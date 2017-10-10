@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Events;
 
 public enum PlayerAniType
 {
@@ -65,13 +66,7 @@ public class PlayerAni : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        AnimationTest();
-    }
-
-    bool inAction = false;
-    void ActionDone()
-    {
-        inAction = false;
+        //AnimationTest();
     }
 
     bool curHalfBodyMode = true; //当前是否半身模式?
@@ -333,6 +328,14 @@ public class PlayerAni : MonoBehaviour
         return null;
     }
 
+    //动作完成
+    public event UnityAction onActionDone;
+    void ActionDone()
+    {
+        if (onActionDone != null)
+            onActionDone();
+    }
+
     void AnimationTest()
     {
         //strafe
@@ -356,11 +359,11 @@ public class PlayerAni : MonoBehaviour
         //Roll
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            SetAnimation(PlayerAniType.Roll, PlayerAniDir.Front, 0.5f);
+            SetAnimation(PlayerAniType.Roll, PlayerAniDir.Front);
         }
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            SetAnimation(PlayerAniType.Roll, PlayerAniDir.Left, 0.5f);
+            SetAnimation(PlayerAniType.Roll, PlayerAniDir.Left);
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -395,7 +398,7 @@ public class PlayerAni : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.E))
         {
-            SetAnimation(PlayerAniType.Run);
+            SetAnimation(PlayerAniType.Run, PlayerAniDir.Front, 1f);
         }
     }
 
