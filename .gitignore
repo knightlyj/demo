@@ -6,5 +6,5 @@
 /Assets/AssetStoreTools*
 
 *.tmp
-*.meta
+*.pidb.meta
 *.suo
