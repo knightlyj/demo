@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: c4640d83dbbdb744097d29294351a76b
-timeCreated: 1507487898
+timeCreated: 1507724179
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -61,8 +61,6 @@ ModelImporter:
     100106: RPG-Character-Mesh
     100108: //RootNode
     100110: Shield
-    100112: WeaponL
-    100114: WeaponR
     400000: B_Head
     400002: B_L_Calf
     400004: B_L_Clavicle
@@ -119,19 +117,12 @@ ModelImporter:
     400106: RPG-Character-Mesh
     400108: //RootNode
     400110: Shield
-    400112: WeaponL
-    400114: WeaponR
     2300000: Shield
-    2300002: WeaponL
-    2300004: WeaponR
     3300000: Shield
-    3300002: WeaponL
-    3300004: WeaponR
-    4300000: RPG-Character-Mesh
-    4300002: Shield
-    4300004: WeaponR
-    4300006: WeaponL
+    4300000: Shield
+    4300002: RPG-Character-Mesh
     7400000: RollForward
+    7400002: RollForward
     9500000: //RootNode
     13700000: RPG-Character-Mesh
   materials:
@@ -159,7 +150,7 @@ ModelImporter:
       name: RollForward
       takeName: Take 001
       firstFrame: 0
-      lastFrame: 21
+      lastFrame: 18
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -179,7 +170,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.98536587
+      - time: 0.9756098
         functionName: ActionDone
         data: 
         objectReferenceParameter: {fileID: 11500000, guid: 486616e53ae7f0a41814b3112e6edfb6,

@@ -9,7 +9,7 @@ public static class KeyboardInput
     public static KeyCode Right = KeyCode.D;
 
 
-    public static KeyCode Run = KeyCode.LeftShift;
+    public static KeyCode Run = KeyCode.LeftControl;
     public static KeyCode Jump = KeyCode.Space;
     public static KeyCode Roll = KeyCode.LeftAlt;
 
@@ -56,12 +56,15 @@ public class PlayerControl : MonoBehaviour
 
     //镜头
     Camera camera = null;
+    float groundCheckRadius = 0.47f;
     // Use this for initialization
     void Start()
     {
-        Physics.gravity = Physics.gravity * 3;
-        playerAni.onActionDone += OnActionDone;
+        Physics.gravity = Physics.gravity * 3; //设置重力
+        playerAni.onActionDone += OnActionDone; //动作事件回调
         playerAni.ChangeWeaponModel("2Hand-Axe", MainHandWeaponType.TwoHandAxe, null, OffHandWeaponType.Empty);
+
+        groundCheckRadius = GetComponent<CapsuleCollider>().radius + 0.02f;
         //镜头设置及初始化
         camera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
         this.orientation = transform.eulerAngles.y;
@@ -89,17 +92,17 @@ public class PlayerControl : MonoBehaviour
     void FixedUpdate()
     {
         //落地检测
-        Collider[] hitGround = Physics.OverlapBox(groundCheck.position, new Vector3(0.23f, 0.1f, 0.23f), Quaternion.identity, groundLayerMask);
+        Collider[] hitGround = Physics.OverlapSphere(groundCheck.position, groundCheckRadius, groundLayerMask);
 
         if (hitGround == null || hitGround.Length == 0)
         {
             grounded = false;
-            //rigidBody.useGravity = true; //在空中,受到重力影响
+            rigidBody.useGravity = true; //在空中,受到重力影响
         }
         else
         {
             grounded = true;
-            //rigidBody.useGravity = false; //在地面时,不用重力
+            rigidBody.useGravity = false; //在地面时,不用重力
         }
     }
 
@@ -134,11 +137,19 @@ public class PlayerControl : MonoBehaviour
         if (camera == null)
             return;
 
-        //计算旋转,镜头相对角色的yaw+角色本身yaw,就是镜头的global yaw
+        //计算旋转,镜头的global yaw
         Quaternion rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0);
-        //调整镜头位置
-        camera.transform.position = watchPoint.position - rotation * Vector3.forward * cameraDistance;
-
+        Vector3 watchDir = rotation * Vector3.forward;
+        Vector3 expectedPos = watchPoint.position - watchDir * cameraDistance;
+        RaycastHit hit;
+        if (Physics.Raycast(watchPoint.position, watchDir * -1, out hit, cameraDistance, groundLayerMask))
+        { //有碰撞,按碰撞点的距离调整位置
+            camera.transform.position = watchPoint.position - watchDir * (hit.distance- 0.2f);
+        }
+        else {
+            //没有碰撞,按设置的镜头距离调整位置
+            camera.transform.position = watchPoint.position - watchDir * cameraDistance;
+        }
         //调整镜头角度
         camera.transform.rotation = rotation;
     }
@@ -218,8 +229,13 @@ public class PlayerControl : MonoBehaviour
         //playerAni.SetAnimation(PlayerAniType.Idle);
     }
 
+    bool run = true;
     void Simulate()
     {
+        if (Input.GetKeyDown(KeyboardInput.Run))
+        {
+            run = !run;
+        }
         if (grounded)
         {   //在地上
 
@@ -283,7 +299,7 @@ public class PlayerControl : MonoBehaviour
                     {
                         SetEightOrientation(dirEnum);
                         float moveSpeed = WalkSpeed;
-                        if (Input.GetKey(KeyboardInput.Run))
+                        if (run)
                         { //跑
                             moveSpeed = runSpeed;
                             if (playerAni.GetAnimation() != PlayerAniType.Run)
@@ -306,7 +322,10 @@ public class PlayerControl : MonoBehaviour
             if (rigidBody.velocity.y < 0) //下落
             {
                 if (playerAni.GetAnimation() != PlayerAniType.Fall)
+                {
                     playerAni.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
+                    inAction = false;
+                }
             }
         }
     }
