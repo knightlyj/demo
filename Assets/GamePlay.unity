@@ -133,14 +133,6 @@ Prefab:
       propertyPath: m_Name
       value: RPG-Character
       objectReference: {fileID: 0}
-    - target: {fileID: 4000010385643750, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 2.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 60
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
   m_IsPrefabParent: 0
@@ -304,7 +296,7 @@ GameObject:
   - 4: {fileID: 1900237375}
   - 218: {fileID: 1900237374}
   - 154: {fileID: 1900237373}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Terrain
   m_TagString: Untagged
   m_Icon: {fileID: 0}

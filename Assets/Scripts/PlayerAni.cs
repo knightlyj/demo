@@ -89,7 +89,7 @@ public class PlayerAni : MonoBehaviour
         }
     }
 
-    float bodyModeStep = 0.2f;
+    float bodyModeStep = 0.1f;
     IEnumerator ToHalfBodyMode()
     {
         float rate = 0;
@@ -132,7 +132,7 @@ public class PlayerAni : MonoBehaviour
 
     Vector3 mainWeaponLocalPos = new Vector3(-0.044f, 0.062f, -0.06f);
     Vector3 mainWeaponLocalRot = new Vector3(1.479f, -0.349f, 8.041f);
-    void ChangeWeaponModel(string mainWeaponName, MainHandWeaponType mainHandType, string offWeaponName, OffHandWeaponType offHandType)
+    public void ChangeWeaponModel(string mainWeaponName, MainHandWeaponType mainHandType, string offWeaponName, OffHandWeaponType offHandType)
     {
         //主手武器处理
         //加载需要的武器资源
@@ -161,7 +161,7 @@ public class PlayerAni : MonoBehaviour
     const int upperLayer = 1;
     const int lowerLayer = 2;
     const int wholeLayer = 3;
-    public void SetAnimation(PlayerAniType aniType, PlayerAniDir dir = PlayerAniDir.Front, float speed = 1.0f)
+    public void SetAnimation(PlayerAniType aniType, PlayerAniDir dir = PlayerAniDir.Front, float fadeInTime = 0.1f, float speed = 1.0f)
     {
         this.curAniType = aniType;
         this.curAniDir = dir;
@@ -176,8 +176,8 @@ public class PlayerAni : MonoBehaviour
             if(upperAni != null && lowerAni != null)
             {
                 SwitchBodyMode(true);
-                animator.CrossFade(Animator.StringToHash(upperAni), 0.1f, upperLayer, 0);
-                animator.CrossFade(Animator.StringToHash(lowerAni), 0.1f, lowerLayer, 0);
+                animator.CrossFade(Animator.StringToHash(upperAni), fadeInTime, upperLayer, 0);
+                animator.CrossFade(Animator.StringToHash(lowerAni), fadeInTime, lowerLayer, 0);
                 animator.speed = speed;
             }
         }
@@ -187,10 +187,15 @@ public class PlayerAni : MonoBehaviour
             if(wholeAni != null)
             {
                 SwitchBodyMode(false);
-                animator.CrossFade(Animator.StringToHash(wholeAni), 0.1f, wholeLayer, 0);
+                animator.CrossFade(Animator.StringToHash(wholeAni), fadeInTime, wholeLayer, 0);
                 animator.speed = speed;
             }
         }
+    }
+
+    public PlayerAniType GetAnimation()
+    {
+        return this.curAniType;
     }
 
     bool IsHalfBodyAnimation(PlayerAniType aniType)
@@ -324,6 +329,18 @@ public class PlayerAni : MonoBehaviour
                 return actionName + dirName;
             else
                 return null;
+        }
+        else if (curAniType == PlayerAniType.JumpUp) //这个动作不分方向
+        {
+            return  "JumpUp";
+        }
+        else if(curAniType == PlayerAniType.Ground)
+        {
+            return "Ground";
+        }
+        else if(curAniType == PlayerAniType.Fall)
+        {
+            return "Fall";
         }
         return null;
     }
