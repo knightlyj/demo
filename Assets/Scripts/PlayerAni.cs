@@ -163,6 +163,11 @@ public class PlayerAni : MonoBehaviour
     const int wholeLayer = 3;
     public void SetAnimation(PlayerAniType aniType, PlayerAniDir dir = PlayerAniDir.Front, float fadeInTime = 0.1f, float speed = 1.0f)
     {
+        if(aniType == this.curAniType)
+        {   //循环动作,不用重复设置
+            if (IsLoopedAnimation(this.curAniType))
+                return;
+        }
         this.curAniType = aniType;
         this.curAniDir = dir;
         if (IsHalfBodyAnimation(aniType))
@@ -196,6 +201,37 @@ public class PlayerAni : MonoBehaviour
     public PlayerAniType GetAnimation()
     {
         return this.curAniType;
+    }
+
+    //是否循环动作
+    bool IsLoopedAnimation(PlayerAniType aniType)
+    {
+        switch (aniType)
+        {
+            //半身
+            case PlayerAniType.Idle:
+                return true;
+            case PlayerAniType.Walk:
+                return true;
+            case PlayerAniType.Run:
+                return true;
+            case PlayerAniType.Strafe:
+                return true;
+
+            //全身
+            case PlayerAniType.JumpUp:
+                return false;
+            case PlayerAniType.Fall:
+                return true;
+            case PlayerAniType.Ground:
+                return false;
+            case PlayerAniType.Roll:
+                return false;
+            case PlayerAniType.GetHit:
+                return false;
+        }
+
+        return false;
     }
 
     bool IsHalfBodyAnimation(PlayerAniType aniType)

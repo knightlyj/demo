@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public static class KeyboardInput
 {
@@ -38,13 +39,20 @@ public class PlayerControl : MonoBehaviour
 
     //各种速度配置
     [SerializeField]
-    float rollSpeed = 3;
+    float rollSpeed = 9;
     [SerializeField]
-    float jumpSpeed = 7;
+    float jumpSpeed = 15;
     [SerializeField]
-    float WalkSpeed = 2;
+    float WalkSpeed = 5;
     [SerializeField]
-    float runSpeed = 4;
+    float runSpeed = 10;
+    [SerializeField]
+    float moveForce = 100;
+
+    [SerializeField]
+    float moveForceInAir = 50;
+    [SerializeField]
+    float moveSpeedInAir = 2;
 
     PlayerAni playerAni = null;
     Rigidbody rigidBody = null;
@@ -56,19 +64,19 @@ public class PlayerControl : MonoBehaviour
 
     //镜头
     Camera camera = null;
-    float groundCheckRadius = 0.47f;
+
     // Use this for initialization
     void Start()
     {
-        Physics.gravity = Physics.gravity * 3; //设置重力
+        Physics.gravity = Physics.gravity * 5; //设置重力
         playerAni.onActionDone += OnActionDone; //动作事件回调
         playerAni.ChangeWeaponModel("2Hand-Axe", MainHandWeaponType.TwoHandAxe, null, OffHandWeaponType.Empty);
 
-        groundCheckRadius = GetComponent<CapsuleCollider>().radius + 0.02f;
         //镜头设置及初始化
         camera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
         this.orientation = transform.eulerAngles.y;
         cameraYaw = this.orientation;
+        cameraDistance = minCameraDistance;
         AdaptCamera();
     }
 
@@ -79,16 +87,24 @@ public class PlayerControl : MonoBehaviour
 
     //地面检测
     bool grounded = true;
+    //跑
+    bool run = true;
     // Update is called once per frame
     void Update()
     {
         UpdateCamera(); //更新镜头
-        Simulate(); //更新操作
         SmoothOrientation(); //角色朝向平滑过渡
+
+        if (Input.GetKeyDown(KeyboardInput.Run)) //跑/走 切换
+        {
+            run = !run;
+        }
     }
 
     [SerializeField]
     LayerMask groundLayerMask;
+    [SerializeField]
+    float groundCheckRadius = 0.1f;
     void FixedUpdate()
     {
         //落地检测
@@ -97,13 +113,14 @@ public class PlayerControl : MonoBehaviour
         if (hitGround == null || hitGround.Length == 0)
         {
             grounded = false;
-            rigidBody.useGravity = true; //在空中,受到重力影响
+            //rigidBody.useGravity = true; //在空中,受到重力影响
         }
         else
         {
             grounded = true;
-            rigidBody.useGravity = false; //在地面时,不用重力
+            //rigidBody.useGravity = false; //在地面时,不用重力
         }
+        Simulate(); //更新操作
     }
 
     //***************************角色和镜头朝向的代码******************************
@@ -126,7 +143,7 @@ public class PlayerControl : MonoBehaviour
     }
     float _orientation = 0f;
 
-    float minCameraDistance = 3.0f;
+    float minCameraDistance = 7.0f;
     float maxCameraDistance = 7.0f;
     float cameraDistance = 3.0f; //镜头距离角色的距离
     float cameraYaw = 0; //镜头的全局yaw
@@ -144,9 +161,10 @@ public class PlayerControl : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(watchPoint.position, watchDir * -1, out hit, cameraDistance, groundLayerMask))
         { //有碰撞,按碰撞点的距离调整位置
-            camera.transform.position = watchPoint.position - watchDir * (hit.distance- 0.2f);
+            camera.transform.position = watchPoint.position - watchDir * (hit.distance - 0.2f);
         }
-        else {
+        else
+        {
             //没有碰撞,按设置的镜头距离调整位置
             camera.transform.position = watchPoint.position - watchDir * cameraDistance;
         }
@@ -163,7 +181,7 @@ public class PlayerControl : MonoBehaviour
         float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
         this.cameraYaw += deltaYaw;
         this.cameraPitch -= deltaPith;
-        this.cameraPitch = cameraPitch - Mathf.Floor(cameraPitch / 360f) * 360f; 
+        this.cameraPitch = cameraPitch - Mathf.Floor(cameraPitch / 360f) * 360f;
         if (cameraPitch > 180f)//范围在-180~180之间
             cameraPitch -= 360f;
         //镜头pitch范围限制
@@ -227,109 +245,171 @@ public class PlayerControl : MonoBehaviour
     {
         inAction = false;
         //playerAni.SetAnimation(PlayerAniType.Idle);
+        StopRollProc();
     }
 
-    bool run = true;
+    void TrunIntoAction()
+    {
+        inAction = true;
+
+    }
+
+    EightDir lastInputDir = EightDir.Empty;
     void Simulate()
     {
-        if (Input.GetKeyDown(KeyboardInput.Run))
+        //处理输入方向
+        EightDir inputDir = EightDir.Empty;
+        //前后
+        if (Input.GetKey(KeyboardInput.Forward))
         {
-            run = !run;
+            inputDir = EightDir.Front;
         }
+        else if (Input.GetKey(KeyboardInput.Backward))
+        {
+            inputDir = EightDir.Back;
+        }
+
+        //左右
+        if (Input.GetKey(KeyboardInput.Left))
+        {
+            if (inputDir == EightDir.Front)
+                inputDir = EightDir.FrontLeft;
+            else if (inputDir == EightDir.Back)
+                inputDir = EightDir.BackLeft;
+            else
+                inputDir = EightDir.Left;
+        }
+        else if (Input.GetKey(KeyboardInput.Right))
+        {
+            if (inputDir == EightDir.Front)
+                inputDir = EightDir.FrontRight;
+            else if (inputDir == EightDir.Back)
+                inputDir = EightDir.BackRight;
+            else
+                inputDir = EightDir.Right;
+        }
+
         if (grounded)
         {   //在地上
-
-            EightDir dirEnum = EightDir.Empty;
-            //前后
-            if (Input.GetKey(KeyboardInput.Forward))
-            {
-                dirEnum = EightDir.Front;
-            }
-            else if (Input.GetKey(KeyboardInput.Backward))
-            {
-                dirEnum = EightDir.Back;
-            }
-
-            //左右
-            if (Input.GetKey(KeyboardInput.Left))
-            {
-                if (dirEnum == EightDir.Front)
-                    dirEnum = EightDir.FrontLeft;
-                else if (dirEnum == EightDir.Back)
-                    dirEnum = EightDir.BackLeft;
-                else
-                    dirEnum = EightDir.Left;
-            }
-            else if (Input.GetKey(KeyboardInput.Right))
-            {
-                if (dirEnum == EightDir.Front)
-                    dirEnum = EightDir.FrontRight;
-                else if (dirEnum == EightDir.Back)
-                    dirEnum = EightDir.BackRight;
-                else
-                    dirEnum = EightDir.Right;
-            }
-
             if (!inAction) //不在特殊动作中
             {
-                if (Input.GetKeyDown(KeyboardInput.Roll))
+                if (Input.GetKey(KeyboardInput.Roll))
                 {
-                    SetEightOrientation(dirEnum);
+                    SetEightOrientation(inputDir);
 
                     playerAni.SetAnimation(PlayerAniType.Roll, PlayerAniDir.Front);
-                    Quaternion rotation = Quaternion.AngleAxis(this.orientation, Vector3.up);
-                    rigidBody.velocity = rotation * Vector3.forward * rollSpeed;
-                    inAction = true;
+                    StartRollProc(this.orientation);
+                    TrunIntoAction();
                 }
-                else if (Input.GetKeyDown(KeyboardInput.Jump))
+                else if (Input.GetKey(KeyboardInput.Jump))
                 {
-                    playerAni.SetAnimation(PlayerAniType.JumpUp, PlayerAniDir.Front);
-                    rigidBody.velocity = new Vector3(rigidBody.velocity.x, jumpSpeed, rigidBody.velocity.z);
-                    inAction = true;
+                    playerAni.SetAnimation(PlayerAniType.JumpUp, PlayerAniDir.Front); //设置动画
+                    rigidBody.velocity = new Vector3(rigidBody.velocity.x, jumpSpeed, rigidBody.velocity.z); //设置垂直速度
+
+                    //如果有按方向键,则设置方向和水平速度
+                    float moveSpeed = WalkSpeed;
+                    if (run)
+                    { //跑
+                        moveSpeed = runSpeed;
+                    }
+                    if (inputDir != EightDir.Empty)
+                    {
+                        SetEightOrientation(inputDir); //设置角色方向
+                        //设置水平速度
+                        Vector3 moveDir = Quaternion.AngleAxis(this.orientation, Vector3.up) * Vector3.forward;
+                        rigidBody.velocity = new Vector3(moveDir.x * moveSpeed, rigidBody.velocity.y, moveDir.z * moveSpeed);
+                    }
+                    TrunIntoAction();
                 }
                 else
-                { //没有做任何动作,则跑/走
-                    if (dirEnum == EightDir.Empty)
-                    {   //没有按方向键,则停下来
-                        rigidBody.velocity = new Vector3(0, 0, 0);
-                        if (playerAni.GetAnimation() != PlayerAniType.Idle)
-                            playerAni.SetAnimation(PlayerAniType.Idle);
+                { //没有做任何动作,则处理跑/走逻辑
+                    if (inputDir == EightDir.Empty)
+                    {
+                        if (lastInputDir != EightDir.Empty)
+                        {
+                            //没有按方向键,且上一帧按了方向键,这一帧就停下来
+                            //如果是落地第一帧,则会按照离地前最后一帧的方向来处理,这样跳跃的落地就直接停下了
+                            rigidBody.velocity = new Vector3(0, 0, 0);
+                        }
+                        playerAni.SetAnimation(PlayerAniType.Idle);
                     }
                     else
                     {
-                        SetEightOrientation(dirEnum);
+                        SetEightOrientation(inputDir);
                         float moveSpeed = WalkSpeed;
                         if (run)
                         { //跑
                             moveSpeed = runSpeed;
-                            if (playerAni.GetAnimation() != PlayerAniType.Run)
-                                playerAni.SetAnimation(PlayerAniType.Run);
+                            playerAni.SetAnimation(PlayerAniType.Run);
                         }
                         else
                         {
-                            if (playerAni.GetAnimation() != PlayerAniType.Walk)
-                                playerAni.SetAnimation(PlayerAniType.Walk);
+                            playerAni.SetAnimation(PlayerAniType.Walk);
                         }
-                        Quaternion rotation = Quaternion.AngleAxis(this.orientation, Vector3.up);
-                        Vector3 moveDir = rotation * Vector3.forward;
-                        rigidBody.velocity = new Vector3(moveDir.x * moveSpeed, rigidBody.velocity.y, moveDir.z * moveSpeed);
+                        //力的角度向下一点点,
+                        Vector3 forceDir = Quaternion.Euler(10, this.orientation, 0) * Vector3.forward;
+                        //水平方向变化时,按速度到当前方向的投影继承速度,如果投影与当前反向,则不继承
+                        Vector3 moveDir = Quaternion.AngleAxis(this.orientation, Vector3.up) * Vector3.forward;
+                        float speedOnDir = moveDir.x * rigidBody.velocity.x + moveDir.z * rigidBody.velocity.z;
+                        if (speedOnDir > 0)
+                            rigidBody.velocity = new Vector3(moveDir.x * speedOnDir, rigidBody.velocity.y, moveDir.z * speedOnDir);
+                        float curSpeed = rigidBody.velocity.magnitude;
+                        if (curSpeed < moveSpeed)
+                        {
+                            rigidBody.AddForce(forceDir * moveForce);
+                        }
+                        else
+                        {
+                            rigidBody.velocity = moveSpeed / curSpeed * rigidBody.velocity;
+                        }
                     }
                 }
             }
+            else
+            {  //在动作中,处理动作的逻辑
+                RollProc();
+            }
+            lastInputDir = inputDir;
+            lastFrameInFall = false;
         }
         else
         {   //在空中
             if (rigidBody.velocity.y < 0) //下落
             {
-                if (playerAni.GetAnimation() != PlayerAniType.Fall)
+                if (lastFrameInFall == false)
                 {
-                    playerAni.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
-                    inAction = false;
+                    startFallTime = DateTime.Now;
                 }
+                else
+                {
+                    TimeSpan span = DateTime.Now - startFallTime;
+                    if (span.TotalMilliseconds > 150)
+                        playerAni.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
+                }
+                OnActionDone();
+                if (inputDir != EightDir.Empty)
+                {
+                    //空中给一点点水平移动的力
+                    Vector3 forceDir = Quaternion.Euler(0, cameraYaw, 0) * Vector3.forward;
+                    float speedOnDir = Vector3.Dot(forceDir, rigidBody.velocity);
+                    if (speedOnDir < moveSpeedInAir)
+                    {
+                        rigidBody.AddForce(forceDir * moveForceInAir);
+                    }
+                }
+                lastFrameInFall = true;
+            }
+            else
+            {
+                lastFrameInFall = false;
             }
         }
     }
+    DateTime startFallTime = DateTime.Now;
+    bool lastFrameInFall = false;
 
+
+    //根据镜头方向,设置人物的八个方向
     void SetEightOrientation(EightDir dir)
     {
         switch (dir)
@@ -362,4 +442,40 @@ public class PlayerControl : MonoBehaviour
                 break;
         }
     }
+
+    bool inRoll = false;
+    Vector3 rollForceDir;
+    void StartRollProc(float yaw)
+    {
+        inRoll = true;
+        rollForceDir = Quaternion.Euler(10, yaw, 0) * Vector3.forward;
+    }
+
+    void StopRollProc()
+    {
+        if (inRoll)
+        {
+            inRoll = false;
+            rigidBody.velocity = new Vector3(0, rigidBody.velocity.y, 0);
+        }
+    }
+
+    void RollProc()
+    {
+        if (inRoll)
+        {
+            float curSpeed = rigidBody.velocity.magnitude;
+            if (curSpeed < rollSpeed)
+            {
+                rigidBody.AddForce(rollForceDir * moveForce);
+            }
+            else
+            {
+                rigidBody.velocity = rollSpeed / curSpeed * rigidBody.velocity;
+            }
+        }
+    }
+
+
+
 }
