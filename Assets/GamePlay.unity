@@ -90,6 +90,97 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualCellSize: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &44527108
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 44527109}
+  - 114: {fileID: 44527110}
+  m_Layer: 9
+  m_Name: WatchPoint
+  m_TagString: WatchPoint
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &44527109
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 44527108}
+  m_LocalRotation: {x: -0, y: 0.5, z: -0, w: 0.8660254}
+  m_LocalPosition: {x: 80.64, y: 7.74, z: 78.79}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+--- !u!114 &44527110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 44527108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f2cc5601f9998f4ba19ac63fbb19378, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  realWatchPoint: {x: 0, y: 0, z: 0}
+  moveFactor: 2
+  minMoveStep: 1
+  chasingDistance: 3
+  maxCameraOffset: 1.5
+--- !u!1001 &325825633
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 80.64
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 5.64
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 78.79
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 0.8660254
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_RootOrder
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1000010919185028, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+      propertyPath: m_Name
+      value: RPG-Character
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
+  m_IsPrefabParent: 0
 --- !u!1 &657100157
 GameObject:
   m_ObjectHideFlags: 0
@@ -232,52 +323,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!1001 &1026117853
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 80.64
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 5.64
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 78.79
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 0.8660254
-      objectReference: {fileID: 0}
-    - target: {fileID: 4000012255017918, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_RootOrder
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 1000010919185028, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-      propertyPath: m_Name
-      value: RPG-Character
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_ParentPrefab: {fileID: 100100000, guid: 0a113a8937f2b424a86b533a50a80033, type: 2}
-  m_IsPrefabParent: 0
 --- !u!1 &1353622246
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,6 +335,7 @@ GameObject:
   - 92: {fileID: 1353622249}
   - 124: {fileID: 1353622248}
   - 81: {fileID: 1353622247}
+  - 114: {fileID: 1353622252}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -365,6 +411,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
+--- !u!114 &1353622252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1353622246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e400297a25ee49439cc2a188b7fd227, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraPitch: 0
+  cameraYaw: 0
+  minPitchStep: 1
+  minYawStep: 1
+  cameraMoveStep: 10
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!1 &1900237372
 GameObject:
   m_ObjectHideFlags: 0

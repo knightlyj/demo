@@ -58,7 +58,7 @@ GameObject:
   - 114: {fileID: 114000011294256040}
   m_Layer: 9
   m_Name: PlayerPrefab
-  m_TagString: Untagged
+  m_TagString: LocalPlayer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -109,16 +109,16 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!1 &1000013975344592
+--- !u!1 &1000013419897520
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 4
   m_Component:
-  - 4: {fileID: 4000010385643750}
+  - 4: {fileID: 4000012346657906}
   m_Layer: 9
-  m_Name: WatchPoint
+  m_Name: Sight
   m_TagString: Untagged
   m_Icon: {fileID: 5721338939258241955, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -137,19 +137,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4000012255017918}
   m_RootOrder: 2
---- !u!4 &4000010385643750
-Transform:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000013975344592}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_Children: []
-  m_Father: {fileID: 4000012255017918}
-  m_RootOrder: 4
 --- !u!4 &4000012125802176
 Transform:
   m_ObjectHideFlags: 1
@@ -157,7 +144,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010197032198}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.3, z: 0}
+  m_LocalPosition: {x: 0, y: 0.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
@@ -178,9 +165,22 @@ Transform:
   - {fileID: 4000013080069510}
   - {fileID: 4000010376880596}
   - {fileID: 4000012125802176}
-  - {fileID: 4000010385643750}
+  - {fileID: 4000012346657906}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+--- !u!4 &4000012346657906
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013419897520}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.173, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000012255017918}
+  m_RootOrder: 4
 --- !u!4 &4000012515211284
 Transform:
   m_ObjectHideFlags: 1
@@ -300,7 +300,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41469aef9df51114c8fb71bdb4b39999, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  watchPoint: {fileID: 4000010385643750}
   groundCheck: {fileID: 4000012125802176}
   rollSpeed: 12
   jumpSpeed: 20
@@ -309,6 +308,7 @@ MonoBehaviour:
   moveForce: 300
   moveForceInAir: 10
   moveSpeedInAir: 2
+  rigidBody: {fileID: 0}
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 256
@@ -352,7 +352,7 @@ SkinnedMeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 6e10ea0198a5eda4298973be9197ac6e, type: 2}
+  - {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}

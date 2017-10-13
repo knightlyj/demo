@@ -30,10 +30,8 @@ public enum EightDir
     FrontRight,
 }
 
-public class PlayerControl : MonoBehaviour
+public class LocalPlayer : Player
 {
-    [SerializeField]
-    Transform watchPoint = null;
     [SerializeField]
     Transform groundCheck = null;
 
@@ -55,7 +53,7 @@ public class PlayerControl : MonoBehaviour
     float moveSpeedInAir = 2;
 
     PlayerAni playerAni = null;
-    Rigidbody rigidBody = null;
+    public Rigidbody rigidBody = null;
     void Awake()
     {
         playerAni = GetComponent<PlayerAni>();
@@ -63,25 +61,29 @@ public class PlayerControl : MonoBehaviour
     }
 
     //镜头
-    Camera camera = null;
+    CameraFollow cameraFollow = null;
 
+    public Transform sight { get { return this._sight; } }
+    Transform _sight;
     // Use this for initialization
-    void Start()
+    protected new void Start()
     {
+        base.Start();
         Physics.gravity = Physics.gravity * 5; //设置重力
         playerAni.onActionDone += OnActionDone; //动作事件回调
         playerAni.ChangeWeaponModel("2Hand-Axe", MainHandWeaponType.TwoHandAxe, null, OffHandWeaponType.Empty);
 
+        _sight = transform.FindChild("Sight");
         //镜头设置及初始化
-        camera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+        cameraFollow = GameObject.FindWithTag("MainCamera").GetComponent<CameraFollow>();
+        //角色朝向初始化
         this.orientation = transform.eulerAngles.y;
-        cameraYaw = this.orientation;
-        cameraDistance = minCameraDistance;
-        AdaptCamera();
+        cameraFollow.cameraYaw = this.orientation;
     }
 
-    void OnDestroy()
+    protected new void OnDestroy()
     {
+        base.OnDestroy();
         playerAni.onActionDone -= OnActionDone;
     }
 
@@ -90,9 +92,9 @@ public class PlayerControl : MonoBehaviour
     //跑
     bool run = true;
     // Update is called once per frame
-    void Update()
+    protected new void Update()
     {
-        UpdateCamera(); //更新镜头
+        base.Update();
         SmoothOrientation(); //角色朝向平滑过渡
 
         if (Input.GetKeyDown(KeyboardInput.Run)) //跑/走 切换
@@ -143,78 +145,14 @@ public class PlayerControl : MonoBehaviour
     }
     float _orientation = 0f;
 
-    float minCameraDistance = 7.0f;
-    float maxCameraDistance = 7.0f;
-    float cameraDistance = 3.0f; //镜头距离角色的距离
-    float cameraYaw = 0; //镜头的全局yaw
-    float cameraPitch = 0;
-    //根据角色朝向和位置,以及镜头的yaw和pitch,调整镜头
-    void AdaptCamera()
-    {
-        if (camera == null)
-            return;
-
-        //计算旋转,镜头的global yaw
-        Quaternion rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0);
-        Vector3 watchDir = rotation * Vector3.forward;
-        Vector3 expectedPos = watchPoint.position - watchDir * cameraDistance;
-        RaycastHit hit;
-        if (Physics.Raycast(watchPoint.position, watchDir * -1, out hit, cameraDistance, groundLayerMask))
-        { //有碰撞,按碰撞点的距离调整位置
-            camera.transform.position = watchPoint.position - watchDir * (hit.distance - 0.2f);
-        }
-        else
-        {
-            //没有碰撞,按设置的镜头距离调整位置
-            camera.transform.position = watchPoint.position - watchDir * cameraDistance;
-        }
-        //调整镜头角度
-        camera.transform.rotation = rotation;
-    }
-
-    float mouseRatio = 3f;
-    float wheelRatio = 100f;
-    void UpdateCamera()
-    {
-        //更新角度
-        float deltaYaw = Input.GetAxis("Mouse X") * mouseRatio;
-        float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
-        this.cameraYaw += deltaYaw;
-        this.cameraPitch -= deltaPith;
-        this.cameraPitch = cameraPitch - Mathf.Floor(cameraPitch / 360f) * 360f;
-        if (cameraPitch > 180f)//范围在-180~180之间
-            cameraPitch -= 360f;
-        //镜头pitch范围限制
-        if (this.cameraPitch > 89f)
-            this.cameraPitch = 89f;
-        else if (this.cameraPitch < -89)
-            this.cameraPitch = -89;
-
-        //更新距离
-        float wheel = Input.GetAxis("Mouse ScrollWheel");
-        if (wheel != 0)
-        {
-            cameraDistance -= wheel * wheelRatio * Time.deltaTime;
-            if (cameraDistance > maxCameraDistance)
-                cameraDistance = maxCameraDistance;
-            if (cameraDistance < minCameraDistance)
-                cameraDistance = minCameraDistance;
-        }
-
-        AdaptCamera();
-    }
-
     //角色朝向平滑过渡
     float showOrientation = 0; //实际显示的朝向
     const float smoothOriBaseStepLen = 300;
     float smoothOriStepLen = 0;
-    bool inSmoothOri = false;
     void StartSmoothOrientation()
     {  //这里计算环形插值
         float diff = this.orientation - showOrientation;
         float absDiff = Mathf.Abs(diff);
-        if (absDiff > 180) { }
-
         if (absDiff > 270)
         {
             smoothOriStepLen = smoothOriBaseStepLen * 4;
@@ -383,14 +321,14 @@ public class PlayerControl : MonoBehaviour
                 else
                 {
                     TimeSpan span = DateTime.Now - startFallTime;
-                    if (span.TotalMilliseconds > 150)
+                    if (span.TotalMilliseconds > 200)
                         playerAni.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
                 }
                 OnActionDone();
                 if (inputDir != EightDir.Empty)
                 {
                     //空中给一点点水平移动的力
-                    Vector3 forceDir = Quaternion.Euler(0, cameraYaw, 0) * Vector3.forward;
+                    Vector3 forceDir = Quaternion.Euler(0, cameraFollow.cameraYaw, 0) * Vector3.forward;
                     float speedOnDir = Vector3.Dot(forceDir, rigidBody.velocity);
                     if (speedOnDir < moveSpeedInAir)
                     {
@@ -415,28 +353,28 @@ public class PlayerControl : MonoBehaviour
         switch (dir)
         {
             case EightDir.Front:
-                this.orientation = cameraYaw;
+                this.orientation = cameraFollow.cameraYaw;
                 break;
             case EightDir.FrontLeft:
-                this.orientation = cameraYaw - 45;
+                this.orientation = cameraFollow.cameraYaw - 45;
                 break;
             case EightDir.Left:
-                this.orientation = cameraYaw - 90;
+                this.orientation = cameraFollow.cameraYaw - 90;
                 break;
             case EightDir.BackLeft:
-                this.orientation = cameraYaw - 135;
+                this.orientation = cameraFollow.cameraYaw - 135;
                 break;
             case EightDir.Back:
-                this.orientation = cameraYaw + 180;
+                this.orientation = cameraFollow.cameraYaw + 180;
                 break;
             case EightDir.BackRight:
-                this.orientation = cameraYaw + 135;
+                this.orientation = cameraFollow.cameraYaw + 135;
                 break;
             case EightDir.Right:
-                this.orientation = cameraYaw + 90;
+                this.orientation = cameraFollow.cameraYaw + 90;
                 break;
             case EightDir.FrontRight:
-                this.orientation = cameraYaw + 45;
+                this.orientation = cameraFollow.cameraYaw + 45;
                 break;
             default:
                 break;

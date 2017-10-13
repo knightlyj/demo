@@ -69,9 +69,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\CameraFollow.cs" />
     <Compile Include="Assets\Scripts\CommonHelper.cs" />
+    <Compile Include="Assets\Scripts\LocalPlayer.cs" />
+    <Compile Include="Assets\Scripts\Player.cs" />
     <Compile Include="Assets\Scripts\PlayerAni.cs" />
-    <Compile Include="Assets\Scripts\PlayerControl.cs" />
+    <Compile Include="Assets\Scripts\UnityHelper.cs" />
+    <Compile Include="Assets\Scripts\WatchPoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Materials\Shader\NewUnlitShader.shader" />

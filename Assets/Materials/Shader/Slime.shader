@@ -3,7 +3,6 @@
 	Properties
 	{
 		_Color("Main Color", Color) = (0,0.1,0.7,0.5)
-		_Force("Force", Vector) = (0,0,0)
 	}
 	
 	SubShader
@@ -35,14 +34,11 @@
 			};
 
 			uniform float4 _Color;
-			uniform float3 _Force;
 
 			v2f vert(appdata v)
 			{
 				v2f o;
 				float4 worldPos = mul(unity_ObjectToWorld, float4(v.position.xyz, 1.0));
-				float3 worldNormal = mul(unity_ObjectToWorld, float4(v.normal, 1.0));
-				float3 downDir = (0, -1, 0);
 
 				o.position = UnityWorldToClipPos(worldPos);
 				o.color = _Color;
@@ -52,7 +48,7 @@
 			float4 frag(v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = i.color;
+				fixed4 col = float4(i.color.rgb, 0);
 				return col;
 			}
 			ENDCG
