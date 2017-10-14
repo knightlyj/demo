@@ -6,7 +6,11 @@ public class WatchPoint : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-
+        LocalPlayer localPlayer = UnityHelper.FindLocalPlayer();
+        if (localPlayer != null)
+        {
+            transform.position = localPlayer.sight.position;
+        }
     }
 
     // Update is called once per frame
@@ -17,8 +21,11 @@ public class WatchPoint : MonoBehaviour
         {
             ChasePlayer(localPlayer);
         }
+
+        //Debug.Log("calc " + realWatchPoint);
     }
 
+    [HideInInspector]
     public Vector3 realWatchPoint;
 
     [SerializeField]

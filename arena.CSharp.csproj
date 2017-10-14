@@ -63,16 +63,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="arena.CSharp.Plugins.csproj">
-      <Project>{C4A60274-C8DF-5ABB-0D16-181BD23839CE}</Project>
-      <Name>arena.CSharp.Plugins</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Assets\Scripts\CameraFollow.cs" />
     <Compile Include="Assets\Scripts\CommonHelper.cs" />
+    <Compile Include="Assets\Scripts\LevelControl.cs" />
     <Compile Include="Assets\Scripts\LocalPlayer.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
+    <Compile Include="Assets\Scripts\PlayerAI.cs" />
     <Compile Include="Assets\Scripts\PlayerAni.cs" />
     <Compile Include="Assets\Scripts\UnityHelper.cs" />
     <Compile Include="Assets\Scripts\WatchPoint.cs" />
@@ -80,11 +76,6 @@
   <ItemGroup>
     <None Include="Assets\Materials\Shader\NewUnlitShader.shader" />
     <None Include="Assets\Materials\Shader\Slime.shader" />
-    <None Include="Assets\Standard Assets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
-    <None Include="Assets\Standard Assets\Environment\Water\Water\Shaders\FXWaterPro.shader" />
-    <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Advanced.shader" />
-    <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\FXWater4Simple.shader" />
-    <None Include="Assets\Standard Assets\Environment\Water\Water4\Shaders\WaterInclude.cginc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

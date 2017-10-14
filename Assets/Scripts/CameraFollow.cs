@@ -7,6 +7,7 @@ public class CameraFollow : MonoBehaviour {
     new Camera camera;
     void Awake()
     {
+        cameraDistance = minCameraDistance;
         camera = GetComponent<Camera>();
     }
 
@@ -18,8 +19,29 @@ public class CameraFollow : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        UpdateCamera();
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            cameraYaw += 180f;
+        }
+        //更新距离
+        UpdateCameraDistance();
 
+        if (Input.GetKeyDown(KeyboardInput.LockTarget))
+        {
+            if (target == null)
+                LockTarget();
+            else
+                UnLockTarget();
+        }
+
+        if (target != null)
+        { //锁定了目标
+            UpdateLockedCamera();
+        }
+        else
+        { //没有锁定目标,镜头自由转动
+            UpdateFreeCamera();
+        }
     }
     
     public float cameraPitch = 0;
@@ -30,29 +52,34 @@ public class CameraFollow : MonoBehaviour {
     float minPitchStep = 1;
     [SerializeField]
     float minYawStep = 1;
+    [SerializeField]
+    float smoohFactor = 2f;
 
     [SerializeField]
-    float cameraMoveStep = 10f;
-    [SerializeField]
-    LayerMask groundLayerMask;
+    LayerMask groundLayerMask = 0;
     //根据角色朝向和位置,以及镜头的yaw和pitch,调整镜头
     void SmoothCamera()
     {
         if (camera == null)
             return;
-        //smooth pitch
+        //smooth pitch 
         float pitchDistance = Mathf.Abs(cameraPitch - smoothPitch);
-        float pitchStep = pitchDistance * 1;
+        float pitchStep = pitchDistance * smoohFactor; 
         if (pitchStep < minPitchStep)
             pitchStep = minPitchStep;
-        smoothPitch = CommonHelper.AngleTowards(smoothPitch, cameraPitch, pitchStep);
+        smoothPitch = CommonHelper.AngleTowards(smoothPitch, cameraPitch, pitchStep * Time.deltaTime);
+        if (smoothPitch > 180) //角度限制在-180~180
+            smoothPitch -= 360; 
 
         //smooth yaw
         float yawDist = Mathf.Abs(cameraYaw - smoothYaw);
-        float yawStep = yawDist * 1;
+        yawDist = Mathf.Min(yawDist, 360 - yawDist);  //角度要环形计算
+        float yawStep = yawDist * smoohFactor;
         if (yawStep < minYawStep)
             yawStep = minYawStep;
-        smoothYaw = CommonHelper.AngleTowards(smoothYaw, cameraYaw, yawStep);
+        smoothYaw = CommonHelper.AngleTowards(smoothYaw, cameraYaw, yawStep * Time.deltaTime, true);
+        if (this.smoothYaw > 360 || this.smoothYaw < 0)
+            this.smoothYaw = smoothYaw - Mathf.Floor(smoothYaw / 360f) * 360f; //角度限制在0~360
 
         Quaternion rotation = Quaternion.Euler(smoothPitch, smoothYaw, 0);
         Vector3 watchDir = rotation * Vector3.forward;
@@ -72,28 +99,8 @@ public class CameraFollow : MonoBehaviour {
         camera.transform.rotation = rotation;
     }
 
-    float minCameraDistance = 7.0f;
-    float maxCameraDistance = 7.0f;
-    float cameraDistance = 7.0f; //镜头距离角色的距离
-
-    float mouseRatio = 3f;
-    float wheelRatio = 100f;
-    void UpdateCamera()
+    void UpdateCameraDistance()
     {
-        //更新角度
-        float deltaYaw = Input.GetAxis("Mouse X") * mouseRatio;
-        float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
-        this.cameraYaw += deltaYaw;
-        this.cameraPitch -= deltaPith;
-        this.cameraPitch = cameraPitch - Mathf.Floor(cameraPitch / 360f) * 360f; //角度限制在-180~180
-        if (this.cameraPitch >= 180f)
-            this.cameraPitch -= 360f;
-        //镜头pitch范围限制
-        if (this.cameraPitch > 89f)
-            this.cameraPitch = 89f;
-        else if (this.cameraPitch < -89f)
-            this.cameraPitch = -89f;
-
         //更新距离
         float wheel = Input.GetAxis("Mouse ScrollWheel");
         if (wheel != 0)
@@ -104,6 +111,100 @@ public class CameraFollow : MonoBehaviour {
             if (cameraDistance < minCameraDistance)
                 cameraDistance = minCameraDistance;
         }
+    }
+
+    [SerializeField]
+    float minCameraDistance = 3.0f;
+    [SerializeField]
+    float maxCameraDistance = 7.0f;
+    float cameraDistance = 7.0f; //镜头距离角色的距离
+
+    float mouseRatio = 3f;
+    float wheelRatio = 100f;
+    void UpdateFreeCamera()  //更新自由镜头
+    {
+        //更新角度
+        float deltaYaw = Input.GetAxis("Mouse X") * mouseRatio;
+        this.cameraYaw += deltaYaw;
+        if(this.cameraYaw > 360 || this.cameraYaw < 0)
+            this.cameraYaw = cameraYaw - Mathf.Floor(cameraYaw / 360f) * 360f; //角度限制在0~360
+
+        float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
+        this.cameraPitch -= deltaPith;
+        this.cameraPitch = cameraPitch - Mathf.Floor(cameraPitch / 360f) * 360f; //角度限制在-180~180
+        if (this.cameraPitch >= 180f)
+            this.cameraPitch -= 360f;
+        //镜头pitch范围限制
+        if (this.cameraPitch > 89f)
+            this.cameraPitch = 89f;
+        else if (this.cameraPitch < -89f)
+            this.cameraPitch = -89f;
+
+        SmoothCamera();
+    }
+
+    
+    Player target;
+    void LockTarget()
+    {
+        GameObject[] allAI = GameObject.FindGameObjectsWithTag("AI");
+        if(allAI != null)
+        {
+            foreach (GameObject go in allAI)
+            {
+                Vector3 dir = go.transform.position - this.transform.position;
+                if (Vector3.Angle(this.transform.forward, dir) < 55)
+                {
+
+                    if (target != null)
+                    { //原来有目标,退订事件
+                        target.onPlayerDestroy -= this.OnTargetDestory;
+                    }
+
+                    //获取新目标,并订阅事件
+                    target = go.GetComponent<Player>();
+                    target.onPlayerDestroy += this.OnTargetDestory;
+
+                    break;
+                }
+            }
+        }
+    }
+
+    void UnLockTarget()
+    {
+        target.onPlayerDestroy -= this.OnTargetDestory;
+        target = null;
+    }
+
+    void OnTargetDestory()
+    {
+        target.onPlayerDestroy -= this.OnTargetDestory;
+        target = null;
+    }
+
+    void UpdateLockedCamera()
+    {
+        //镜头yaw朝向目标
+        Vector3 toTarget = target.transform.position - watchPoint.realWatchPoint;
+        toTarget.y = 0;
+
+        float aCos = Mathf.Acos(toTarget.z / toTarget.magnitude);
+        cameraYaw = aCos / Mathf.PI * 180;
+        if (toTarget.x < 0)
+            cameraYaw = -cameraYaw;
+
+        //更新pitch
+        float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
+        this.cameraPitch -= deltaPith;
+        this.cameraPitch = cameraPitch - Mathf.Floor(cameraPitch / 360f) * 360f; //角度限制在-180~180
+        if (this.cameraPitch >= 180f)
+            this.cameraPitch -= 360f;
+        //镜头pitch范围限制
+        if (this.cameraPitch > 89f)
+            this.cameraPitch = 89f;
+        else if (this.cameraPitch < -89f)
+            this.cameraPitch = -89f;
 
         SmoothCamera();
     }

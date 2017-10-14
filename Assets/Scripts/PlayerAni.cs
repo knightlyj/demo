@@ -36,6 +36,7 @@ public enum MainHandWeaponType
     //双手部分
     TwoHandSpear,
     TwoHandAxe,
+    TwoHandSword,
 }
 
 public enum OffHandWeaponType
@@ -287,6 +288,9 @@ public class PlayerAni : MonoBehaviour
 
         switch (mainHandType)
         {
+            case MainHandWeaponType.TwoHandSword:
+                weaponName = "2HandSword";
+                break;
             case MainHandWeaponType.TwoHandAxe:
                 weaponName = "2HandAxe";
                 break;

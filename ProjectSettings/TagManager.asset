@@ -6,6 +6,8 @@ TagManager:
   tags:
   - WatchPoint
   - LocalPlayer
+  - Collide
+  - AI
   layers:
   - Default
   - TransparentFX
@@ -15,7 +17,7 @@ TagManager:
   - UI
   - 
   - 
-  - Terrain
+  - Ground
   - Player
   - 
   - 
