@@ -25,17 +25,12 @@ public class WatchPoint : MonoBehaviour
         //Debug.Log("calc " + realWatchPoint);
     }
 
-    [HideInInspector]
-    public Vector3 realWatchPoint;
-
     [SerializeField]
     float moveFactor = 1f;
     [SerializeField]
     float minMoveStep = 10f;
     [SerializeField]
     float chasingDistance = 3f;
-    [SerializeField]
-    float maxCameraOffset = 1.5f;
     void ChasePlayer(LocalPlayer localPlayer)
     {
         float distance = (localPlayer.sight.position - this.transform.position).magnitude;
@@ -48,13 +43,13 @@ public class WatchPoint : MonoBehaviour
         {  //移动中,超出一定距离则跟上玩家
             if (distance > chasingDistance)
             {
+                //Vector3 dir = transform.position - localPlayer.sight.position;
+                //dir *= chasingDistance / distance;
+                //transform.position = localPlayer.sight.position + dir;
                 chase = true;
             }
-            else
-            {
-
-            }
         }
+
 
         if (chase)
         {
@@ -62,18 +57,14 @@ public class WatchPoint : MonoBehaviour
             if (moveStep < minMoveStep)  //最小追踪步长
                 moveStep = minMoveStep;
 
-            transform.position = Vector3.MoveTowards(transform.position, localPlayer.sight.position, moveStep * Time.deltaTime);
-        }
-
-        if (distance > maxCameraOffset)
-        {
-            Vector3 dir = transform.position - localPlayer.sight.position;
-            dir.Normalize();
-            realWatchPoint = localPlayer.sight.position + dir * maxCameraOffset;
-        }
-        else
-        {
-            realWatchPoint = transform.position;
+            if (moveStep * Time.deltaTime > distance)
+            {
+                transform.position = localPlayer.sight.position;
+            }
+            else
+            {
+                transform.position = Vector3.MoveTowards(transform.position, localPlayer.sight.position, moveStep * Time.deltaTime);
+            }
         }
     }
 }

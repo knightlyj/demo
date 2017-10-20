@@ -27,4 +27,20 @@ public static class UnityHelper{
         localPlayer.onPlayerDestroy -= OnPlayerDestroy;
         localPlayer = null;
     }
+
+
+    //找到父节点中的对象
+    public static T FindObjectUpward<T>(Transform origin)
+    {
+        while(origin != null)
+        {
+            T obj = origin.GetComponent<T>();
+            if(obj != null)
+            {
+                return obj;
+            }
+            origin = origin.parent;
+        }
+        return default(T);
+    }
 }

@@ -14,6 +14,10 @@ public static class KeyboardInput
     public static KeyCode Jump = KeyCode.Space;
     public static KeyCode Roll = KeyCode.LeftAlt;
 
+    public static KeyCode Attack = KeyCode.Mouse0;
+    public static KeyCode AntiAttack = KeyCode.F;
+    public static KeyCode StrongAttack = KeyCode.Mouse1;
+
     public static KeyCode ResetCamera = KeyCode.Mouse2; //暂时不用
     public static KeyCode LockTarget = KeyCode.Q;
 }
@@ -53,6 +57,7 @@ public class LocalPlayer : Player
         //镜头设置及初始化
         cameraFollow = GameObject.FindWithTag("MainCamera").GetComponent<CameraFollow>();
         cameraFollow.cameraYaw = this.orientation;
+        cameraFollow.locked = false;
     }
 
     protected new void OnDestroy()
@@ -63,14 +68,28 @@ public class LocalPlayer : Player
     // Update is called once per frame
     protected new void Update()
     {
-        playerAction.run = Input.GetKey(KeyboardInput.Run);
-        playerAction.jump = Input.GetKey(KeyboardInput.Jump);
-        playerAction.roll = Input.GetKey(KeyboardInput.Roll);
+        input.run = Input.GetKey(KeyboardInput.Run);
+        input.jump = Input.GetKey(KeyboardInput.Jump);
+        input.roll = Input.GetKey(KeyboardInput.Roll);
 
+        input.attack = Input.GetKey(KeyboardInput.Attack);
+        input.antiAttack = Input.GetKey(KeyboardInput.AntiAttack);
+        input.strongAttack = Input.GetKey(KeyboardInput.StrongAttack);
+        
         UpdateInputYaw();
 
-        
-        
+        if (Input.GetKeyDown(KeyboardInput.LockTarget))
+        {
+            if (target == null)
+                LockTarget();
+            else
+                UnLockTarget();
+        }
+
+        if(target != null)
+        {
+            UpdateLockedCamera();
+        }
 
         base.Update();
     }
@@ -121,38 +140,89 @@ public class LocalPlayer : Player
     void SetOrientation(EightDir inputDir)
     {
         if (inputDir == EightDir.Empty)
-            noDirInput = true;  //输入了反向
+            input.hasDir = false;  //没输入方向
         else
-            noDirInput = false;  //没输入方向
+            input.hasDir = true;  //输入方向
 
         switch (inputDir)
         {
             case EightDir.Front:
-                this.inputYaw = cameraFollow.cameraYaw;
+                input.yaw = cameraFollow.cameraYaw;
                 break;
             case EightDir.FrontLeft:
-                this.inputYaw = cameraFollow.cameraYaw - 45;
+                input.yaw = cameraFollow.cameraYaw - 45;
                 break;
             case EightDir.Left:
-                this.inputYaw = cameraFollow.cameraYaw - 90;
+                input.yaw = cameraFollow.cameraYaw - 90;
                 break;
             case EightDir.BackLeft:
-                this.inputYaw = cameraFollow.cameraYaw - 135;
+                input.yaw = cameraFollow.cameraYaw - 135;
                 break;
             case EightDir.Back:
-                this.inputYaw = cameraFollow.cameraYaw + 180;
+                input.yaw = cameraFollow.cameraYaw + 180;
                 break;
             case EightDir.BackRight:
-                this.inputYaw = cameraFollow.cameraYaw + 135;
+                input.yaw = cameraFollow.cameraYaw + 135;
                 break;
             case EightDir.Right:
-                this.inputYaw = cameraFollow.cameraYaw + 90;
+                input.yaw = cameraFollow.cameraYaw + 90;
                 break;
             case EightDir.FrontRight:
-                this.inputYaw = cameraFollow.cameraYaw + 45;
+                input.yaw = cameraFollow.cameraYaw + 45;
                 break;
             default:
                 break;
         }
+    }
+
+    void LockTarget()
+    {
+        GameObject[] allAI = GameObject.FindGameObjectsWithTag("AI");
+        if (allAI != null)
+        {
+            foreach (GameObject go in allAI)
+            {
+                Vector3 dir = go.transform.position - cameraFollow.transform.position;
+                if (Vector3.Angle(cameraFollow.transform.forward, dir) < 55)
+                {
+
+                    if (target != null)
+                    { //原来有目标,退订事件
+                        target.onPlayerDestroy -= this.OnTargetDestory;
+                    }
+
+                    //获取新目标,并订阅事件
+                    target = go.GetComponent<Player>();
+                    target.onPlayerDestroy += this.OnTargetDestory;
+                    cameraFollow.locked = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    void UnLockTarget()
+    {
+        target.onPlayerDestroy -= this.OnTargetDestory;
+        cameraFollow.locked = false;
+        target = null;
+    }
+
+    void OnTargetDestory()
+    {
+        target.onPlayerDestroy -= this.OnTargetDestory;
+        target = null;
+    }
+
+    void UpdateLockedCamera()
+    {
+        //镜头yaw朝向目标
+        Vector3 toTarget = target.transform.position - cameraFollow.watchPoint.transform.position;
+        toTarget.y = 0;
+
+        float aCos = Mathf.Acos(toTarget.z / toTarget.magnitude);
+        cameraFollow.cameraYaw = aCos / Mathf.PI * 180;
+        if (toTarget.x < 0)
+            cameraFollow.cameraYaw = -cameraFollow.cameraYaw;
     }
 }

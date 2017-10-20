@@ -170,8 +170,8 @@ ModelImporter:
       curves: []
       events:
       - time: 0.98536587
-        functionName: ActionDone
-        data: 
+        functionName: AnimationDone
+        data: JumpUp
         objectReferenceParameter: {fileID: 11500000, guid: 486616e53ae7f0a41814b3112e6edfb6,
           type: 3}
         floatParameter: 0

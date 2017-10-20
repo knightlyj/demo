@@ -123,6 +123,7 @@ ModelImporter:
     4300002: RPG-Character-Mesh
     7400000: RollForward
     7400002: RollForward
+    7400004: RollForward
     9500000: //RootNode
     13700000: RPG-Character-Mesh
   materials:
@@ -170,9 +171,9 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.9853658
-        functionName: ActionDone
-        data: 
+      - time: 0.98536587
+        functionName: AnimationDone
+        data: Roll
         objectReferenceParameter: {fileID: 11500000, guid: 486616e53ae7f0a41814b3112e6edfb6,
           type: 3}
         floatParameter: 0
