@@ -4,7 +4,7 @@ using System.Collections;
 public class LevelControl : MonoBehaviour
 {
     [SerializeField]
-    float gravityScale = 5.0f;
+    float gravityScale = 1.0f;
     // Use this for initialization
     void Start()
     {
@@ -13,6 +13,12 @@ public class LevelControl : MonoBehaviour
 
     // Update is called once per frame
     void Update()
+    {
+
+    }
+
+
+    void TestCaseInit()
     {
 
     }

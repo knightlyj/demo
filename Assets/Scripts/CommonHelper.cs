@@ -9,16 +9,38 @@ public static class CommonHelper
         return Mathf.Abs(a - b) < 0.001f;
     }
 
+    //角度差值,以顺时针为正方向
+    static public float AngleDiff(float from, float to)
+    {
+        from = from - Mathf.Floor(from / 360f) * 360f; //范围在0~360之间
+        to = to - Mathf.Floor(to / 360f) * 360f; //范围在0~360之间
+
+        //计算顺时针到目标的距离
+        float distClockwise = 0;
+        if (to > from)
+            distClockwise = to - from;
+        else
+            distClockwise = 360 - (from - to);
+
+        if (distClockwise < 180)
+        {
+            return distClockwise;
+        }
+        else
+        {
+            return distClockwise - 360;
+        }
+    }
+
     //朝目标角度变化,按最近距离计算,simple为true时,不执行step的abs和两个角度重规划到0~360
-    static public float AngleTowards(float now, float target, float step, bool simple = false)
+    static public float AngleTowards(float now, float target, float step)
     {
         float result = 0;
-        if (!simple)
-        {
-            step = Mathf.Abs(step);
-            now = now - Mathf.Floor(now / 360f) * 360f; //范围在0~360之间
-            target = target - Mathf.Floor(target / 360f) * 360f; //范围在0~360之间
-        }
+
+        step = Mathf.Abs(step);
+        now = now - Mathf.Floor(now / 360f) * 360f; //范围在0~360之间
+        target = target - Mathf.Floor(target / 360f) * 360f; //范围在0~360之间
+
         //计算顺时针到目标的距离
         float distClockwise = 0;
         if (target > now)
@@ -84,4 +106,5 @@ public static class CommonHelper
                 return now - step;
         }
     }
+
 }

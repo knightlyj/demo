@@ -7,7 +7,7 @@ public class RollAction : ActionBase {
     {
         base.Start(player);
         player.orientation = player.input.yaw; //调整方向
-        player.aniController.SetAnimation(PlayerAniType.Roll, PlayerAniDir.Front);
+        player.aniModule.SetAnimation(PlayerAniType.Roll, PlayerAniDir.Front);
         rollForceDir = Quaternion.Euler(10, player.orientation, 0) * Vector3.forward;
     }
 

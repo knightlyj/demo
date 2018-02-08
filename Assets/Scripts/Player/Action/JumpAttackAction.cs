@@ -5,7 +5,7 @@ public class JumpAttackAction : ActionBase {
     public override void Start(Player player)
     {
         base.Start(player);
-        player.aniController.SetAnimation(PlayerAniType.JumpAttack); //设置动画
+        player.aniModule.SetAnimation(PlayerAniType.JumpAttack); //设置动画
         player.rigidBody.velocity = new Vector3(player.rigidBody.velocity.x, Player.jumpSpeed * 0.6f, player.rigidBody.velocity.z); //设置垂直速度
     }
 

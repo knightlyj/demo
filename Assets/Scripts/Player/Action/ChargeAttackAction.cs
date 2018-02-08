@@ -20,7 +20,7 @@ public class ChargeAttackAction : ActionBase {
             player.orientation = yaw;
         }
 
-        player.aniController.SetAnimation(PlayerAniType.Charge);
+        player.aniModule.SetAnimation(PlayerAniType.Charge);
         chargeComplete = false;
         attack = false;
     }
@@ -32,7 +32,7 @@ public class ChargeAttackAction : ActionBase {
         {
             if (!player.input.strongAttack && !attack)
             {
-                player.aniController.SetAnimation(PlayerAniType.ChargeAttack);
+                player.aniModule.SetAnimation(PlayerAniType.ChargeAttack);
                 attack = true;
             }
         }
@@ -45,7 +45,7 @@ public class ChargeAttackAction : ActionBase {
         {
             if (aniName == "Charge")
             {
-                player.aniController.SetAnimation(PlayerAniType.ChargeWait);
+                player.aniModule.SetAnimation(PlayerAniType.ChargeWait);
                 chargeComplete = true;
             }
             else if(aniName == "ChargeAttack")

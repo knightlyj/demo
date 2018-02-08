@@ -40,29 +40,25 @@ public class LocalPlayer : Player
     protected new void Awake()
     {
         base.Awake();
-        _sight = transform.FindChild("Sight");
     }
 
-    public Transform sight { get { return this._sight; } }
-    Transform _sight;
-
-
     //镜头
-    CameraFollow cameraFollow = null;
+    CameraControl cameraControl = null;
     // Use this for initialization
     protected new void Start()
     {
         base.Start();
 
         //镜头设置及初始化
-        cameraFollow = GameObject.FindWithTag("MainCamera").GetComponent<CameraFollow>();
-        cameraFollow.cameraYaw = this.orientation;
-        cameraFollow.locked = false;
+        cameraControl = GameObject.FindWithTag("MainCamera").GetComponent<CameraControl>();
+        cameraControl.cameraYaw = this.orientation;
+        UnLockTarget();
     }
 
     protected new void OnDestroy()
     {
         base.OnDestroy();
+        UnLockTarget();
     }
 
     // Update is called once per frame
@@ -75,7 +71,7 @@ public class LocalPlayer : Player
         input.attack = Input.GetKey(KeyboardInput.Attack);
         input.antiAttack = Input.GetKey(KeyboardInput.AntiAttack);
         input.strongAttack = Input.GetKey(KeyboardInput.StrongAttack);
-        
+
         UpdateInputYaw();
 
         if (Input.GetKeyDown(KeyboardInput.LockTarget))
@@ -84,11 +80,6 @@ public class LocalPlayer : Player
                 LockTarget();
             else
                 UnLockTarget();
-        }
-
-        if(target != null)
-        {
-            UpdateLockedCamera();
         }
 
         base.Update();
@@ -144,35 +135,49 @@ public class LocalPlayer : Player
         else
             input.hasDir = true;  //输入方向
 
+        float yaw = 0;
+        if (target == null)
+        {   //没有锁定个目标,按镜头角度设置方向
+            yaw = cameraControl.cameraYaw;
+        }
+        else
+        {   //有锁定目标,根据目标方向设置角色朝向
+            Vector3 toTarget = target.transform.position - transform.position;
+            toTarget.y = 0;
+            yaw = Mathf.Acos(toTarget.z / toTarget.magnitude) / Mathf.PI * 180;
+            if (toTarget.x < 0)
+                yaw = -yaw;
+        }
         switch (inputDir)
         {
             case EightDir.Front:
-                input.yaw = cameraFollow.cameraYaw;
+                input.yaw = yaw;
                 break;
             case EightDir.FrontLeft:
-                input.yaw = cameraFollow.cameraYaw - 45;
+                input.yaw = yaw - 45;
                 break;
             case EightDir.Left:
-                input.yaw = cameraFollow.cameraYaw - 90;
+                input.yaw = yaw - 90;
                 break;
             case EightDir.BackLeft:
-                input.yaw = cameraFollow.cameraYaw - 135;
+                input.yaw = yaw - 135;
                 break;
             case EightDir.Back:
-                input.yaw = cameraFollow.cameraYaw + 180;
+                input.yaw = yaw + 180;
                 break;
             case EightDir.BackRight:
-                input.yaw = cameraFollow.cameraYaw + 135;
+                input.yaw = yaw + 135;
                 break;
             case EightDir.Right:
-                input.yaw = cameraFollow.cameraYaw + 90;
+                input.yaw = yaw + 90;
                 break;
             case EightDir.FrontRight:
-                input.yaw = cameraFollow.cameraYaw + 45;
+                input.yaw = yaw + 45;
                 break;
             default:
                 break;
         }
+
     }
 
     void LockTarget()
@@ -182,19 +187,14 @@ public class LocalPlayer : Player
         {
             foreach (GameObject go in allAI)
             {
-                Vector3 dir = go.transform.position - cameraFollow.transform.position;
-                if (Vector3.Angle(cameraFollow.transform.forward, dir) < 55)
+                Vector3 dir = go.transform.position - cameraControl.transform.position;
+                if (Vector3.Angle(cameraControl.transform.forward, dir) < 55)
                 {
-
-                    if (target != null)
-                    { //原来有目标,退订事件
-                        target.onPlayerDestroy -= this.OnTargetDestory;
-                    }
-
+                    //原来有目标,退订事件
+                    UnLockTarget();
                     //获取新目标,并订阅事件
                     target = go.GetComponent<Player>();
                     target.onPlayerDestroy += this.OnTargetDestory;
-                    cameraFollow.locked = true;
                     break;
                 }
             }
@@ -203,26 +203,16 @@ public class LocalPlayer : Player
 
     void UnLockTarget()
     {
-        target.onPlayerDestroy -= this.OnTargetDestory;
-        cameraFollow.locked = false;
-        target = null;
+        if (target != null)
+        {
+            target.onPlayerDestroy -= this.OnTargetDestory;
+            target = null;
+        }
     }
 
     void OnTargetDestory()
     {
-        target.onPlayerDestroy -= this.OnTargetDestory;
-        target = null;
+        UnLockTarget();
     }
 
-    void UpdateLockedCamera()
-    {
-        //镜头yaw朝向目标
-        Vector3 toTarget = target.transform.position - cameraFollow.watchPoint.transform.position;
-        toTarget.y = 0;
-
-        float aCos = Mathf.Acos(toTarget.z / toTarget.magnitude);
-        cameraFollow.cameraYaw = aCos / Mathf.PI * 180;
-        if (toTarget.x < 0)
-            cameraFollow.cameraYaw = -cameraFollow.cameraYaw;
-    }
 }

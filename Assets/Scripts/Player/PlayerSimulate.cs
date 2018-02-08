@@ -10,7 +10,7 @@ public partial class Player
         InAir,
         Action,
     }
-
+    
     PlayerState state = PlayerState.OnGround;
 
     void Simulate()
@@ -19,7 +19,6 @@ public partial class Player
         {
             if (grounded)
             {   //在地上
-
                 SimulateOnGround();
             }
             else
@@ -72,7 +71,7 @@ public partial class Player
                     //如果是落地第一帧,则会按照离地前最后一帧的方向来处理,这样跳跃的落地就直接停下了
                     rigidBody.velocity = new Vector3(0, 0, 0);
                 }
-                aniController.SetAnimation(PlayerAniType.Idle);
+                aniModule.SetAnimation(PlayerAniType.Idle);
             }
             else
             {
@@ -81,11 +80,11 @@ public partial class Player
                 if (input.run)
                 { //跑
                     moveSpeed = runSpeed;
-                    aniController.SetAnimation(PlayerAniType.Run);
+                    aniModule.SetAnimation(PlayerAniType.Run);
                 }
                 else
                 {
-                    aniController.SetAnimation(PlayerAniType.Walk);
+                    aniModule.SetAnimation(PlayerAniType.Walk);
                 }
                 //力的角度向下一点点,
                 Vector3 forceDir = Quaternion.Euler(0, this.orientation, 0) * Vector3.forward;
@@ -95,16 +94,16 @@ public partial class Player
                 if (speedOnDir > 0)
                     rigidBody.velocity = new Vector3(moveDir.x * speedOnDir, rigidBody.velocity.y, moveDir.z * speedOnDir);
                 float curSpeed = rigidBody.velocity.magnitude;
-                //if (curSpeed < moveSpeed)
-                //{
-                //    rigidBody.AddForce(forceDir * moveForce);
-                //}
-                //else
-                //{
-                //    rigidBody.velocity = moveSpeed / curSpeed * rigidBody.velocity;
-                //}
+                if (curSpeed < moveSpeed)
+                {
+                    rigidBody.AddForce(forceDir * moveForce);
+                }
+                else
+                {
+                    rigidBody.velocity = moveSpeed / curSpeed * rigidBody.velocity;
+                }
 
-                rigidBody.velocity = forceDir * moveSpeed;
+                //rigidBody.velocity = forceDir * moveSpeed;
             }
         }
         lastNoDirInput = input.hasDir;
@@ -127,7 +126,7 @@ public partial class Player
                 TimeSpan span = DateTime.Now - startFallTime;
                 if (span.TotalMilliseconds > 200)
                 {
-                    aniController.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
+                    aniModule.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
                 }
                 if (input.hasDir)
                 {

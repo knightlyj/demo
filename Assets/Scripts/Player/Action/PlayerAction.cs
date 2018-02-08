@@ -74,25 +74,5 @@ public partial class Player
         {
             actions[(int)curActionType].OnAnimationEvent(aniName, PlayerAniEventType.Finish);
         }
-        //else if (action.Equals("Attack1"))
-        //{
-        //    attackComboTime = DateTime.Now;
-        //}
-        //else if (action.Equals("Attack2"))
-        //{
-
-        //}
-        //else if (action.Equals("Charge"))
-        //{
-        //    if (input.strongAttack)
-        //    {
-        //        chargeComplete = true;
-        //    }
-        //    else
-        //    {
-        //        aniController.SetAnimation(PlayerAniType.ChargeAttack);
-        //        StopCharge();
-        //    }
-        //}
     }
 }

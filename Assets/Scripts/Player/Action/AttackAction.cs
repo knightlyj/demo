@@ -25,11 +25,11 @@ public class AttackAction : ActionBase
         TimeSpan span = DateTime.Now - attackComboTime;
         if (span.TotalMilliseconds < 100)
         {
-            player.aniController.SetAnimation(PlayerAniType.Attack2);
+            player.aniModule.SetAnimation(PlayerAniType.Attack2);
         }
         else
         {
-            player.aniController.SetAnimation(PlayerAniType.Attack1);
+            player.aniModule.SetAnimation(PlayerAniType.Attack1);
         }
     }
 

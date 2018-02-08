@@ -17,10 +17,10 @@ public class GetHitAction : ActionBase {
         switch (dirEnum)
         {
             case EightDir.Front:
-                player.aniController.SetAnimation(PlayerAniType.GetHit, PlayerAniDir.Front);
+                player.aniModule.SetAnimation(PlayerAniType.GetHit, PlayerAniDir.Front);
                 break;
             case EightDir.Back:
-                player.aniController.SetAnimation(PlayerAniType.GetHit, PlayerAniDir.Back);
+                player.aniModule.SetAnimation(PlayerAniType.GetHit, PlayerAniDir.Back);
                 break;
         }
     }

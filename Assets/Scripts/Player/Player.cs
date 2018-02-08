@@ -40,28 +40,37 @@ public partial class Player : MonoBehaviour
     public event UnityAction onPlayerDestroy; //角色销毁事件
     public PlayerInput input; //角色动作
 
-    [SerializeField]
     Transform groundCheck = null;
-    [SerializeField]
-    Transform rightHand = null;
 
-    public PlayerAniController aniController = null;
+    [HideInInspector]
+    public PlayerAnimation aniModule = null;
     [HideInInspector]
     public Rigidbody rigidBody = null;
+
+    //************左右手*******************
+    public Transform rightHand { get { return this._rightHand; } }
+    Transform _rightHand = null;
+
+    public Transform leftHand { get { return this._leftHand; } }
+    Transform _leftHand = null;
+
     protected void Awake()
     {
-        aniController = GetComponent<PlayerAniController>();
+        groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
+        groundCheck = transform.FindChild("GroundCheck");
+        aniModule = GetComponent<PlayerAnimation>();
         rigidBody = GetComponent<Rigidbody>();
+
+        _rightHand = UnityHelper.FindChildRecursive(transform, "B_R_Hand");
+        _leftHand = UnityHelper.FindChildRecursive(transform, "B_L_Hand");
     }
-
-
 
     // Use this for initialization
     protected void Start()
     {
-        aniController.onAnimationDone += this.OnAnimationDone; //动作事件回调
-        aniController.onStartAttack += this.OnStartAttack;
-        aniController.onStopAttack += this.OnStopAttack;
+        aniModule.onAnimationDone += this.OnAnimationDone; //动作事件回调
+        aniModule.onStartAttack += this.OnStartAttack;
+        aniModule.onStopAttack += this.OnStopAttack;
         ChangeWeapon(MainHandWeaponType.Sword, OffHandWeaponType.Empty);
 
         ActionInit();
@@ -72,9 +81,9 @@ public partial class Player : MonoBehaviour
 
     protected void OnDestroy()
     {
-        aniController.onAnimationDone -= this.OnAnimationDone;
-        aniController.onStartAttack -= this.OnStartAttack;
-        aniController.onStopAttack -= this.OnStopAttack;
+        aniModule.onAnimationDone -= this.OnAnimationDone;
+        aniModule.onStartAttack -= this.OnStartAttack;
+        aniModule.onStopAttack -= this.OnStopAttack;
         if (onPlayerDestroy != null)
         {
             onPlayerDestroy();
@@ -89,9 +98,7 @@ public partial class Player : MonoBehaviour
         SmoothOrientation(); //角色朝向平滑过渡
     }
 
-    [SerializeField]
     LayerMask groundLayerMask;
-    [SerializeField]
     float groundCheckRadius = 0.47f;
     protected void FixedUpdate()
     {
@@ -132,12 +139,12 @@ public partial class Player : MonoBehaviour
     float _orientation = 0f;
 
     //角色朝向平滑过渡
-    float showOrientation = 0; //实际显示的朝向
+    float smoothOrientation = 0; //实际显示的朝向
     const float smoothOriBaseStepLen = 300;
     float smoothOriStepLen = 0;
     void StartSmoothOrientation()
     {  //这里计算环形插值
-        float diff = this.orientation - showOrientation;
+        float diff = this.orientation - smoothOrientation;
         float absDiff = Mathf.Abs(diff);
         if (absDiff > 270)
         {
@@ -159,11 +166,11 @@ public partial class Player : MonoBehaviour
     }
     void SmoothOrientation()
     {
-        showOrientation = CommonHelper.AngleTowards(showOrientation, orientation, smoothOriStepLen * Time.deltaTime);
-        transform.eulerAngles = new Vector3(0, showOrientation, 0);
+        smoothOrientation = CommonHelper.AngleTowards(smoothOrientation, orientation, smoothOriStepLen * Time.deltaTime);
+        transform.eulerAngles = new Vector3(0, smoothOrientation, 0);
     }
 
-
+    [HideInInspector]
     public Vector3 hitSrcPos;
     //受击动作
     public void GetHit(Vector3 hitPos, AttackType attack, int damage)
@@ -175,10 +182,10 @@ public partial class Player : MonoBehaviour
     //动画开始攻击事件
     void OnStartAttack(string attack)
     {
-        if(curActionType != ActionType.Empty)
+        if (curActionType != ActionType.Empty)
         {
             actions[(int)curActionType].OnAnimationEvent(attack, PlayerAniEventType.StartAttack);
-        }   
+        }
     }
     //动画停止攻击事件
     void OnStopAttack()
@@ -205,7 +212,7 @@ public partial class Player : MonoBehaviour
             DisableMainWeapon();
         }
 
-        aniController.SetWeaponType(mainHand, offHand);
+        aniModule.SetWeaponType(mainHand, offHand);
     }
 
     //开启武器碰撞
@@ -228,6 +235,7 @@ public partial class Player : MonoBehaviour
         }
     }
 
+    [HideInInspector]
     public Player target;
     //格挡
 }

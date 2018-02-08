@@ -54,7 +54,7 @@ public enum OffHandWeaponType
 
 
 
-public class PlayerAniController : MonoBehaviour
+public class PlayerAnimation : MonoBehaviour
 {
     PlayerAniType curAniType = PlayerAniType.Idle;
     PlayerAniDir curAniDir = PlayerAniDir.Front;

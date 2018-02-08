@@ -6,7 +6,7 @@ public class JumpAction : ActionBase {
 	public override void Start(Player player)
     {
         base.Start(player);
-        player.aniController.SetAnimation(PlayerAniType.JumpUp, PlayerAniDir.Front); //设置动画
+        player.aniModule.SetAnimation(PlayerAniType.JumpUp, PlayerAniDir.Front); //设置动画
         player.rigidBody.velocity = new Vector3(player.rigidBody.velocity.x, Player.jumpSpeed, player.rigidBody.velocity.z); //设置垂直速度
 
         //如果有按方向键,则设置方向和水平速度

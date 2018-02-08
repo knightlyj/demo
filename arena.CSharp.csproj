@@ -63,24 +63,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\CameraFollow.cs" />
+    <Compile Include="Assets\Scripts\CameraControl.cs" />
     <Compile Include="Assets\Scripts\CommonHelper.cs" />
+    <Compile Include="Assets\Scripts\CreatureCommon.cs" />
     <Compile Include="Assets\Scripts\LevelControl.cs" />
-    <Compile Include="Assets\Scripts\LocalPlayer.cs" />
+    <Compile Include="Assets\Scripts\Player\AIPlayer.cs" />
     <Compile Include="Assets\Scripts\Player\Action\ActionBase.cs" />
     <Compile Include="Assets\Scripts\Player\Action\AttackAction.cs" />
     <Compile Include="Assets\Scripts\Player\Action\ChargeAttackAction.cs" />
     <Compile Include="Assets\Scripts\Player\Action\GetHitAction.cs" />
     <Compile Include="Assets\Scripts\Player\Action\JumpAction.cs" />
     <Compile Include="Assets\Scripts\Player\Action\JumpAttackAction.cs" />
+    <Compile Include="Assets\Scripts\Player\Action\PlayerAction.cs" />
     <Compile Include="Assets\Scripts\Player\Action\RollAction.cs" />
+    <Compile Include="Assets\Scripts\Player\LocalPlayer.cs" />
     <Compile Include="Assets\Scripts\Player\Player.cs" />
-    <Compile Include="Assets\Scripts\Player\PlayerAI.cs" />
-    <Compile Include="Assets\Scripts\Player\PlayerAction.cs" />
-    <Compile Include="Assets\Scripts\Player\PlayerAniController.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerAnimation.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerSimulate.cs" />
     <Compile Include="Assets\Scripts\UnityHelper.cs" />
-    <Compile Include="Assets\Scripts\WatchPoint.cs" />
     <Compile Include="Assets\Scripts\Weapon.cs" />
   </ItemGroup>
   <ItemGroup>
