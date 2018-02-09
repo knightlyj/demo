@@ -66,7 +66,7 @@
     <Compile Include="Assets\Scripts\CameraControl.cs" />
     <Compile Include="Assets\Scripts\CommonHelper.cs" />
     <Compile Include="Assets\Scripts\CreatureCommon.cs" />
-    <Compile Include="Assets\Scripts\LevelControl.cs" />
+    <Compile Include="Assets\Scripts\LevelManager.cs" />
     <Compile Include="Assets\Scripts\Player\AIPlayer.cs" />
     <Compile Include="Assets\Scripts\Player\Action\ActionBase.cs" />
     <Compile Include="Assets\Scripts\Player\Action\AttackAction.cs" />

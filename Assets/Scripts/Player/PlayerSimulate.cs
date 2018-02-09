@@ -10,7 +10,7 @@ public partial class Player
         InAir,
         Action,
     }
-    
+
     PlayerState state = PlayerState.OnGround;
 
     void Simulate()
@@ -39,6 +39,8 @@ public partial class Player
     bool lastNoDirInput = true;
     void SimulateOnGround()
     {
+        rigidBody.useGravity = true;
+
         if (input.roll)
         {
             IntoAction(ActionType.Roll);
@@ -70,6 +72,7 @@ public partial class Player
                 {   //没有按方向键,且上一帧按了方向键,这一帧就停下来
                     //如果是落地第一帧,则会按照离地前最后一帧的方向来处理,这样跳跃的落地就直接停下了
                     rigidBody.velocity = new Vector3(0, 0, 0);
+                    rigidBody.useGravity = false;
                 }
                 aniModule.SetAnimation(PlayerAniType.Idle);
             }
@@ -86,24 +89,9 @@ public partial class Player
                 {
                     aniModule.SetAnimation(PlayerAniType.Walk);
                 }
-                //力的角度向下一点点,
-                Vector3 forceDir = Quaternion.Euler(0, this.orientation, 0) * Vector3.forward;
-                //水平方向变化时,按速度到当前方向的投影继承速度,如果投影与当前反向,则不继承
-                Vector3 moveDir = Quaternion.AngleAxis(this.orientation, Vector3.up) * Vector3.forward;
-                float speedOnDir = moveDir.x * rigidBody.velocity.x + moveDir.z * rigidBody.velocity.z;
-                if (speedOnDir > 0)
-                    rigidBody.velocity = new Vector3(moveDir.x * speedOnDir, rigidBody.velocity.y, moveDir.z * speedOnDir);
-                float curSpeed = rigidBody.velocity.magnitude;
-                if (curSpeed < moveSpeed)
-                {
-                    rigidBody.AddForce(forceDir * moveForce);
-                }
-                else
-                {
-                    rigidBody.velocity = moveSpeed / curSpeed * rigidBody.velocity;
-                }
+                Vector3 newVel = Quaternion.Euler(0, this.orientation, 0) * Vector3.forward * moveSpeed;
 
-                //rigidBody.velocity = forceDir * moveSpeed;
+                rigidBody.velocity = new Vector3(newVel.x, rigidBody.velocity.y, newVel.z);
             }
         }
         lastNoDirInput = input.hasDir;

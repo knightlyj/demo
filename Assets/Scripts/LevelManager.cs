@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class LevelControl : MonoBehaviour
+public class LevelManager : MonoBehaviour
 {
     [SerializeField]
     float gravityScale = 1.0f;

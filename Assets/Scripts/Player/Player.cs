@@ -99,7 +99,7 @@ public partial class Player : MonoBehaviour
     }
 
     LayerMask groundLayerMask;
-    float groundCheckRadius = 0.47f;
+    float groundCheckRadius = 0.4f;
     protected void FixedUpdate()
     {
         //落地检测

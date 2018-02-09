@@ -27,7 +27,7 @@ public class CameraControl : MonoBehaviour
         //更新角度
 
         UpdateFreeCamera();
-        UpdateLockedCamera();
+        
         //镜头碰撞
         CameraCollision();
     }
@@ -36,7 +36,7 @@ public class CameraControl : MonoBehaviour
     void FixedUpdate()
     {
         fixedCount++;
-        
+        UpdateLockedCamera();
     }
 
     [HideInInspector]
@@ -71,7 +71,6 @@ public class CameraControl : MonoBehaviour
                     this.cameraPitch = maxPitch;
                 else if (this.cameraPitch < -maxPitch)
                     this.cameraPitch = -maxPitch;
-
                 
             }
         }
@@ -115,6 +114,7 @@ public class CameraControl : MonoBehaviour
         float ratio = 0.1f * fixedCount;
         cameraYaw = CommonHelper.AngleTowardsByDiff(cameraYaw, targetYaw, ratio, 0.01f);
         cameraPitch = CommonHelper.AngleTowardsByDiff(cameraPitch, targetPitch, ratio, 0.01f);
+
         fixedCount = 0;
     }
 
