@@ -12,9 +12,24 @@ public partial class Player
     }
 
     PlayerState state = PlayerState.OnGround;
-
+    LayerMask groundLayerMask;
+    float groundCheckRadius = 0.42f;
     void Simulate()
     {
+        //落地检测
+        Collider[] hitGround = Physics.OverlapSphere(groundCheck.position, groundCheckRadius, groundLayerMask);
+
+        if (hitGround == null || hitGround.Length == 0)
+        {
+            grounded = false;
+            //rigidBody.useGravity = true; //在空中,受到重力影响
+        }
+        else
+        {
+            grounded = true;
+            //rigidBody.useGravity = false; //在地面时,不用重力
+        }
+
         if (curActionType == ActionType.Empty) //不在特殊动作中
         {
             if (grounded)

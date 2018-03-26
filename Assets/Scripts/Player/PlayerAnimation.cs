@@ -69,6 +69,7 @@ public class PlayerAnimation : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+
     }
 
     // Update is called once per frame
@@ -131,7 +132,7 @@ public class PlayerAnimation : MonoBehaviour
             yield return null;
         }
     }
-    
+
     public void SetWeaponType(MainHandWeaponType mainHandType, OffHandWeaponType offHandType)
     {
         //动作调整
@@ -154,7 +155,7 @@ public class PlayerAnimation : MonoBehaviour
     const int wholeLayer = 3;
     public void SetAnimation(PlayerAniType aniType, PlayerAniDir dir = PlayerAniDir.Front, float fadeInTime = 0.1f, float speed = 1.0f)
     {
-        if(aniType == this.curAniType)
+        if (aniType == this.curAniType)
         {   //循环动作,不用重复设置
             if (IsLoopedAnimation(this.curAniType))
                 return;
@@ -169,7 +170,7 @@ public class PlayerAnimation : MonoBehaviour
             //设置下半身动作
             string lowerAni = GetLowerAniName();
 
-            if(upperAni != null && lowerAni != null)
+            if (upperAni != null && lowerAni != null)
             {
                 SwitchBodyMode(true);
                 animator.CrossFade(Animator.StringToHash(upperAni), fadeInTime, upperLayer, 0);
@@ -180,7 +181,7 @@ public class PlayerAnimation : MonoBehaviour
         else
         {
             string wholeAni = GetWholeAniName();
-            if(wholeAni != null)
+            if (wholeAni != null)
             {
                 SwitchBodyMode(false);
                 animator.CrossFade(Animator.StringToHash(wholeAni), fadeInTime, wholeLayer, 0);
@@ -225,7 +226,7 @@ public class PlayerAnimation : MonoBehaviour
 
         return false;
     }
-    
+
     string GetWeaponTypeName()
     {
         switch (mainHandType)
@@ -300,15 +301,15 @@ public class PlayerAnimation : MonoBehaviour
     //获取全身动作名
     string GetWholeAniName()
     {
-        if(curAniType == PlayerAniType.GetHit || curAniType == PlayerAniType.Roll)
+        if (curAniType == PlayerAniType.GetHit || curAniType == PlayerAniType.Roll)
         { //这两个动作分4个方向
             string animationName = null;
             string dirName = null;
-            if(curAniType == PlayerAniType.GetHit)
+            if (curAniType == PlayerAniType.GetHit)
             {
                 animationName = "GetHit";
             }
-            else if(curAniType == PlayerAniType.Roll)
+            else if (curAniType == PlayerAniType.Roll)
             {
                 animationName = "Roll";
             }
@@ -336,41 +337,41 @@ public class PlayerAnimation : MonoBehaviour
         }
         else if (curAniType == PlayerAniType.JumpUp) //这个动作不分方向
         {
-            return  "JumpUp";
+            return "JumpUp";
         }
-        else if(curAniType == PlayerAniType.Ground)
+        else if (curAniType == PlayerAniType.Ground)
         {
             return "Ground";
         }
-        else if(curAniType == PlayerAniType.Fall)
+        else if (curAniType == PlayerAniType.Fall)
         {
             return "Fall";
         }
-        else if(curAniType == PlayerAniType.Attack1)
+        else if (curAniType == PlayerAniType.Attack1)
         {
             return "Attack1-" + GetWeaponTypeName();
         }
-        else if(curAniType == PlayerAniType.Attack2)
+        else if (curAniType == PlayerAniType.Attack2)
         {
             return "Attack2-" + GetWeaponTypeName();
         }
-        else if(curAniType == PlayerAniType.JumpAttack)
+        else if (curAniType == PlayerAniType.JumpAttack)
         {
             return "JumpAttack-" + GetWeaponTypeName();
         }
-        else if(curAniType == PlayerAniType.Charge)
+        else if (curAniType == PlayerAniType.Charge)
         {
             return "Charge-" + GetWeaponTypeName();
         }
-        else if(curAniType == PlayerAniType.ChargeWait)
+        else if (curAniType == PlayerAniType.ChargeWait)
         {
             return "ChargeWait-" + GetWeaponTypeName();
         }
-        else if(curAniType == PlayerAniType.ChargeAttack)
+        else if (curAniType == PlayerAniType.ChargeAttack)
         {
             return "ChargeAttack-" + GetWeaponTypeName();
         }
-        else if(curAniType == PlayerAniType.Charge)
+        else if (curAniType == PlayerAniType.Charge)
         {
             return "Charge-" + GetWeaponTypeName();
         }
@@ -398,7 +399,7 @@ public class PlayerAnimation : MonoBehaviour
     public event AniamtionCallback onStartAttack;
     void StartAttack(string attack)
     {
-        if(onStartAttack!= null)
+        if (onStartAttack != null)
         {
             onStartAttack(attack);
         }
@@ -407,12 +408,11 @@ public class PlayerAnimation : MonoBehaviour
     public event UnityAction onStopAttack;
     void StopAttack()
     {
-        if(onStopAttack != null)
+        if (onStopAttack != null)
         {
             onStopAttack();
         }
     }
-
     
 
 }

@@ -98,23 +98,9 @@ public partial class Player : MonoBehaviour
         SmoothOrientation(); //角色朝向平滑过渡
     }
 
-    LayerMask groundLayerMask;
-    float groundCheckRadius = 0.4f;
+    
     protected void FixedUpdate()
     {
-        //落地检测
-        Collider[] hitGround = Physics.OverlapSphere(groundCheck.position, groundCheckRadius, groundLayerMask);
-
-        if (hitGround == null || hitGround.Length == 0)
-        {
-            grounded = false;
-            //rigidBody.useGravity = true; //在空中,受到重力影响
-        }
-        else
-        {
-            grounded = true;
-            //rigidBody.useGravity = false; //在地面时,不用重力
-        }
         Simulate(); //更新操作
     }
 
