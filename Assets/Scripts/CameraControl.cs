@@ -11,10 +11,16 @@ public class CameraControl : MonoBehaviour
         camera = GetComponent<Camera>();
     }
 
+    Vector3 colisionBox;
     // Use this for initialization
     void Start()
     {
         noColPos = transform.position;
+
+        float halfFov = camera.fieldOfView * 0.5f * Mathf.Deg2Rad;
+        colisionBox.y = camera.nearClipPlane * Mathf.Tan(halfFov);
+        colisionBox.x = colisionBox.y * camera.aspect;
+        colisionBox.z = 0.1f;
     }
 
     // Update is called once per frame
@@ -64,7 +70,7 @@ public class CameraControl : MonoBehaviour
         
         //计算从当前的无碰撞位置到player的yaw
         toWatchPoint.y = 0;
-        this.cameraYaw = Mathf.Acos(toWatchPoint.z / toWatchPoint.magnitude) / Mathf.PI * 180;
+        this.cameraYaw = Mathf.Acos(toWatchPoint.z / toWatchPoint.magnitude) * Mathf.Rad2Deg;
         if (toWatchPoint.x < 0)
             this.cameraYaw = -this.cameraYaw;
         
@@ -101,7 +107,7 @@ public class CameraControl : MonoBehaviour
         LocalPlayer localPlayer = UnityHelper.FindLocalPlayer();
         Transform aim = localPlayer.target.GetComponent<CreatureCommon>().aim;
         Vector3 toTarget = aim.position - watchPoint.position;
-        float targetPitch = -Mathf.Asin(toTarget.y / toTarget.magnitude) / Mathf.PI * 180;
+        float targetPitch = -Mathf.Asin(toTarget.y / toTarget.magnitude) * Mathf.Rad2Deg;
         targetPitch += 15f;
 
         //镜头pitch范围限制
@@ -111,7 +117,7 @@ public class CameraControl : MonoBehaviour
             targetPitch = -maxPitch;
 
         toTarget.y = 0;
-        float targetYaw = Mathf.Acos(toTarget.z / toTarget.magnitude) / Mathf.PI * 180;
+        float targetYaw = Mathf.Acos(toTarget.z / toTarget.magnitude) * Mathf.Rad2Deg;
         if (toTarget.x < 0)
             targetYaw = -targetYaw;
 
@@ -134,9 +140,10 @@ public class CameraControl : MonoBehaviour
         Vector3 watchDir = rotation * Vector3.forward;
         //这里用镜头尺寸的box检测碰撞,这样只要镜头没有插入ground,就不会穿帮
         RaycastHit hit;
-        if (Physics.BoxCast(watchPoint.position, new Vector3(0.5f, 0.5f, 0.1f), -watchDir, out hit, rotation, cameraDistance, groundLayerMask))
+        if (Physics.BoxCast(watchPoint.position, colisionBox, -watchDir, out hit, rotation, cameraDistance, groundLayerMask))
         { //有碰撞,按碰撞点的距离调整位置
-            transform.position = watchPoint.position - watchDir * hit.distance;
+            float distance = Mathf.Max(camera.nearClipPlane + 0.5f, hit.distance);
+            transform.position = watchPoint.position - watchDir * distance;
         }
         else
         {
