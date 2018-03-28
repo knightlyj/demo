@@ -31,7 +31,7 @@ public partial class Player : MonoBehaviour
     //各种速度配置
     public const float rollSpeed = 12;
     public const float jumpSpeed = 20;
-    public const float walkSpeed = 5;
+    public const float walkSpeed = 2;
     public const float runSpeed = 10;
     public const float moveForce = 300;
     public const float moveForceInAir = 10;
@@ -101,7 +101,7 @@ public partial class Player : MonoBehaviour
     
     protected void FixedUpdate()
     {
-        Simulate(); //更新操作
+        Simulate(); //根据输入,模拟角色运动
     }
 
     //***************************角色朝向的代码******************************

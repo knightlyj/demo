@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\Player\PlayerAnimation.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerSimulate.cs" />
     <Compile Include="Assets\Scripts\UnityHelper.cs" />
+    <Compile Include="Assets\Scripts\WatchPoint.cs" />
     <Compile Include="Assets\Scripts\Weapon.cs" />
   </ItemGroup>
   <ItemGroup>

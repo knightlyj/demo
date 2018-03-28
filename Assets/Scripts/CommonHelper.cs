@@ -33,34 +33,34 @@ public static class CommonHelper
     }
 
     //朝目标角度变化,按最近距离计算,simple为true时,不执行step的abs和两个角度重规划到0~360
-    static public float AngleTowards(float now, float target, float step)
+    static public float AngleTowards(float from, float to, float step)
     {
         float result = 0;
 
         step = Mathf.Abs(step);
-        now = now - Mathf.Floor(now / 360f) * 360f; //范围在0~360之间
-        target = target - Mathf.Floor(target / 360f) * 360f; //范围在0~360之间
+        from = from - Mathf.Floor(from / 360f) * 360f; //范围在0~360之间
+        to = to - Mathf.Floor(to / 360f) * 360f; //范围在0~360之间
 
         //计算顺时针到目标的距离
         float distClockwise = 0;
-        if (target > now)
-            distClockwise = target - now;
+        if (to > from)
+            distClockwise = to - from;
         else
-            distClockwise = 360 - (now - target);
+            distClockwise = 360 - (from - to);
 
         if (Mathf.Min(distClockwise, 360 - distClockwise) <= step)
         { //足够近,直接相等即可
-            result = target;
+            result = to;
         }
         else
         {
             if (distClockwise < 180)
             {  //顺时针距离小于180,则顺时针移动
-                result = now + step;
+                result = from + step;
             }
             else
             {   //顺时针距离大于180,则逆时针移动
-                result = now - step;
+                result = from - step;
             }
         }
 
@@ -69,19 +69,19 @@ public static class CommonHelper
     }
 
     //根据距离*比例,计算步长
-    static public float AngleTowardsByDiff(float now, float target, float ratio, float minStep)
+    static public float AngleTowardsByDiff(float from, float to, float ratio, float minStep)
     {
         ratio = Mathf.Abs(ratio);
         minStep = Mathf.Abs(minStep);
-        now = now - Mathf.Floor(now / 360f) * 360f; //范围在0~360之间
-        target = target - Mathf.Floor(target / 360f) * 360f; //范围在0~360之间
+        from = from - Mathf.Floor(from / 360f) * 360f; //范围在0~360之间
+        to = to - Mathf.Floor(to / 360f) * 360f; //范围在0~360之间
 
         //计算顺时针到目标的距离
         float distClockwise = 0;
-        if (target > now)
-            distClockwise = target - now;
+        if (to > from)
+            distClockwise = to - from;
         else
-            distClockwise = 360 - (now - target);
+            distClockwise = 360 - (from - to);
 
         if (distClockwise < 180)
         {  //顺时针距离小于180,则顺时针移动
@@ -90,9 +90,9 @@ public static class CommonHelper
                 step = minStep;
 
             if (step >= distClockwise)
-                return target;
+                return to;
             else
-                return now + step;
+                return from + step;
         }
         else
         {   //顺时针距离大于180,则逆时针移动
@@ -101,9 +101,9 @@ public static class CommonHelper
                 step = minStep;
 
             if (step >= (360 - distClockwise))
-                return target;
+                return to;
             else
-                return now - step;
+                return from - step;
         }
     }
 

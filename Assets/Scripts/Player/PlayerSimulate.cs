@@ -11,9 +11,8 @@ public partial class Player
         Action,
     }
 
-    PlayerState state = PlayerState.OnGround;
     LayerMask groundLayerMask;
-    float groundCheckRadius = 0.42f;
+    float groundCheckRadius = 0.5f;
     void Simulate()
     {
         //落地检测
@@ -40,7 +39,6 @@ public partial class Player
             {   //在空中
                 SimulateInAir();
             }
-
         }
         else
         {  //在动作中,处理动作的逻辑
@@ -51,10 +49,9 @@ public partial class Player
 
 
     //模拟地面
-    bool lastNoDirInput = true;
     void SimulateOnGround()
     {
-        rigidBody.useGravity = true;
+        //rigidBody.useGravity = true;
 
         if (input.roll)
         {
@@ -83,12 +80,8 @@ public partial class Player
         { //没有做任何动作,则处理跑/走逻辑
             if (!input.hasDir) //没输入方向
             {
-                if (!lastNoDirInput)
-                {   //没有按方向键,且上一帧按了方向键,这一帧就停下来
-                    //如果是落地第一帧,则会按照离地前最后一帧的方向来处理,这样跳跃的落地就直接停下了
-                    rigidBody.velocity = new Vector3(0, 0, 0);
-                    rigidBody.useGravity = false;
-                }
+                rigidBody.velocity = new Vector3(0, 0, 0);
+                //rigidBody.useGravity = false;
                 aniModule.SetAnimation(PlayerAniType.Idle);
             }
             else
@@ -104,12 +97,19 @@ public partial class Player
                 {
                     aniModule.SetAnimation(PlayerAniType.Walk);
                 }
-                Vector3 newVel = Quaternion.Euler(0, this.orientation, 0) * Vector3.forward * moveSpeed;
 
-                rigidBody.velocity = new Vector3(newVel.x, rigidBody.velocity.y, newVel.z);
+                //水平方向变化时,按速度到当前方向的投影继承速度,如果投影与当前反向,则不继承
+                //按这种写法,分析时序后,速度是稳定的,如果不到最大速度才施加力的话,速度不会稳定
+                Vector3 moveDir = Quaternion.AngleAxis(this.orientation, Vector3.up) * Vector3.forward;
+                float speedOnDir = moveDir.x * rigidBody.velocity.x + moveDir.z * rigidBody.velocity.z;
+                rigidBody.AddForce(moveDir * moveForce);
+                if (speedOnDir > moveSpeed)
+                {
+                    rigidBody.velocity = moveDir * moveSpeed;
+                }
+
             }
         }
-        lastNoDirInput = input.hasDir;
         lastFrameInFall = false;
     }
 

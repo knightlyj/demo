@@ -4,22 +4,29 @@ using System;
 
 public static class KeyboardInput
 {
-    public static KeyCode Forward = KeyCode.W;
-    public static KeyCode Backward = KeyCode.S;
-    public static KeyCode Left = KeyCode.A;
-    public static KeyCode Right = KeyCode.D;
+    public static readonly string Forward = "Forward";
+    public static readonly string Right = "Right";
 
+    public static readonly string LeftAttack = "LeftHandAttack";
+    public static readonly string RightAttack = "RightHandAttack";
+    public static readonly string StrongAttack = "StrongAttack";
 
-    public static KeyCode Run = KeyCode.LeftShift;
-    public static KeyCode Jump = KeyCode.Space;
-    public static KeyCode Roll = KeyCode.LeftAlt;
+    public static readonly string RunAndRoll = "Run/Roll";
+    public static readonly string Jump = "Jump";
 
-    public static KeyCode Attack = KeyCode.Mouse0;
-    public static KeyCode AntiAttack = KeyCode.F;
-    public static KeyCode StrongAttack = KeyCode.Mouse1;
+    public static readonly string LockTarget = "Lock/RestCamera";
+}
 
-    public static KeyCode ResetCamera = KeyCode.Mouse2; //暂时不用
-    public static KeyCode LockTarget = KeyCode.Q;
+public static class GamePadInput
+{
+    public const float joystickThreshold = 0.6f;
+    public static readonly string Forward = "JoystickForward";
+    public static readonly string Right = "JoystickRight";
+    public static readonly string CameraX = "JoystickCameraX";
+    public static readonly string CameraY = "JoystickCameraY";
+
+    public static readonly KeyCode Run = KeyCode.Joystick1Button1;
+    public static readonly KeyCode LockTarget = KeyCode.Joystick1Button9;
 }
 
 public enum EightDir
@@ -64,17 +71,16 @@ public class LocalPlayer : Player
     // Update is called once per frame
     protected new void Update()
     {
-        input.run = Input.GetKey(KeyboardInput.Run);
-        input.jump = Input.GetKey(KeyboardInput.Jump);
-        input.roll = Input.GetKey(KeyboardInput.Roll);
+        input.run = Input.GetButton(KeyboardInput.RunAndRoll) || Input.GetKey(GamePadInput.Run);
+        input.jump = Input.GetButton(KeyboardInput.Jump);
+        input.roll = false;// Input.GetKey(KeyboardInput.Roll);
 
-        input.attack = Input.GetKey(KeyboardInput.Attack);
-        input.antiAttack = Input.GetKey(KeyboardInput.AntiAttack);
-        input.strongAttack = Input.GetKey(KeyboardInput.StrongAttack);
+        input.attack = Input.GetButton(KeyboardInput.LeftAttack);
+        input.strongAttack = false;// Input.GetButton(KeyboardInput.StrongAttack);
 
         UpdateInputYaw();
 
-        if (Input.GetKeyDown(KeyboardInput.LockTarget))
+        if (Input.GetButtonDown(KeyboardInput.LockTarget) || Input.GetKeyDown(GamePadInput.LockTarget))
         {
             if (target == null)
                 LockTarget();
@@ -95,26 +101,21 @@ public class LocalPlayer : Player
         //处理输入方向
         EightDir inputDir = EightDir.Empty;
         //前后
-        if (Input.GetKey(KeyboardInput.Forward))
+        float keyForward = Input.GetAxis(KeyboardInput.Forward);
+        float gamepadForward = Input.GetAxis(GamePadInput.Forward);
+        if (keyForward > 0 || gamepadForward > GamePadInput.joystickThreshold)
         {
             inputDir = EightDir.Front;
         }
-        else if (Input.GetKey(KeyboardInput.Backward))
+        else if (keyForward < 0 || gamepadForward < -GamePadInput.joystickThreshold)
         {
             inputDir = EightDir.Back;
         }
 
         //左右
-        if (Input.GetKey(KeyboardInput.Left))
-        {
-            if (inputDir == EightDir.Front)
-                inputDir = EightDir.FrontLeft;
-            else if (inputDir == EightDir.Back)
-                inputDir = EightDir.BackLeft;
-            else
-                inputDir = EightDir.Left;
-        }
-        else if (Input.GetKey(KeyboardInput.Right))
+        float keyRight = Input.GetAxis(KeyboardInput.Right);
+        float gamepadRight = Input.GetAxis(GamePadInput.Right);
+        if (keyRight > 0 || gamepadRight > GamePadInput.joystickThreshold)
         {
             if (inputDir == EightDir.Front)
                 inputDir = EightDir.FrontRight;
@@ -122,6 +123,15 @@ public class LocalPlayer : Player
                 inputDir = EightDir.BackRight;
             else
                 inputDir = EightDir.Right;
+        }
+        else if (keyRight < 0 || gamepadRight < -GamePadInput.joystickThreshold)
+        {
+            if (inputDir == EightDir.Front)
+                inputDir = EightDir.FrontLeft;
+            else if (inputDir == EightDir.Back)
+                inputDir = EightDir.BackLeft;
+            else
+                inputDir = EightDir.Left;
         }
 
         SetOrientation(inputDir);
@@ -135,19 +145,7 @@ public class LocalPlayer : Player
         else
             input.hasDir = true;  //输入方向
 
-        float yaw = 0;
-        if (target == null)
-        {   //没有锁定个目标,按镜头角度设置方向
-            yaw = cameraControl.cameraYaw;
-        }
-        else
-        {   //有锁定目标,根据目标方向设置角色朝向
-            Vector3 toTarget = target.transform.position - transform.position;
-            toTarget.y = 0;
-            yaw = Mathf.Acos(toTarget.z / toTarget.magnitude) / Mathf.PI * 180;
-            if (toTarget.x < 0)
-                yaw = -yaw;
-        }
+        float yaw = cameraControl.cameraYaw;
         switch (inputDir)
         {
             case EightDir.Front:
