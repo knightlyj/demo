@@ -258,7 +258,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraPitch: 0
-  cameraYaw: NaN
+  cameraYaw: 0
   watchPoint: {fileID: 1745113371}
   groundLayerMask:
     serializedVersion: 2
@@ -343,7 +343,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4000011992605376, guid: dace0e0f8d14fe741b4f319bee52c527, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 1.4
+      value: 13.8
       objectReference: {fileID: 0}
     - target: {fileID: 4000011992605376, guid: dace0e0f8d14fe741b4f319bee52c527, type: 2}
       propertyPath: m_LocalPosition.y
@@ -351,7 +351,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000011992605376, guid: dace0e0f8d14fe741b4f319bee52c527, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 73.8
+      value: 79.5
       objectReference: {fileID: 0}
     - target: {fileID: 4000011992605376, guid: dace0e0f8d14fe741b4f319bee52c527, type: 2}
       propertyPath: m_LocalRotation.x
@@ -389,7 +389,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4000010959858876, guid: e5389995b028d3c43a5b28242062ec83, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: -2.53
       objectReference: {fileID: 0}
     - target: {fileID: 4000010959858876, guid: e5389995b028d3c43a5b28242062ec83, type: 2}
       propertyPath: m_LocalPosition.y
@@ -397,7 +397,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000010959858876, guid: e5389995b028d3c43a5b28242062ec83, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 77
+      value: 75.27
       objectReference: {fileID: 0}
     - target: {fileID: 4000010959858876, guid: e5389995b028d3c43a5b28242062ec83, type: 2}
       propertyPath: m_LocalRotation.x
@@ -425,7 +425,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1000010911869972, guid: e5389995b028d3c43a5b28242062ec83, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e5389995b028d3c43a5b28242062ec83, type: 2}

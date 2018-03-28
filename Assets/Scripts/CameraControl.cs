@@ -14,7 +14,7 @@ public class CameraControl : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-
+        noColPos = transform.position;
     }
 
     // Update is called once per frame
@@ -57,17 +57,17 @@ public class CameraControl : MonoBehaviour
     //***********************镜头角度****************************
     float mouseRatio = 3f;
     float joystickRatio = 2f;
-    
+    Vector3 noColPos;
     void UpdateFreeCamera()  //更新镜头角度
     {
-        Vector3 toWatchPoint = watchPoint.position - transform.position;
-
-        //计算从当前位置到player的yaw
+        Vector3 toWatchPoint = watchPoint.position - noColPos;
+        
+        //计算从当前的无碰撞位置到player的yaw
         toWatchPoint.y = 0;
         this.cameraYaw = Mathf.Acos(toWatchPoint.z / toWatchPoint.magnitude) / Mathf.PI * 180;
         if (toWatchPoint.x < 0)
             this.cameraYaw = -this.cameraYaw;
-
+        
         float deltaYaw = Input.GetAxis("Mouse X") * mouseRatio;
         float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
         float gamePadYaw = Input.GetAxis(GamePadInput.CameraX);
@@ -84,9 +84,7 @@ public class CameraControl : MonoBehaviour
         else if (gamepadPitch < -GamePadInput.joystickThreshold)
             gamepadPitch = -60f * Time.deltaTime;
         this.cameraPitch -= deltaPith + gamepadPitch * joystickRatio;
-
-       
-
+        
         //镜头pitch范围限制
         if (this.cameraPitch > maxPitch)
             this.cameraPitch = maxPitch;
@@ -148,5 +146,6 @@ public class CameraControl : MonoBehaviour
 
         //调整镜头角度和位置
         transform.rotation = rotation;
+        noColPos = watchPoint.position - watchDir * cameraDistance;
     }
 }
