@@ -10,9 +10,8 @@ public struct PlayerInput
     public bool hasDir;  //有输入方向
     public float yaw;
 
-    public bool run;
+    public bool runAndRoll;
     public bool jump;
-    public bool roll;
 
     public bool attack;   //轻攻击
     public bool antiAttack;  //防反

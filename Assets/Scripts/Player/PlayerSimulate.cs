@@ -45,29 +45,18 @@ public partial class Player
             SimulateAction();
         }
     }
-
-
-
+    
     //模拟地面
     void SimulateOnGround()
     {
         //rigidBody.useGravity = true;
-
-        if (input.roll)
-        {
-            IntoAction(ActionType.Roll);
-        }
-        else if (input.jump)
-        {
-            IntoAction(ActionType.Jump);
-        }
-        else if (input.attack)
+        if (input.attack)
         {
             IntoAction(ActionType.Attack);
         }
         else if (input.strongAttack)
         {
-            if (input.run && input.hasDir)
+            if (input.runAndRoll && input.hasDir)
             { //跳劈
                 IntoAction(ActionType.JumpAttack);
             }
@@ -88,7 +77,7 @@ public partial class Player
             {
                 this.orientation = input.yaw;
                 float moveSpeed = walkSpeed;
-                if (input.run)
+                if (input.runAndRoll)
                 { //跑
                     moveSpeed = runSpeed;
                     aniModule.SetAnimation(PlayerAniType.Run);
@@ -149,5 +138,16 @@ public partial class Player
         {
             lastFrameInFall = false;
         }
+    }
+
+    bool lastRunAndRoll = false;  //上一次的输入
+    void RunAndRollProc()
+    {
+        if (lastRunAndRoll)
+        {
+
+        }
+
+        lastRunAndRoll = input.runAndRoll;
     }
 }

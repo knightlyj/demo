@@ -71,9 +71,8 @@ public class LocalPlayer : Player
     // Update is called once per frame
     protected new void Update()
     {
-        input.run = Input.GetButton(KeyboardInput.RunAndRoll) || Input.GetKey(GamePadInput.Run);
+        input.runAndRoll = Input.GetButton(KeyboardInput.RunAndRoll) || Input.GetKey(GamePadInput.Run);
         input.jump = Input.GetButton(KeyboardInput.Jump);
-        input.roll = false;// Input.GetKey(KeyboardInput.Roll);
 
         input.attack = Input.GetButton(KeyboardInput.LeftAttack);
         input.strongAttack = false;// Input.GetButton(KeyboardInput.StrongAttack);

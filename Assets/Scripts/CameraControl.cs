@@ -21,11 +21,15 @@ public class CameraControl : MonoBehaviour
         colisionBox.y = camera.nearClipPlane * Mathf.Tan(halfFov);
         colisionBox.x = colisionBox.y * camera.aspect;
         colisionBox.z = 0.1f;
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        //更新watch point位置
+        UpdateWatchPoint();
+
         //更新镜头位置和角度
         LocalPlayer localPlayer = UnityHelper.FindLocalPlayer();
         if (localPlayer != null)
@@ -50,6 +54,30 @@ public class CameraControl : MonoBehaviour
         fixedCount++;
     }
 
+    //***********************watch point*****************************
+    Vector3 watchPoint;
+    bool wpInit = false;
+    Transform sight = null;
+    void UpdateWatchPoint()
+    {
+        if (!wpInit)
+        {
+            LocalPlayer localPlayer = UnityHelper.FindLocalPlayer();
+            if (localPlayer != null)
+            {
+                sight = localPlayer.GetComponent<CreatureCommon>().sight;
+                watchPoint = sight.position;
+                wpInit = true;
+            }
+        }
+        else
+        {
+            Vector3 toPlayer = sight.position - watchPoint;
+            float step = Mathf.Max(toPlayer.magnitude * fixedCount * 0.07f, 0.001f);
+            watchPoint = Vector3.MoveTowards(watchPoint, sight.position, step);
+        }
+    }
+
     //camera 当前 yaw和pitch
     [HideInInspector]
     public float cameraPitch = 0;
@@ -58,15 +86,14 @@ public class CameraControl : MonoBehaviour
 
     float cameraDistance = 7.0f;  //镜头距离
     const float maxPitch = 75f;  //最大pitch
-
-    public Transform watchPoint;
+    
     //***********************镜头角度****************************
     float mouseRatio = 3f;
     float joystickRatio = 2f;
     Vector3 noColPos;
     void UpdateFreeCamera()  //更新镜头角度
     {
-        Vector3 toWatchPoint = watchPoint.position - noColPos;
+        Vector3 toWatchPoint = watchPoint - noColPos;
         
         //计算从当前的无碰撞位置到player的yaw
         toWatchPoint.y = 0;
@@ -106,7 +133,7 @@ public class CameraControl : MonoBehaviour
     {
         LocalPlayer localPlayer = UnityHelper.FindLocalPlayer();
         Transform aim = localPlayer.target.GetComponent<CreatureCommon>().aim;
-        Vector3 toTarget = aim.position - watchPoint.position;
+        Vector3 toTarget = aim.position - watchPoint;
         float targetPitch = -Mathf.Asin(toTarget.y / toTarget.magnitude) * Mathf.Rad2Deg;
         targetPitch += 15f;
 
@@ -140,19 +167,19 @@ public class CameraControl : MonoBehaviour
         Vector3 watchDir = rotation * Vector3.forward;
         //这里用镜头尺寸的box检测碰撞,这样只要镜头没有插入ground,就不会穿帮
         RaycastHit hit;
-        if (Physics.BoxCast(watchPoint.position, colisionBox, -watchDir, out hit, rotation, cameraDistance, groundLayerMask))
+        if (Physics.BoxCast(watchPoint, colisionBox, -watchDir, out hit, rotation, cameraDistance, groundLayerMask))
         { //有碰撞,按碰撞点的距离调整位置
             float distance = Mathf.Max(camera.nearClipPlane + 0.5f, hit.distance);
-            transform.position = watchPoint.position - watchDir * distance;
+            transform.position = watchPoint - watchDir * distance;
         }
         else
         {
             //没有碰撞
-            transform.position = watchPoint.position - watchDir * cameraDistance;
+            transform.position = watchPoint - watchDir * cameraDistance;
         }
 
         //调整镜头角度和位置
         transform.rotation = rotation;
-        noColPos = watchPoint.position - watchDir * cameraDistance;
+        noColPos = watchPoint - watchDir * cameraDistance;
     }
 }

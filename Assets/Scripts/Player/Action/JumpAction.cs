@@ -11,7 +11,7 @@ public class JumpAction : ActionBase {
 
         //如果有按方向键,则设置方向和水平速度
         float moveSpeed = Player.walkSpeed;
-        if (player.input.run)
+        if (player.input.runAndRoll)
         { //跑
             moveSpeed = Player.runSpeed;
         }
