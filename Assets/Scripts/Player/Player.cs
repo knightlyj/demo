@@ -5,13 +5,14 @@ using System;
 
 
 
-public struct PlayerInput
+public struct ActionInput
 {
     public bool hasDir;  //有输入方向
     public float yaw;
 
-    public bool runAndRoll;
+    public bool run;
     public bool jump;
+    public bool roll;
 
     public bool attack;   //轻攻击
     public bool antiAttack;  //防反
@@ -28,16 +29,16 @@ public enum AttackType
 public partial class Player : MonoBehaviour
 {
     //各种速度配置
-    public const float rollSpeed = 12;
-    public const float jumpSpeed = 20;
-    public const float walkSpeed = 2;
-    public const float runSpeed = 10;
-    public const float moveForce = 300;
+    public const float rollSpeed = 9;
+    public const float jumpForce = 200;
+    public const float walkSpeed = 4;
+    public const float runSpeed = 7;
+    public const float moveForce = 150;
     public const float moveForceInAir = 10;
     public const float moveSpeedInAir = 2;
 
     public event UnityAction onPlayerDestroy; //角色销毁事件
-    public PlayerInput input; //角色动作
+    public ActionInput input; //角色动作
 
     Transform groundCheck = null;
 
@@ -67,9 +68,7 @@ public partial class Player : MonoBehaviour
     // Use this for initialization
     protected void Start()
     {
-        aniModule.onAnimationDone += this.OnAnimationDone; //动作事件回调
-        aniModule.onStartAttack += this.OnStartAttack;
-        aniModule.onStopAttack += this.OnStopAttack;
+        aniModule.onAnimationEvent += this.OnAnimationEvent; //动作事件回调
         ChangeWeapon(MainHandWeaponType.Sword, OffHandWeaponType.Empty);
 
         ActionInit();
@@ -80,17 +79,13 @@ public partial class Player : MonoBehaviour
 
     protected void OnDestroy()
     {
-        aniModule.onAnimationDone -= this.OnAnimationDone;
-        aniModule.onStartAttack -= this.OnStartAttack;
-        aniModule.onStopAttack -= this.OnStopAttack;
         if (onPlayerDestroy != null)
         {
             onPlayerDestroy();
         }
     }
 
-    //地面检测
-    bool grounded = true;
+    
     // Update is called once per frame
     protected void Update()
     {
@@ -104,14 +99,10 @@ public partial class Player : MonoBehaviour
     }
 
     //***************************角色朝向的代码******************************
-    Vector3 playerDir = Vector3.forward; //角色朝向,初始朝向Z-Axis
     public float orientation //角色朝向,基于y轴旋转
     {
         set
         {
-            Quaternion rotation = Quaternion.AngleAxis(this.orientation, Vector3.up);
-            this.playerDir = rotation * Vector3.forward;
-            float temp = _orientation;
             _orientation = value;
             _orientation = _orientation - Mathf.Floor(_orientation / 360f) * 360f; //范围在0~360之间
             StartSmoothOrientation();
@@ -154,33 +145,7 @@ public partial class Player : MonoBehaviour
         smoothOrientation = CommonHelper.AngleTowards(smoothOrientation, orientation, smoothOriStepLen * Time.deltaTime);
         transform.eulerAngles = new Vector3(0, smoothOrientation, 0);
     }
-
-    [HideInInspector]
-    public Vector3 hitSrcPos;
-    //受击动作
-    public void GetHit(Vector3 hitPos, AttackType attack, int damage)
-    {
-        hitSrcPos = hitPos;
-        IntoAction(ActionType.GetHit);
-    }
-
-    //动画开始攻击事件
-    void OnStartAttack(string attack)
-    {
-        if (curActionType != ActionType.Empty)
-        {
-            actions[(int)curActionType].OnAnimationEvent(attack, PlayerAniEventType.StartAttack);
-        }
-    }
-    //动画停止攻击事件
-    void OnStopAttack()
-    {
-        if (curActionType != ActionType.Empty)
-        {
-            actions[(int)curActionType].OnAnimationEvent(null, PlayerAniEventType.StopAttack);
-        }
-    }
-
+    
     //更换武器
     Weapon mainWeapon = null;
     void ChangeWeapon(MainHandWeaponType mainHand, OffHandWeaponType offHand)
@@ -214,10 +179,7 @@ public partial class Player : MonoBehaviour
     //武器碰撞到其他player时的回调
     void OnHitOther(Collider other)
     {
-        if (curActionType != ActionType.Empty)
-        {
-            actions[(int)curActionType].OnMainHandTrig(other);
-        }
+        actions[(int)curActionType].OnMainHandTrig(other);
     }
 
     [HideInInspector]

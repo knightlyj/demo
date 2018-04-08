@@ -21,7 +21,7 @@ public class CameraControl : MonoBehaviour
         colisionBox.y = camera.nearClipPlane * Mathf.Tan(halfFov);
         colisionBox.x = colisionBox.y * camera.aspect;
         colisionBox.z = 0.1f;
-        
+
     }
 
     // Update is called once per frame
@@ -45,7 +45,7 @@ public class CameraControl : MonoBehaviour
         }
 
         fixedCount = 0;
-        
+
     }
 
     int fixedCount = 0;
@@ -84,46 +84,76 @@ public class CameraControl : MonoBehaviour
     [HideInInspector]
     public float cameraYaw = 0;
 
-    float cameraDistance = 7.0f;  //镜头距离
+    float cameraDistance = 5.0f;  //镜头距离
     const float maxPitch = 75f;  //最大pitch
-    
+
     //***********************镜头角度****************************
     float mouseRatio = 3f;
-    float joystickRatio = 2f;
+    float joystickRatio = 4f;
     Vector3 noColPos;
+    
     void UpdateFreeCamera()  //更新镜头角度
     {
         Vector3 toWatchPoint = watchPoint - noColPos;
-        
-        //计算从当前的无碰撞位置到player的yaw
-        toWatchPoint.y = 0;
-        this.cameraYaw = Mathf.Acos(toWatchPoint.z / toWatchPoint.magnitude) * Mathf.Rad2Deg;
-        if (toWatchPoint.x < 0)
-            this.cameraYaw = -this.cameraYaw;
-        
-        float deltaYaw = Input.GetAxis("Mouse X") * mouseRatio;
-        float deltaPith = Input.GetAxis("Mouse Y") * mouseRatio;
-        float gamePadYaw = Input.GetAxis(GamePadInput.CameraX);
-        float gamepadPitch = Input.GetAxis(GamePadInput.CameraY);
+
+        //计算鼠标输入
+        float mouseYaw = Input.GetAxis("Mouse X") * mouseRatio;
+        float mousePith = Input.GetAxis("Mouse Y") * mouseRatio;
+        //计算手柄输入
+        float gamePadYaw = Input.GetAxis(GamePadInput.cameraX);
+        float gamepadPitch = Input.GetAxis(GamePadInput.cameraY);
 
         if (gamePadYaw > GamePadInput.joystickThreshold)
-            gamePadYaw = -60f * Time.deltaTime;
+            gamePadYaw = -joystickRatio * fixedCount;
         else if (gamePadYaw < -GamePadInput.joystickThreshold)
-            gamePadYaw = 60f * Time.deltaTime;
-        this.cameraYaw += deltaYaw + gamePadYaw * joystickRatio;
+            gamePadYaw = joystickRatio * fixedCount;
+        else
+            gamePadYaw = 0;
 
         if (gamepadPitch > GamePadInput.joystickThreshold)
-            gamepadPitch = 60f * Time.deltaTime;
+            gamepadPitch = joystickRatio * fixedCount;
         else if (gamepadPitch < -GamePadInput.joystickThreshold)
-            gamepadPitch = -60f * Time.deltaTime;
-        this.cameraPitch -= deltaPith + gamepadPitch * joystickRatio;
+            gamepadPitch = -joystickRatio * fixedCount;
+        else
+            gamepadPitch = 0;
         
-        //镜头pitch范围限制
-        if (this.cameraPitch > maxPitch)
-            this.cameraPitch = maxPitch;
-        else if (this.cameraPitch < -maxPitch)
-            this.cameraPitch = -maxPitch;
+        float deltaYaw = mouseYaw + gamePadYaw;
+        float deltaPitch = -(mousePith + gamepadPitch);
+        
+        if (resetCamera)
+        {
+            if (deltaYaw != 0 || deltaPitch != 0)
+            {
+                resetCamera = false;
+            }
+            else
+            {
+                cameraYaw = CommonHelper.AngleTowardsByDiff(cameraYaw, resetYaw, Time.deltaTime * 5, 0.5f);
+                if(cameraYaw == resetYaw)
+                {
+                    resetCamera = false;
+                }
+            }
+        }
+        else
+        {
 
+            //计算从当前的无碰撞位置到player的yaw
+            toWatchPoint.y = 0;
+            this.cameraYaw = Mathf.Acos(toWatchPoint.z / toWatchPoint.magnitude) * Mathf.Rad2Deg;
+            if (toWatchPoint.x < 0)
+                this.cameraYaw = -this.cameraYaw;
+
+
+            this.cameraYaw += deltaYaw;
+            this.cameraPitch += deltaPitch;
+
+            //镜头pitch范围限制
+            if (this.cameraPitch > maxPitch)
+                this.cameraPitch = maxPitch;
+            else if (this.cameraPitch < -maxPitch)
+                this.cameraPitch = -maxPitch;
+        }
 
         //碰撞检测
         Collision();
@@ -181,5 +211,13 @@ public class CameraControl : MonoBehaviour
         //调整镜头角度和位置
         transform.rotation = rotation;
         noColPos = watchPoint - watchDir * cameraDistance;
+    }
+
+    bool resetCamera = false;
+    float resetYaw = 0;
+    public void ResetCamera(float yaw)
+    {
+        this.resetCamera = true;
+        this.resetYaw = yaw;
     }
 }

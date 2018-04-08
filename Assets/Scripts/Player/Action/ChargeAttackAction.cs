@@ -39,37 +39,32 @@ public class ChargeAttackAction : ActionBase {
     }
     
     bool chargeComplete = false;
-    public override void OnAnimationEvent(string aniName, PlayerAniEventType aniEvent)
+    public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniEvent == PlayerAniEventType.Finish)
-        {
-            if (aniName == "Charge")
-            {
-                player.aniModule.SetAnimation(PlayerAniType.ChargeWait);
-                chargeComplete = true;
-            }
-            else if(aniName == "ChargeAttack")
-            {
-                if (onActionDone != null)
-                    onActionDone();
-            }
-        }
-        else if (aniEvent == PlayerAniEventType.StartAttack)
-        {
-            player.EnableMainWeapon();  //开启武器碰撞
-        }
-        else if (aniEvent == PlayerAniEventType.StopAttack)
-        {
-            player.DisableMainWeapon(); //关掉武器碰撞
-        }
+        //if (aniEvent == PlayerAniEventType.Finish)
+        //{
+        //    if (aniName == "Charge")
+        //    {
+        //        player.aniModule.SetAnimation(PlayerAniType.ChargeWait);
+        //        chargeComplete = true;
+        //    }
+        //    else if(aniName == "ChargeAttack")
+        //    {
+
+        //    }
+        //}
+        //else if (aniEvent == PlayerAniEventType.StartAttack)
+        //{
+        //    player.EnableMainWeapon();  //开启武器碰撞
+        //}
+        //else if (aniEvent == PlayerAniEventType.StopAttack)
+        //{
+        //    player.DisableMainWeapon(); //关掉武器碰撞
+        //}
     }
 
     public override void OnMainHandTrig(Collider other)
     {
-        Player target = UnityHelper.FindObjectUpward<Player>(other.transform);
-        if (target != null)
-        {
-            target.GetHit(player.transform.position, AttackType.ChargeAttack, 1);
-        }
+
     }
 }

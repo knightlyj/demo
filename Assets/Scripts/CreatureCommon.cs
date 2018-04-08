@@ -8,14 +8,12 @@ public class CreatureCommon : MonoBehaviour
     public Transform aim { get { return this._aim; } }
 
     [SerializeField]
-    Transform _aim;
+    Transform _aim = null;
 
     //***********视线点*************
     [HideInInspector]
     public Transform sight { get { return this._sight; } }
 
     [SerializeField]
-    Transform _sight;
-
-    
+    Transform _sight = null;
 }

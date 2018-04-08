@@ -4,29 +4,30 @@ using System;
 
 public static class KeyboardInput
 {
-    public static readonly string Forward = "Forward";
-    public static readonly string Right = "Right";
+    public static readonly string forward = "Forward";
+    public static readonly string right = "Right";
 
-    public static readonly string LeftAttack = "LeftHandAttack";
-    public static readonly string RightAttack = "RightHandAttack";
-    public static readonly string StrongAttack = "StrongAttack";
+    public static readonly string leftAttack = "LeftHandAttack";
+    public static readonly string rightAttack = "RightHandAttack";
+    public static readonly string strongAttack = "StrongAttack";
 
-    public static readonly string RunAndRoll = "Run/Roll";
-    public static readonly string Jump = "Jump";
+    public static readonly string jump = "Jump";
+    public static readonly string runRoll = "Run/Roll";
 
-    public static readonly string LockTarget = "Lock/RestCamera";
+    public static readonly string lockTarget = "Lock/RestCamera";
 }
 
 public static class GamePadInput
 {
     public const float joystickThreshold = 0.6f;
-    public static readonly string Forward = "JoystickForward";
-    public static readonly string Right = "JoystickRight";
-    public static readonly string CameraX = "JoystickCameraX";
-    public static readonly string CameraY = "JoystickCameraY";
+    public static readonly string forward = "JoystickForward";
+    public static readonly string right = "JoystickRight";
+    public static readonly string cameraX = "JoystickCameraX";
+    public static readonly string cameraY = "JoystickCameraY";
 
-    public static readonly KeyCode Run = KeyCode.Joystick1Button1;
-    public static readonly KeyCode LockTarget = KeyCode.Joystick1Button9;
+    public static readonly KeyCode jump = KeyCode.JoystickButton1;
+    public static readonly KeyCode runRoll = KeyCode.JoystickButton1;
+    public static readonly KeyCode lockTarget = KeyCode.JoystickButton9;
 }
 
 public enum EightDir
@@ -71,28 +72,36 @@ public class LocalPlayer : Player
     // Update is called once per frame
     protected new void Update()
     {
-        input.runAndRoll = Input.GetButton(KeyboardInput.RunAndRoll) || Input.GetKey(GamePadInput.Run);
-        input.jump = Input.GetButton(KeyboardInput.Jump);
-
-        input.attack = Input.GetButton(KeyboardInput.LeftAttack);
-        input.strongAttack = false;// Input.GetButton(KeyboardInput.StrongAttack);
-
-        UpdateInputYaw();
-
-        if (Input.GetButtonDown(KeyboardInput.LockTarget) || Input.GetKeyDown(GamePadInput.LockTarget))
-        {
-            if (target == null)
-                LockTarget();
-            else
-                UnLockTarget();
-        }
-
         base.Update();
     }
 
     protected new void FixedUpdate()
     {
+        UpdateInput();
         base.FixedUpdate();
+    }
+
+    DateTime lastLockTime = DateTime.Now;
+    void UpdateInput()
+    {
+        input.attack = Input.GetButton(KeyboardInput.leftAttack);
+        input.strongAttack = false;// Input.GetButton(KeyboardInput.StrongAttack);
+
+        UpdateJump();
+        UpdateRunRoll();
+        UpdateInputYaw();
+
+        if (Input.GetButtonDown(KeyboardInput.lockTarget) || Input.GetKeyDown(GamePadInput.lockTarget))
+        {
+            TimeSpan span = DateTime.Now - lastLockTime;
+            if (span.TotalMilliseconds > 500)
+            {
+                if (target == null)
+                    LockTarget();
+                else
+                    UnLockTarget();
+            }
+        }
     }
 
     void UpdateInputYaw()
@@ -100,8 +109,8 @@ public class LocalPlayer : Player
         //处理输入方向
         EightDir inputDir = EightDir.Empty;
         //前后
-        float keyForward = Input.GetAxis(KeyboardInput.Forward);
-        float gamepadForward = Input.GetAxis(GamePadInput.Forward);
+        float keyForward = Input.GetAxis(KeyboardInput.forward);
+        float gamepadForward = Input.GetAxis(GamePadInput.forward);
         if (keyForward > 0 || gamepadForward > GamePadInput.joystickThreshold)
         {
             inputDir = EightDir.Front;
@@ -112,8 +121,8 @@ public class LocalPlayer : Player
         }
 
         //左右
-        float keyRight = Input.GetAxis(KeyboardInput.Right);
-        float gamepadRight = Input.GetAxis(GamePadInput.Right);
+        float keyRight = Input.GetAxis(KeyboardInput.right);
+        float gamepadRight = Input.GetAxis(GamePadInput.right);
         if (keyRight > 0 || gamepadRight > GamePadInput.joystickThreshold)
         {
             if (inputDir == EightDir.Front)
@@ -133,17 +142,12 @@ public class LocalPlayer : Player
                 inputDir = EightDir.Left;
         }
 
-        SetOrientation(inputDir);
-    }
-
-    //根据镜头方向,设置人物的八个方向
-    void SetOrientation(EightDir inputDir)
-    {
         if (inputDir == EightDir.Empty)
             input.hasDir = false;  //没输入方向
         else
             input.hasDir = true;  //输入方向
 
+        //从八方向转到yaw
         float yaw = cameraControl.cameraYaw;
         switch (inputDir)
         {
@@ -174,7 +178,68 @@ public class LocalPlayer : Player
             default:
                 break;
         }
+    }
 
+    DateTime runDownTime = DateTime.Now;
+    DateTime stopRunTime = DateTime.Now;
+    bool lastRunDown = false;
+    bool runLongDown = false;  //长按
+    void UpdateRunRoll()
+    {
+        bool runDown = Input.GetButton(KeyboardInput.runRoll) || Input.GetKey(GamePadInput.runRoll);
+        if (runDown)
+        {
+            if (!lastRunDown)
+            { //button down
+                runDownTime = DateTime.Now;
+                input.roll = false;
+            }
+            else
+            { //long pressed
+                TimeSpan span = DateTime.Now - runDownTime;
+                if (span.TotalMilliseconds > 300)
+                {
+                    input.run = true;
+                    runLongDown = true;
+                }
+            }
+        }
+        else
+        {
+            if (lastRunDown)
+            { //button up
+                if (!runLongDown)
+                {
+                    input.roll = true;
+                }
+                else
+                {
+                    stopRunTime = DateTime.Now;
+                    input.run = false;
+                    runLongDown = false;
+                }
+            }
+            else
+            {
+                input.roll = false;
+            }
+        }
+        lastRunDown = runDown;
+    }
+
+    bool lastJumpDown = false;
+    void UpdateJump()
+    {
+        bool jumpDown = Input.GetButton(KeyboardInput.jump) || Input.GetKey(GamePadInput.jump);
+        if (!lastJumpDown && jumpDown)
+        {
+            TimeSpan span = DateTime.Now - stopRunTime;
+            if (span.TotalMilliseconds < 100 || input.run)
+            {
+                input.jump = true;
+            }
+        }
+        lastJumpDown = jumpDown;
     }
 
     void LockTarget()
@@ -195,6 +260,11 @@ public class LocalPlayer : Player
                     break;
                 }
             }
+        }
+
+        if (target == null)
+        {
+            cameraControl.ResetCamera(this.orientation);
         }
     }
 

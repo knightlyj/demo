@@ -7,7 +7,7 @@ public class GetHitAction : ActionBase {
     {
         base.Start(player);
         EightDir dirEnum = EightDir.Front; ;
-        Vector3 dir = player.hitSrcPos - player.transform.position;
+        Vector3 dir = player.transform.position;
         dir.y = 0;
         float frontProj = Vector3.Dot(player.transform.forward, dir);
         if (frontProj < 0)
@@ -25,13 +25,12 @@ public class GetHitAction : ActionBase {
         }
     }
 
-    public override void OnAnimationEvent(string aniName, PlayerAniEventType aniEvent)
+    public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniName.Equals("GetHit") && aniEvent == PlayerAniEventType.Finish)
-        {
-            if (this.onActionDone != null)
-                onActionDone();
-        }
+        //if (aniName.Equals("GetHit") && aniEvent == PlayerAniEventType.Finish)
+        //{
+
+        //}
     }
 }
 

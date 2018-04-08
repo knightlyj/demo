@@ -1,35 +1,58 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class JumpAction : ActionBase {
-
-	public override void Start(Player player)
+public class JumpAction : ActionBase
+{
+    float jumpYaw = 0;
+    public override void Start(Player player)
     {
         base.Start(player);
         player.aniModule.SetAnimation(PlayerAniType.JumpUp, PlayerAniDir.Front); //设置动画
-        player.rigidBody.velocity = new Vector3(player.rigidBody.velocity.x, Player.jumpSpeed, player.rigidBody.velocity.z); //设置垂直速度
+        jumpYaw = player.orientation;
+    }
 
-        //如果有按方向键,则设置方向和水平速度
-        float moveSpeed = Player.walkSpeed;
-        if (player.input.runAndRoll)
-        { //跑
-            moveSpeed = Player.runSpeed;
-        }
-        if (player.input.hasDir)
+    bool jumped = false;
+    int upForceCount = 0;
+    public override void Update()
+    {
+        base.Update();
+        if (!jumped)
         {
-            player.orientation = player.input.yaw; //设置角色方向
-            //设置水平速度
-            Vector3 moveDir = Quaternion.AngleAxis(player.orientation, Vector3.up) * Vector3.forward;
-            player.rigidBody.velocity = new Vector3(moveDir.x * moveSpeed, player.rigidBody.velocity.y, moveDir.z * moveSpeed);
+            Vector3 moveDir = Quaternion.AngleAxis(jumpYaw, Vector3.up) * Vector3.forward;
+            float speedOnDir = moveDir.x * player.rigidBody.velocity.x + moveDir.z * player.rigidBody.velocity.z;
+            player.rigidBody.AddForce(moveDir * Player.moveForce);
+            if (speedOnDir > Player.runSpeed)
+            {
+                player.rigidBody.velocity = moveDir * Player.runSpeed;
+            }
+        }
+        else
+        {
+            if(upForceCount > 0)
+            {
+                player.rigidBody.AddForce(new Vector3(0, Player.jumpForce, 0));
+                upForceCount--;
+            }
         }
     }
 
-    public override void OnAnimationEvent(string aniName, PlayerAniEventType aniEvent)
+    public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniName.Equals("JumpUp") && aniEvent == PlayerAniEventType.Finish)
+        if (aniEvent.stringParameter.Equals("JumpUp"))
         {
-            if (this.onActionDone != null)
-                onActionDone();
+            if (aniEvent.intParameter == 0)
+            {
+                if (this.onActionDone != null)
+                    onActionDone();
+            }
+            else if (aniEvent.intParameter == 1)
+            {
+                Vector3 moveDir = Quaternion.AngleAxis(player.orientation, Vector3.up) * Vector3.forward;
+                player.rigidBody.velocity = new Vector3(moveDir.x * Player.runSpeed * 1.2f, player.rigidBody.velocity.y, moveDir.z * Player.runSpeed * 1.2f);
+                player.rigidBody.AddForce(new Vector3(0, Player.jumpForce, 0));
+                upForceCount = 3;
+                jumped = true;  
+            }
         }
     }
 }

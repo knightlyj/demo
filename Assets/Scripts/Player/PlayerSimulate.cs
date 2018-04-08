@@ -11,6 +11,7 @@ public partial class Player
         Action,
     }
 
+    bool grounded = false;
     LayerMask groundLayerMask;
     float groundCheckRadius = 0.5f;
     void Simulate()
@@ -21,12 +22,10 @@ public partial class Player
         if (hitGround == null || hitGround.Length == 0)
         {
             grounded = false;
-            //rigidBody.useGravity = true; //在空中,受到重力影响
         }
         else
         {
             grounded = true;
-            //rigidBody.useGravity = false; //在地面时,不用重力
         }
 
         if (curActionType == ActionType.Empty) //不在特殊动作中
@@ -45,18 +44,18 @@ public partial class Player
             SimulateAction();
         }
     }
-    
+
+    float moveSpeed = walkSpeed;
     //模拟地面
     void SimulateOnGround()
     {
-        //rigidBody.useGravity = true;
         if (input.attack)
         {
             IntoAction(ActionType.Attack);
         }
         else if (input.strongAttack)
         {
-            if (input.runAndRoll && input.hasDir)
+            if (input.run && input.hasDir)
             { //跳劈
                 IntoAction(ActionType.JumpAttack);
             }
@@ -65,29 +64,43 @@ public partial class Player
                 IntoAction(ActionType.ChargeAttack);
             }
         }
+        else if (input.jump)
+        {
+            IntoAction(ActionType.Jump);
+            input.jump = false;
+        }
+        else if (input.roll)
+        {
+            IntoAction(ActionType.Roll);
+            input.roll = false;
+        }
         else
         { //没有做任何动作,则处理跑/走逻辑
             if (!input.hasDir) //没输入方向
             {
                 rigidBody.velocity = new Vector3(0, 0, 0);
-                //rigidBody.useGravity = false;
                 aniModule.SetAnimation(PlayerAniType.Idle);
+                moveSpeed = walkSpeed;  //idle时，重置移动速度
             }
             else
-            {
+            { 
                 this.orientation = input.yaw;
-                float moveSpeed = walkSpeed;
-                if (input.runAndRoll)
+                //在移动时按下run，移动速度会逐渐递增到跑步速度
+                if (input.run)
                 { //跑
-                    moveSpeed = runSpeed;
-                    aniModule.SetAnimation(PlayerAniType.Run);
+                    moveSpeed += (runSpeed - walkSpeed) * 0.08f;
+                    if (moveSpeed >= runSpeed)
+                        moveSpeed = runSpeed;
                 }
                 else
                 {
-                    aniModule.SetAnimation(PlayerAniType.Walk);
+                    moveSpeed -= (runSpeed - walkSpeed) * 0.08f;
+                    if (moveSpeed <= walkSpeed)
+                        moveSpeed = walkSpeed;
                 }
-
-                //水平方向变化时,按速度到当前方向的投影继承速度,如果投影与当前反向,则不继承
+                float walkRun = (moveSpeed - walkSpeed) / (runSpeed - walkSpeed);
+                aniModule.SetWalkRun(walkRun);
+                aniModule.SetAnimation(PlayerAniType.WalkRun);
                 //按这种写法,分析时序后,速度是稳定的,如果不到最大速度才施加力的话,速度不会稳定
                 Vector3 moveDir = Quaternion.AngleAxis(this.orientation, Vector3.up) * Vector3.forward;
                 float speedOnDir = moveDir.x * rigidBody.velocity.x + moveDir.z * rigidBody.velocity.z;
@@ -138,16 +151,5 @@ public partial class Player
         {
             lastFrameInFall = false;
         }
-    }
-
-    bool lastRunAndRoll = false;  //上一次的输入
-    void RunAndRollProc()
-    {
-        if (lastRunAndRoll)
-        {
-
-        }
-
-        lastRunAndRoll = input.runAndRoll;
     }
 }

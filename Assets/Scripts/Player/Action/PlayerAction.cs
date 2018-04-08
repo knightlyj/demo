@@ -2,17 +2,14 @@
 using System.Collections;
 using System;
 
+//带硬直的动作,都在这里处理
 public partial class Player
 {
     enum ActionType
     {
         Empty, Roll, Jump, Attack, JumpAttack, ChargeAttack, GetHit,
     }
-    //各个动作优先级
-    int[] ActionPriorities = {
-        0,      1,    1,     1,    1,          1,            5
-    };
-
+    
     ActionBase[] actions = null;
     void ActionInit()
     {
@@ -35,22 +32,12 @@ public partial class Player
     ActionType curActionType = ActionType.Empty;
     void IntoAction(ActionType actionType)
     {
-        if (curActionType != ActionType.Empty)
-        {  //当前有动作,且不是受击动作,则不打断
-            if (actionType != ActionType.GetHit)
-                return;
-        }
-
-        //如果之前有动作,则停止
-        if (curActionType != ActionType.Empty)
-        {
+        //结束当前动作
+        if(curActionType != ActionType.Empty)
             actions[(int)curActionType].Stop();
-        }
-
         //开始新动作
         curActionType = actionType;
         actions[(int)actionType].Start(this);
-
     }
 
     void SimulateAction()
@@ -63,16 +50,19 @@ public partial class Player
 
     void OnActionDone()
     {
+        actions[(int)curActionType].Stop();
         curActionType = ActionType.Empty;
     }
 
-
     //动画完成的回调
-    void OnAnimationDone(string aniName)
+    void OnAnimationEvent(AnimationEvent aniEvent)
     {
         if (curActionType != ActionType.Empty)
         {
-            actions[(int)curActionType].OnAnimationEvent(aniName, PlayerAniEventType.Finish);
+            actions[(int)curActionType].OnAnimationEvent(aniEvent);
         }
     }
+
+
+    bool inAction { get { return this.curActionType != ActionType.Empty; } }
 }

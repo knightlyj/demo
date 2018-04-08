@@ -38,34 +38,28 @@ public class AttackAction : ActionBase
         player.DisableMainWeapon(); //关掉武器碰撞
     }
 
-    public override void OnAnimationEvent(string aniName, PlayerAniEventType aniEvent)
+    public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniEvent == PlayerAniEventType.StartAttack)
-        {
-            player.EnableMainWeapon();  //开启武器碰撞
-        }
-        else if (aniEvent == PlayerAniEventType.StopAttack)
-        {
-            player.DisableMainWeapon(); //关掉武器碰撞
-        }
-        else if (aniEvent == PlayerAniEventType.Finish)
-        {
-            if (aniName == "Attack1")
-                attackComboTime = DateTime.Now;
+        //if (aniEvent == PlayerAniEventType.StartAttack)
+        //{
+        //    player.EnableMainWeapon();  //开启武器碰撞
+        //}
+        //else if (aniEvent == PlayerAniEventType.StopAttack)
+        //{
+        //    player.DisableMainWeapon(); //关掉武器碰撞
+        //}
+        //else if (aniEvent == PlayerAniEventType.Finish)
+        //{
+        //    if (aniName == "Attack1")
+        //        attackComboTime = DateTime.Now;
 
-            Stop();
-            if (this.onActionDone != null)
-                onActionDone();
-        }
+        //    Stop();
+        //}
     }
 
     public override void OnMainHandTrig(Collider other)
     {
-        Player target = UnityHelper.FindObjectUpward<Player>(other.transform);
-        if (target != null)
-        {
-            target.GetHit(player.transform.position, AttackType.NormalAttack, 1);
-        }
+
     }
 
 

@@ -2,14 +2,6 @@
 using System.Collections;
 using UnityEngine.Events;
 
-public enum PlayerAniEventType
-{
-    Finish,
-    StartAttack,
-    StopAttack,
-
-}
-
 public class ActionBase
 {
     protected Player player = null;
@@ -20,7 +12,7 @@ public class ActionBase
 
     virtual public void Update()
     {
-        
+
     }
 
     virtual public void Stop()
@@ -28,7 +20,7 @@ public class ActionBase
 
     }
 
-    virtual public void OnAnimationEvent(string aniName, PlayerAniEventType aniEvent)
+    virtual public void OnAnimationEvent(AnimationEvent aniEvent)
     {
 
     }

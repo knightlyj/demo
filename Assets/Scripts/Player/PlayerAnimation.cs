@@ -6,8 +6,7 @@ public enum PlayerAniType
 {
     //半身分离动作
     Idle = 0,
-    Walk,
-    Run,
+    WalkRun,
     Strafe,
 
     //全身动作
@@ -196,14 +195,18 @@ public class PlayerAnimation : MonoBehaviour
         return this.curAniType;
     }
 
+    public void SetWalkRun(float walkRun)
+    {
+        animator.SetFloat("WalkRun", walkRun);
+    }
+
     //是否循环动作
     bool IsLoopedAnimation(PlayerAniType aniType)
     {
         switch (aniType)
         { //循环
             case PlayerAniType.Idle:
-            case PlayerAniType.Walk:
-            case PlayerAniType.Run:
+            case PlayerAniType.WalkRun:
             case PlayerAniType.Strafe:
             case PlayerAniType.ChargeWait:
                 return true;
@@ -219,8 +222,7 @@ public class PlayerAnimation : MonoBehaviour
         {
             //半身
             case PlayerAniType.Idle:
-            case PlayerAniType.Walk:
-            case PlayerAniType.Run:
+            case PlayerAniType.WalkRun:
             case PlayerAniType.Strafe:
                 return true;
         }
@@ -252,11 +254,8 @@ public class PlayerAnimation : MonoBehaviour
             case PlayerAniType.Idle:
                 animationName = "Idle";
                 break;
-            case PlayerAniType.Walk:
-                animationName = "Walk";
-                break;
-            case PlayerAniType.Run:
-                animationName = "Run";
+            case PlayerAniType.WalkRun:
+                animationName = "WalkRun";
                 break;
             case PlayerAniType.Strafe:
                 animationName = "Strafe";
@@ -278,10 +277,8 @@ public class PlayerAnimation : MonoBehaviour
         {
             case PlayerAniType.Idle:
                 return "Idle";
-            case PlayerAniType.Walk:
-                return "Walk";
-            case PlayerAniType.Run:
-                return "Run";
+            case PlayerAniType.WalkRun:
+                return "WalkRun";
             case PlayerAniType.Strafe:
                 switch (curAniDir)
                 {
@@ -298,7 +295,7 @@ public class PlayerAnimation : MonoBehaviour
         }
         return null;
     }
-
+    
     //获取全身动作名
     string GetWholeAniName(PlayerAniType aniType, PlayerAniDir aniDir)
     {
@@ -388,32 +385,12 @@ public class PlayerAnimation : MonoBehaviour
     }
 
     //动作完成
-    public delegate void AniamtionCallback(string aniName);
-    public event AniamtionCallback onAnimationDone;
-    void AnimationDone(string aniName)
+    public delegate void AniamtionCallback(AnimationEvent aniEvent);
+    public event AniamtionCallback onAnimationEvent;
+    void AnimationEventHandler(AnimationEvent aniEvent)
     {
-        if (onAnimationDone != null)
-            onAnimationDone(aniName);
-    }
-
-    //攻击事件
-    public event AniamtionCallback onStartAttack;
-    void StartAttack(string attack)
-    {
-        if (onStartAttack != null)
-        {
-            onStartAttack(attack);
-        }
-    }
-
-    public event UnityAction onStopAttack;
-    void StopAttack()
-    {
-        if (onStopAttack != null)
-        {
-            onStopAttack();
-        }
+        if (onAnimationEvent != null)
+            onAnimationEvent(aniEvent);
     }
     
-
 }
