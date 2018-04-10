@@ -43,6 +43,8 @@ public partial class Player
         {  //在动作中,处理动作的逻辑
             SimulateAction();
         }
+
+        SimulateEnergy();
     }
 
     float moveSpeed = walkSpeed;
@@ -67,11 +69,13 @@ public partial class Player
         else if (input.jump)
         {
             IntoAction(ActionType.Jump);
+            EnergyCost(jumpEnergyCost);
             input.jump = false;
         }
         else if (input.roll)
         {
             IntoAction(ActionType.Roll);
+            EnergyCost(rollEnergyCost);
             input.roll = false;
         }
         else
@@ -86,11 +90,12 @@ public partial class Player
             { 
                 this.orientation = input.yaw;
                 //在移动时按下run，移动速度会逐渐递增到跑步速度
-                if (input.run)
+                if (input.run && cantRunTime <= 0)
                 { //跑
                     moveSpeed += (runSpeed - walkSpeed) * 0.08f;
                     if (moveSpeed >= runSpeed)
                         moveSpeed = runSpeed;
+                    EnergyCost(runEnergyCost * Time.fixedDeltaTime); //消耗精力
                 }
                 else
                 {
@@ -151,5 +156,46 @@ public partial class Player
         {
             lastFrameInFall = false;
         }
+    }
+
+    float cantRunTime = 0f;  //精力空了以后一段时间内不能跑步
+    float noActionTime = 0f;  //动作的时间,一定时间内不恢复精力
+    //尝试消耗精力,如果不够则扣掉剩下的全部精力,精力不够时攻击动作的伤害会打折扣
+    float EnergyCost(float cost)
+    {
+        if(cost > 10f)
+        {  //跑步消耗精力少,不会更新这个时间,跑步停下则立即恢复精力,1秒的精力恢复延迟,硬编码了
+            noActionTime = 1f;
+        }
+        if(energyPoint <= cost)
+        {
+            cantRunTime = (maxEnergy / energyRespawn);
+            energyPoint = 0f;
+            return energyPoint;
+        }
+        else
+        {
+            energyPoint -= cost;
+            return cost;   
+        }
+    }
+
+    void SimulateEnergy()
+    {
+        noActionTime -= Time.fixedDeltaTime;
+        if (noActionTime < 0f)  //
+        {
+            energyPoint += energyRespawn * Time.fixedDeltaTime;
+            if (energyPoint > maxEnergy)
+                energyPoint = maxEnergy;
+            noActionTime = 0f;
+        }
+        UnityHelper.GetUIManager().SetPlayerEnergy(energyPoint / maxEnergy);
+
+        cantRunTime -= Time.fixedDeltaTime;
+        if (cantRunTime < 0f)
+            cantRunTime = 0f;
+
+        Debug.Log(energyPoint);
     }
 }

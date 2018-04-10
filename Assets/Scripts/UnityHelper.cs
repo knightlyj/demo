@@ -70,4 +70,16 @@ public static class UnityHelper
         return go.GetComponent<CameraControl>();
     }
 
+
+    public static LevelManager GetLevelManager()
+    {
+        GameObject go = GameObject.FindWithTag("LevelManager");
+        return go.GetComponent<LevelManager>();
+    }
+
+    public static UIManager GetUIManager()
+    {
+        GameObject go = GameObject.FindWithTag("UIManager");
+        return go.GetComponent<UIManager>();
+    }
 }

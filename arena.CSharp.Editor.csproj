@@ -90,21 +90,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="arena.CSharp.Plugins.csproj">
-      <Project>{C4A60274-C8DF-5ABB-0D16-181BD23839CE}</Project>
-      <Name>arena.CSharp.Plugins</Name>
-    </ProjectReference>
     <ProjectReference Include="arena.CSharp.csproj">
       <Project>{1D3AB7A2-2B3B-1BAE-D505-CAE30E6ADAB3}</Project>
       <Name>arena.CSharp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Editor\ImageEffects\CameraMotionBlurEditor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\CameraMotionBlur.shader" />
-    <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\CameraMotionBlurDX11.shader" />
+    <Compile Include="Assets\Editor\BarEditor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

@@ -10,16 +10,11 @@ public class LevelManager : MonoBehaviour
     {
         Physics.gravity = new Vector3(0f, -9.8f, 0f) * gravityScale; //设置重力
     }
-
+    
     // Update is called once per frame
     void Update()
     {
 
     }
-
-
-    void TestCaseInit()
-    {
-
-    }
+    
 }

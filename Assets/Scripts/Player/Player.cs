@@ -28,7 +28,7 @@ public enum AttackType
 
 public partial class Player : MonoBehaviour
 {
-    //各种速度配置
+    //物理引擎各种配置
     public const float rollSpeed = 9;
     public const float jumpForce = 200;
     public const float walkSpeed = 4;
@@ -39,6 +39,16 @@ public partial class Player : MonoBehaviour
 
     public event UnityAction onPlayerDestroy; //角色销毁事件
     public ActionInput input; //角色动作
+
+    //角色属性
+    public float healthPoint = maxHealth;
+    public float energyPoint = maxEnergy;
+    public const float maxHealth = 1000f; //最大血量
+    public const float maxEnergy = 200f; //最大精力
+    public const float energyRespawn = 25f; //精力恢复速度, per second
+    public const float rollEnergyCost = 35f; //roll消耗的energy
+    public const float runEnergyCost = 50f;  //run消耗energy, per second
+    public const float jumpEnergyCost = 35f; //jump消耗的energy
 
     Transform groundCheck = null;
 

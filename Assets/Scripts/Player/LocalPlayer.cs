@@ -43,6 +43,7 @@ public enum EightDir
     FrontRight,
 }
 
+[RequireComponent(typeof(PlayerAnimation))]
 public class LocalPlayer : Player
 {
     protected new void Awake()

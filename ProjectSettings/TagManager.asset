@@ -8,6 +8,8 @@ TagManager:
   - LocalPlayer
   - Collide
   - AI
+  - LevelManager
+  - UIManager
   layers:
   - Default
   - TransparentFX
