@@ -175,10 +175,18 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
+      - time: 0.6822034
+        functionName: AnimationEventHandler
+        data: CanInput
+        objectReferenceParameter: {fileID: 11500000, guid: cd53ddf2807df424588596e7457a6952,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       - time: 0.98536587
         functionName: AnimationEventHandler
-        data: Roll
-        objectReferenceParameter: {fileID: 11500000, guid: 486616e53ae7f0a41814b3112e6edfb6,
+        data: Done
+        objectReferenceParameter: {fileID: 11500000, guid: cd53ddf2807df424588596e7457a6952,
           type: 3}
         floatParameter: 0
         intParameter: 0

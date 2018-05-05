@@ -7,14 +7,14 @@ public static class KeyboardInput
     public static readonly string forward = "Forward";
     public static readonly string right = "Right";
 
-    public static readonly string leftAttack = "LeftHandAttack";
-    public static readonly string rightAttack = "RightHandAttack";
-    public static readonly string strongAttack = "StrongAttack";
+    public static readonly KeyCode leftHand = KeyCode.Mouse0;
+    public static readonly KeyCode rightHand = KeyCode.Mouse1;
+    public static readonly KeyCode strongAttack = KeyCode.LeftShift;
 
-    public static readonly string jump = "Jump";
-    public static readonly string runRoll = "Run/Roll";
+    public static readonly KeyCode jump = KeyCode.F;
+    public static readonly KeyCode runRoll = KeyCode.Space;
 
-    public static readonly string lockTarget = "Lock/RestCamera";
+    public static readonly KeyCode lockTarget = KeyCode.Mouse2;
 }
 
 public static class GamePadInput
@@ -28,7 +28,14 @@ public static class GamePadInput
     public static readonly KeyCode jump = KeyCode.JoystickButton1;
     public static readonly KeyCode runRoll = KeyCode.JoystickButton1;
     public static readonly KeyCode lockTarget = KeyCode.JoystickButton9;
+
+    public static readonly KeyCode leftHand1 = KeyCode.JoystickButton4;
+    public static readonly KeyCode rightHand1 = KeyCode.JoystickButton5;
+
+    public static bool leftHand2 { get { return Input.GetAxis("LTRT") > 0.7f; } }
+    public static bool rightHand2 { get { return Input.GetAxis("LTRT") < -0.7f; } }
 }
+
 
 public enum EightDir
 {
@@ -43,7 +50,6 @@ public enum EightDir
     FrontRight,
 }
 
-[RequireComponent(typeof(PlayerAnimation))]
 public class LocalPlayer : Player
 {
     protected new void Awake()
@@ -73,26 +79,73 @@ public class LocalPlayer : Player
     // Update is called once per frame
     protected new void Update()
     {
+        UpdateInput();
         base.Update();
     }
 
     protected new void FixedUpdate()
     {
-        UpdateInput();
+
         base.FixedUpdate();
     }
 
     DateTime lastLockTime = DateTime.Now;
     void UpdateInput()
     {
-        input.attack = Input.GetButton(KeyboardInput.leftAttack);
-        input.strongAttack = false;// Input.GetButton(KeyboardInput.StrongAttack);
-
-        UpdateJump();
+        input.Clear();
+        
         UpdateRunRoll();
         UpdateInputYaw();
 
-        if (Input.GetButtonDown(KeyboardInput.lockTarget) || Input.GetKeyDown(GamePadInput.lockTarget))
+        //跳跃
+        if (Input.GetKeyDown(KeyboardInput.jump) || Input.GetKeyDown(GamePadInput.jump))
+        {
+            input.jump = true;
+        }
+        //左手攻击
+        if (Input.GetKeyDown(KeyboardInput.leftHand))
+        {
+            if (Input.GetKey(KeyboardInput.strongAttack))
+            {
+                input.leftHand2 = true;
+            }
+            else
+            {
+                input.leftHand1 = true;
+            }
+        }
+        if (Input.GetKeyDown(GamePadInput.leftHand1))
+        {
+            input.leftHand1 = true;
+        }
+        else if (GamePadInput.leftHand2)
+        {
+            input.leftHand2 = true;
+        }
+
+        //右手攻击
+        if (Input.GetKeyDown(KeyboardInput.rightHand))
+        {
+            if (Input.GetKey(KeyboardInput.strongAttack))
+            {
+                input.rightHand2 = true;
+            }
+            else
+            {
+                input.rightHand1 = true;
+            }
+        }
+        if (Input.GetKeyDown(GamePadInput.rightHand1))
+        {
+            input.rightHand1 = true;
+        }
+        else if (GamePadInput.rightHand2)
+        {
+            input.rightHand2 = true;
+        }
+
+        //锁定目标
+        if (Input.GetKeyDown(KeyboardInput.lockTarget) || Input.GetKeyDown(GamePadInput.lockTarget))
         {
             TimeSpan span = DateTime.Now - lastLockTime;
             if (span.TotalMilliseconds > 500)
@@ -182,18 +235,16 @@ public class LocalPlayer : Player
     }
 
     DateTime runDownTime = DateTime.Now;
-    DateTime stopRunTime = DateTime.Now;
     bool lastRunDown = false;
     bool runLongDown = false;  //长按
     void UpdateRunRoll()
     {
-        bool runDown = Input.GetButton(KeyboardInput.runRoll) || Input.GetKey(GamePadInput.runRoll);
+        bool runDown = Input.GetKey(KeyboardInput.runRoll) || Input.GetKey(GamePadInput.runRoll);
         if (runDown)
         {
             if (!lastRunDown)
             { //button down
                 runDownTime = DateTime.Now;
-                input.roll = false;
             }
             else
             { //long pressed
@@ -215,32 +266,12 @@ public class LocalPlayer : Player
                 }
                 else
                 {
-                    stopRunTime = DateTime.Now;
                     input.run = false;
                     runLongDown = false;
                 }
             }
-            else
-            {
-                input.roll = false;
-            }
         }
         lastRunDown = runDown;
-    }
-
-    bool lastJumpDown = false;
-    void UpdateJump()
-    {
-        bool jumpDown = Input.GetButton(KeyboardInput.jump) || Input.GetKey(GamePadInput.jump);
-        if (!lastJumpDown && jumpDown)
-        {
-            TimeSpan span = DateTime.Now - stopRunTime;
-            if (span.TotalMilliseconds < 100 || input.run)
-            {
-                input.jump = true;
-            }
-        }
-        lastJumpDown = jumpDown;
     }
 
     void LockTarget()

@@ -2,16 +2,11 @@
 using System.Collections;
 using System;
 
+
+
 public partial class Player
 {
-    enum PlayerState
-    {
-        OnGround,
-        InAir,
-        Action,
-    }
-
-    bool grounded = false;
+    protected bool grounded = false;
     LayerMask groundLayerMask;
     float groundCheckRadius = 0.5f;
     void Simulate()
@@ -44,68 +39,79 @@ public partial class Player
             SimulateAction();
         }
 
-        SimulateEnergy();
+        UpdateEnergy();
     }
 
+    DateTime lastRunTime = DateTime.Now;
     float moveSpeed = walkSpeed;
+    bool changingWeapon = false;
+    bool block = false;
     //模拟地面
     void SimulateOnGround()
     {
-        if (input.attack)
+        if (input.jump)
         {
-            IntoAction(ActionType.Attack);
-        }
-        else if (input.strongAttack)
-        {
-            if (input.run && input.hasDir)
-            { //跳劈
-                IntoAction(ActionType.JumpAttack);
-            }
-            else
+            TimeSpan span = DateTime.Now - lastRunTime;
+            if (span.TotalMilliseconds < 200)
             {
-                IntoAction(ActionType.ChargeAttack);
+                if (EnergyCost(jumpEnergyCost) > 0)
+                {
+                    IntoAction(ActionType.Jump);
+                }
             }
-        }
-        else if (input.jump)
-        {
-            IntoAction(ActionType.Jump);
-            EnergyCost(jumpEnergyCost);
-            input.jump = false;
         }
         else if (input.roll)
         {
-            IntoAction(ActionType.Roll);
-            EnergyCost(rollEnergyCost);
-            input.roll = false;
+            if (EnergyCost(rollEnergyCost) > 0)
+                IntoAction(ActionType.Roll);
         }
         else
         { //没有做任何动作,则处理跑/走逻辑
             if (!input.hasDir) //没输入方向
             {
-                rigidBody.velocity = new Vector3(0, 0, 0);
-                aniModule.SetAnimation(PlayerAniType.Idle);
+                if (rigidBody.velocity.magnitude < 0.5f)
+                {
+                    if (lowerAniState != LowerAniState.Idle)
+                        AnimateLowerIdle();
+                    if (upperAniState != UpperAniState.Idle)
+                    {
+                        if (!changingWeapon && !block)
+                        {
+                            AnimateUpperIdle();
+                        }
+                    }
+                    rigidBody.Sleep();
+                }
                 moveSpeed = walkSpeed;  //idle时，重置移动速度
             }
             else
-            { 
+            {
                 this.orientation = input.yaw;
                 //在移动时按下run，移动速度会逐渐递增到跑步速度
                 if (input.run && cantRunTime <= 0)
                 { //跑
-                    moveSpeed += (runSpeed - walkSpeed) * 0.08f;
+                    moveSpeed += (runSpeed - walkSpeed) * 0.05f;
                     if (moveSpeed >= runSpeed)
                         moveSpeed = runSpeed;
                     EnergyCost(runEnergyCost * Time.fixedDeltaTime); //消耗精力
+                    lastRunTime = DateTime.Now;
                 }
                 else
-                {
-                    moveSpeed -= (runSpeed - walkSpeed) * 0.08f;
+                { //走
+                    moveSpeed -= (runSpeed - walkSpeed) * 0.05f;
                     if (moveSpeed <= walkSpeed)
                         moveSpeed = walkSpeed;
                 }
-                float walkRun = (moveSpeed - walkSpeed) / (runSpeed - walkSpeed);
-                aniModule.SetWalkRun(walkRun);
-                aniModule.SetAnimation(PlayerAniType.WalkRun);
+                walkRun = (moveSpeed - walkSpeed) / (runSpeed - walkSpeed);
+                if (lowerAniState != LowerAniState.Move)
+                    AnimateLowerMove();
+                if (upperAniState != UpperAniState.Move)
+                {
+                    if (!changingWeapon && !block)
+                    {
+                        AnimateUpperMove();
+                    }
+                }
                 //按这种写法,分析时序后,速度是稳定的,如果不到最大速度才施加力的话,速度不会稳定
                 Vector3 moveDir = Quaternion.AngleAxis(this.orientation, Vector3.up) * Vector3.forward;
                 float speedOnDir = moveDir.x * rigidBody.velocity.x + moveDir.z * rigidBody.velocity.z;
@@ -114,7 +120,6 @@ public partial class Player
                 {
                     rigidBody.velocity = moveDir * moveSpeed;
                 }
-
             }
         }
         lastFrameInFall = false;
@@ -136,7 +141,7 @@ public partial class Player
                 TimeSpan span = DateTime.Now - startFallTime;
                 if (span.TotalMilliseconds > 200)
                 {
-                    aniModule.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
+                    //aniModule.SetAnimation(PlayerAniType.Fall, PlayerAniDir.Front, 0.5f);
                 }
                 if (input.hasDir)
                 {
@@ -163,24 +168,32 @@ public partial class Player
     //尝试消耗精力,如果不够则扣掉剩下的全部精力,精力不够时攻击动作的伤害会打折扣
     float EnergyCost(float cost)
     {
-        if(cost > 10f)
+        if (energyPoint <= 0)
+            return 0;
+
+        //这里有点trick,用精力消耗来判断跑步和其他动作.
+        if (cost > 5f)
         {  //跑步消耗精力少,不会更新这个时间,跑步停下则立即恢复精力,1秒的精力恢复延迟,硬编码了
             noActionTime = 1f;
         }
-        if(energyPoint <= cost)
-        {
+
+        float realCost = cost;
+
+        if (energyPoint <= cost)
+        { //精力不够则消耗掉剩下的全部
             cantRunTime = (maxEnergy / energyRespawn);
+            realCost = energyPoint;
             energyPoint = 0f;
-            return energyPoint;
         }
         else
         {
             energyPoint -= cost;
-            return cost;   
         }
+
+        return realCost;  //返回消耗的精力
     }
 
-    void SimulateEnergy()
+    void UpdateEnergy()
     {
         noActionTime -= Time.fixedDeltaTime;
         if (noActionTime < 0f)  //
@@ -195,7 +208,6 @@ public partial class Player
         cantRunTime -= Time.fixedDeltaTime;
         if (cantRunTime < 0f)
             cantRunTime = 0f;
-
-        Debug.Log(energyPoint);
     }
+
 }

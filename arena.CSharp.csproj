@@ -69,22 +69,19 @@
     <Compile Include="Assets\Scripts\CreatureCommon.cs" />
     <Compile Include="Assets\Scripts\LevelManager.cs" />
     <Compile Include="Assets\Scripts\Player\AIPlayer.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\ActionBase.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\AttackAction.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\ChargeAttackAction.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\GetHitAction.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\JumpAction.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\JumpAttackAction.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\PlayerAction.cs" />
-    <Compile Include="Assets\Scripts\Player\Action\RollAction.cs" />
+    <Compile Include="Assets\Scripts\Player\Actions\ActionBase.cs" />
+    <Compile Include="Assets\Scripts\Player\Actions\JumpAction.cs" />
+    <Compile Include="Assets\Scripts\Player\Actions\RollAction.cs" />
     <Compile Include="Assets\Scripts\Player\LocalPlayer.cs" />
     <Compile Include="Assets\Scripts\Player\Player.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerAction.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAnimation.cs" />
-    <Compile Include="Assets\Scripts\Player\PlayerSimulate.cs" />
+    <Compile Include="Assets\Scripts\Player\PlayerControl.cs" />
+    <Compile Include="Assets\Scripts\Player\WeaponConfig.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
     <Compile Include="Assets\Scripts\UnityHelper.cs" />
     <Compile Include="Assets\Scripts\WatchPoint.cs" />
-    <Compile Include="Assets\Scripts\Weapon.cs" />
+    <Compile Include="Assets\Scripts\WeaponObj.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

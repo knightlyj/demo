@@ -171,15 +171,16 @@ ModelImporter:
       - time: 0.3813559
         functionName: AnimationEventHandler
         data: JumpUp
-        objectReferenceParameter: {fileID: 11500000, guid: 486616e53ae7f0a41814b3112e6edfb6,
+        objectReferenceParameter: {fileID: 11500000, guid: cd53ddf2807df424588596e7457a6952,
           type: 3}
         floatParameter: 0
         intParameter: 1
         messageOptions: 0
       - time: 0.9788136
         functionName: AnimationEventHandler
-        data: JumpUp
-        objectReferenceParameter: {instanceID: 0}
+        data: Done
+        objectReferenceParameter: {fileID: 11500000, guid: cd53ddf2807df424588596e7457a6952,
+          type: 3}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0

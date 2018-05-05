@@ -3,27 +3,28 @@ using System.Collections;
 using UnityEngine.Events;
 using System;
 
-
-
-public struct ActionInput
+public struct LocalInput
 {
     public bool hasDir;  //有输入方向
     public float yaw;
 
     public bool run;
-    public bool jump;
     public bool roll;
+    public bool jump;
+    public bool rightHand1, rightHand2;
+    public bool leftHand1, leftHand2;
 
-    public bool attack;   //轻攻击
-    public bool antiAttack;  //防反
-    public bool strongAttack; //重攻击 
-}
-
-public enum AttackType
-{
-    NormalAttack,
-    ChargeAttack,
-    JumpAttack,
+    public void Clear()
+    {
+        hasDir = false;
+        run = false;
+        roll = false;
+        jump = false;
+        rightHand1 = false;
+        rightHand2 = false;
+        leftHand1 = false;
+        leftHand2 = false;
+    }
 }
 
 public partial class Player : MonoBehaviour
@@ -38,7 +39,7 @@ public partial class Player : MonoBehaviour
     public const float moveSpeedInAir = 2;
 
     public event UnityAction onPlayerDestroy; //角色销毁事件
-    public ActionInput input; //角色动作
+    public LocalInput input; //角色动作
 
     //角色属性
     public float healthPoint = maxHealth;
@@ -53,9 +54,8 @@ public partial class Player : MonoBehaviour
     Transform groundCheck = null;
 
     [HideInInspector]
-    public PlayerAnimation aniModule = null;
-    [HideInInspector]
     public Rigidbody rigidBody = null;
+    Animator animator = null;
 
     //************左右手*******************
     public Transform rightHand { get { return this._rightHand; } }
@@ -66,23 +66,22 @@ public partial class Player : MonoBehaviour
 
     protected void Awake()
     {
+        animator = GetComponent<Animator>();
         groundLayerMask = 1 << LayerMask.NameToLayer("Ground");
         groundCheck = transform.FindChild("GroundCheck");
-        aniModule = GetComponent<PlayerAnimation>();
         rigidBody = GetComponent<Rigidbody>();
 
         _rightHand = UnityHelper.FindChildRecursive(transform, "B_R_Hand");
         _leftHand = UnityHelper.FindChildRecursive(transform, "B_L_Hand");
+
+        ActionInit();
     }
 
     // Use this for initialization
     protected void Start()
     {
-        aniModule.onAnimationEvent += this.OnAnimationEvent; //动作事件回调
-        ChangeWeapon(MainHandWeaponType.Sword, OffHandWeaponType.Empty);
-
-        ActionInit();
-
+        ChangeRightWeapon(WeaponType.Sword);
+        ChangeLeftWeapon(WeaponType.Sword);
         //角色朝向初始化
         this.orientation = transform.eulerAngles.y;
     }
@@ -95,14 +94,14 @@ public partial class Player : MonoBehaviour
         }
     }
 
-    
+
     // Update is called once per frame
     protected void Update()
     {
         SmoothOrientation(); //角色朝向平滑过渡
     }
 
-    
+
     protected void FixedUpdate()
     {
         Simulate(); //根据输入,模拟角色运动
@@ -155,41 +154,111 @@ public partial class Player : MonoBehaviour
         smoothOrientation = CommonHelper.AngleTowards(smoothOrientation, orientation, smoothOriStepLen * Time.deltaTime);
         transform.eulerAngles = new Vector3(0, smoothOrientation, 0);
     }
-    
-    //更换武器
-    Weapon mainWeapon = null;
-    void ChangeWeapon(MainHandWeaponType mainHand, OffHandWeaponType offHand)
+
+
+    //武器类型
+    WeaponType leftWeaponType = WeaponType.Empty;
+    WeaponType rightWeaponType = WeaponType.Empty;
+    //双手拿武器
+    bool twoHanded = false;
+    //右手武器脚本
+    WeaponObj rightWeapon = null;
+    //更换右手武器
+    void ChangeRightWeapon(WeaponType weapon)
     {
-        if (mainHand == MainHandWeaponType.Sword)
+        if (weapon != this.rightWeaponType)
         {
-            //在右手上加上武器
-            UnityEngine.Object res = Resources.Load("Weapons/Sword");
-            GameObject go = GameObject.Instantiate(res, rightHand, false) as GameObject;
+            if (rightWeapon != null)
+            {  //原来有武器的话,要销毁
+                Destroy(rightWeapon.gameObject);
+                rightWeapon = null;
+            }
 
-            //设置碰撞回调,并关掉武器碰撞
-            mainWeapon = go.GetComponent<Weapon>();
-            mainWeapon.onHit = this.OnHitOther;
-            DisableMainWeapon();
+            this.rightWeaponType = weapon;
+            GameObject goWeapon = null;
+            if (weapon == WeaponType.Sword)
+            {
+                //在右手上加上武器
+                UnityEngine.Object res = Resources.Load("Weapons/Sword");
+                goWeapon = GameObject.Instantiate(res, this.rightHand, false) as GameObject;
+            }
+            else if (weapon == WeaponType.HugeAxe)
+            {
+                //在右手上加上武器
+                UnityEngine.Object res = Resources.Load("Weapons/HugeAxe");
+                goWeapon = GameObject.Instantiate(res, this.rightHand, false) as GameObject;
+            }
+
+            if (goWeapon != null)
+            {
+                //设置碰撞回调,并关掉武器碰撞
+                rightWeapon = goWeapon.GetComponent<WeaponObj>();
+                rightWeapon.onHit = this.OnHitOther;
+                rightWeapon.colliderEanbled = false;
+            }
         }
+    }
+    //左手武器脚本
+    WeaponObj leftWeapon = null;
+    //更换左手武器
+    void ChangeLeftWeapon(WeaponType weapon)
+    {
+        if (weapon != this.leftWeaponType)
+        {
+            if (leftWeapon != null)
+            {
+                Destroy(leftWeapon.gameObject);
+                leftWeapon = null;
+            }
 
-        aniModule.SetWeaponType(mainHand, offHand);
+            this.leftWeaponType = weapon;
+            GameObject goWeapon = null;
+            if (weapon == WeaponType.Sword)
+            {
+                //在右手上加上武器
+                UnityEngine.Object res = Resources.Load("Weapons/Sword");
+                goWeapon = GameObject.Instantiate(res, this.leftHand, false) as GameObject;
+            }
+            else if (weapon == WeaponType.HugeAxe)
+            {
+                //在右手上加上武器
+                UnityEngine.Object res = Resources.Load("Weapons/HugeAxe");
+                goWeapon = GameObject.Instantiate(res, this.leftHand, false) as GameObject;
+            }
+
+            if(goWeapon != null)
+            {
+                //设置碰撞回调,并关掉武器碰撞
+                leftWeapon = goWeapon.GetComponent<WeaponObj>();
+                leftWeapon.onHit = this.OnHitOther;
+                leftWeapon.colliderEanbled = false;
+                //左手的武器,位置有点变化
+                Vector3 euler = leftWeapon.transform.localEulerAngles;
+                euler.x += 180f;
+                euler.z -= 5.5f;
+                Vector3 pos = leftWeapon.transform.localPosition;
+                pos += new Vector3(0.027f, -0.01f, -0.059f) - new Vector3(0.034f, 0.061f, -0.058f);
+                leftWeapon.transform.localEulerAngles = euler;
+                leftWeapon.transform.localPosition = pos;
+            }
+        }
     }
 
     //开启武器碰撞
     public void EnableMainWeapon()
     {
-        mainWeapon.colliderEanbled = true;
+        rightWeapon.colliderEanbled = true;
     }
     //关闭武器碰撞
     public void DisableMainWeapon()
     {
-        mainWeapon.colliderEanbled = false;
+        rightWeapon.colliderEanbled = false;
     }
 
     //武器碰撞到其他player时的回调
     void OnHitOther(Collider other)
     {
-        actions[(int)curActionType].OnMainHandTrig(other);
+
     }
 
     [HideInInspector]

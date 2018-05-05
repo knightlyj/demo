@@ -1,23 +1,24 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Weapon : MonoBehaviour
+
+public class WeaponObj : MonoBehaviour
 {
-    BoxCollider boxCollider = null;
+    new Collider collider = null;
     void Awake()
     {
-        boxCollider = GetComponent<BoxCollider>();
+        collider = GetComponent<Collider>();
     }
 
     public bool colliderEanbled
     {
         set
         {
-            boxCollider.enabled = value;
+            collider.enabled = value;
         }
         get
         {
-            return boxCollider.enabled;
+            return collider.enabled;
         }
     }
 
