@@ -7,7 +7,7 @@ using System;
 public partial class Player
 {
     protected bool grounded = false;
-    LayerMask groundLayerMask;
+    protected LayerMask groundLayerMask;
     float groundCheckRadius = 0.5f;
     void Simulate()
     {
@@ -203,8 +203,7 @@ public partial class Player
                 energyPoint = maxEnergy;
             noActionTime = 0f;
         }
-        UnityHelper.GetUIManager().SetPlayerEnergy(energyPoint / maxEnergy);
-
+        
         cantRunTime -= Time.fixedDeltaTime;
         if (cantRunTime < 0f)
             cantRunTime = 0f;

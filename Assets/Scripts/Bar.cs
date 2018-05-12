@@ -63,7 +63,6 @@ public class Bar : MonoBehaviour
                         lostRatio = pointRatio;
                         inLost = false;
                     }
-                    
                     SetLostRatioView();
                 }
             }

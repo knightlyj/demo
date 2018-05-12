@@ -81,11 +81,13 @@ public class LocalPlayer : Player
     {
         UpdateInput();
         base.Update();
-    }
 
+        //更新UI的精力条
+        UnityHelper.GetUIManager().SetPlayerEnergy(energyPoint / maxEnergy);
+    }
+    
     protected new void FixedUpdate()
     {
-
         base.FixedUpdate();
     }
 
@@ -93,7 +95,7 @@ public class LocalPlayer : Player
     void UpdateInput()
     {
         input.Clear();
-        
+
         UpdateRunRoll();
         UpdateInputYaw();
 

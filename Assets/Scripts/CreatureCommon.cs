@@ -16,4 +16,5 @@ public class CreatureCommon : MonoBehaviour
 
     [SerializeField]
     Transform _sight = null;
+    
 }

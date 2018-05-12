@@ -9,6 +9,27 @@ public static class CommonHelper
         return Mathf.Abs(a - b) < 0.001f;
     }
 
+    //浮点数towards
+    static public float FloatTowards(float a, float b, float step)
+    {
+        float sign = Mathf.Sign(b - a);
+        step = Mathf.Abs(step);
+        if(sign > 0)
+        {
+            if (a + step > b)
+                return b;
+            else
+                return a + step;
+        }
+        else
+        {
+            if (a - step < b)
+                return b;
+            else
+                return a - step;
+        }
+    }
+
     //角度差值,以顺时针为正方向
     static public float AngleDiff(float from, float to)
     {
