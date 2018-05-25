@@ -20,8 +20,7 @@ public class CameraControl : MonoBehaviour
         float halfFov = camera.fieldOfView * 0.5f * Mathf.Deg2Rad;
         colisionBox.y = camera.nearClipPlane * Mathf.Tan(halfFov) + 0.05f;
         colisionBox.x = colisionBox.y * camera.aspect + 0.05f;
-        colisionBox.z = camera.nearClipPlane / 2;
-
+        colisionBox.z = 0.02f;
     }
 
     public enum ViewMode
@@ -99,7 +98,7 @@ public class CameraControl : MonoBehaviour
     public float cameraPitch = 0;
     [HideInInspector]
     public float cameraYaw = 0;
-    const float maxPitch = 75f;  //最大pitch
+    public const float maxPitch = 75f;  //最大pitch
 
     [SerializeField]
     LayerMask cameraCollideLayer = 0;  //镜头碰撞的layer
@@ -108,7 +107,7 @@ public class CameraControl : MonoBehaviour
     /// 输入处理
     /// </summary>
     float mouseRatio = 3f;
-    float joystickRatio = 4f;
+    float joystickRatio = 200f;
     void UpdateInput()
     {
         //计算鼠标输入
@@ -119,16 +118,16 @@ public class CameraControl : MonoBehaviour
         float gamepadPitch = Input.GetAxis(GamePadInput.cameraY);
 
         if (gamePadYaw > GamePadInput.joystickThreshold)
-            gamePadYaw = -joystickRatio * fixedCount;
+            gamePadYaw = -joystickRatio * Time.deltaTime;
         else if (gamePadYaw < -GamePadInput.joystickThreshold)
-            gamePadYaw = joystickRatio * fixedCount;
+            gamePadYaw = joystickRatio * Time.deltaTime;
         else
             gamePadYaw = 0;
 
         if (gamepadPitch > GamePadInput.joystickThreshold)
-            gamepadPitch = joystickRatio * fixedCount;
+            gamepadPitch = joystickRatio * Time.deltaTime;
         else if (gamepadPitch < -GamePadInput.joystickThreshold)
-            gamepadPitch = -joystickRatio * fixedCount;
+            gamepadPitch = -joystickRatio * Time.deltaTime;
         else
             gamepadPitch = 0;
 
@@ -180,10 +179,7 @@ public class CameraControl : MonoBehaviour
         else
         {
             //计算从当前的无碰撞位置到player的yaw
-            toWatchPoint.y = 0;
-            this.cameraYaw = Mathf.Acos(toWatchPoint.z / toWatchPoint.magnitude) * Mathf.Rad2Deg;
-            if (toWatchPoint.x < 0)
-                this.cameraYaw = -this.cameraYaw;
+            this.cameraYaw = CommonHelper.YawOfVector3(toWatchPoint);
 
             UpdateInput();
         }
@@ -204,11 +200,8 @@ public class CameraControl : MonoBehaviour
             targetPitch = maxPitch;
         else if (targetPitch < -maxPitch)
             targetPitch = -maxPitch;
-
-        toTarget.y = 0;
-        float targetYaw = Mathf.Acos(toTarget.z / toTarget.magnitude) * Mathf.Rad2Deg;
-        if (toTarget.x < 0)
-            targetYaw = -targetYaw;
+        
+        float targetYaw = CommonHelper.YawOfVector3(toTarget);
 
         float ratio = 0.08f * fixedCount;
         cameraYaw = CommonHelper.AngleTowardsByDiff(cameraYaw, targetYaw, ratio, 0.01f);
@@ -231,10 +224,10 @@ public class CameraControl : MonoBehaviour
         float distance = maxNormalViewDist;
         if (Physics.BoxCast(watchPoint, colisionBox, -watchDir, out hit, rotation, maxNormalViewDist, cameraCollideLayer))
         { //有碰撞,按碰撞点的距离调整位置
-            distance = Mathf.Max(camera.nearClipPlane + 0.5f, hit.distance);
+            distance = hit.distance;
             normalViewPos = watchPoint - watchDir * distance;
         }
-        normalViewPos = watchPoint - watchDir * distance;
+        normalViewPos = watchPoint - watchDir * distance - rotation * Vector3.forward * camera.nearClipPlane;
 
         //调整镜头角度和位置
         transform.rotation = rotation;
@@ -253,36 +246,39 @@ public class CameraControl : MonoBehaviour
 
 
     //更新射击镜头位置
-    const float shootViewDistance = 1.5f;
+    const float shootViewDistance = 1.0f;
     void UpdateShootView()
     {
         UpdateInput();
         RaycastHit hit;
         Quaternion cameraRot = Quaternion.Euler(this.cameraPitch, this.cameraYaw, 0);
-        Vector3 backColDir = Quaternion.Euler(15, this.cameraYaw, 0) * -Vector3.forward;
-        float backDistance = 1.0f;
-        if (Physics.BoxCast(watchPoint, colisionBox, backColDir, out hit, cameraRot, backDistance, cameraCollideLayer))
-        {
-            backDistance = hit.distance - 0.05f;
-        }
+        Vector3 backColDir = Quaternion.Euler(0, this.cameraYaw, 0) * -Vector3.forward;
+
+        float a = 1 - Mathf.Abs(cameraPitch) / maxPitch;
+        a = 1f;
+        float backDistance = a * 0.25f + 0.25f;
+
         Vector3 backPos = watchPoint + backColDir * backDistance;
 
 
-        Vector3 rightColDir = Quaternion.Euler(15f, this.cameraYaw + 90f, 0) * Vector3.forward;
+        Vector3 rightColDir = Quaternion.Euler(0, this.cameraYaw + 90f, 0) * Vector3.forward;
         float rightDistance = shootViewDistance;
         if (Physics.BoxCast(backPos, colisionBox, rightColDir, out hit, cameraRot, rightDistance, cameraCollideLayer))
         {
             rightDistance = hit.distance;
         }
 
-        Vector3 rightPos = rightColDir * rightDistance - cameraRot * Vector3.forward * camera.nearClipPlane / 2;
+        float b = rightDistance / shootViewDistance;
+        b = 1f;
+        if (b < 0.5f)
+            backPos += Vector3.up * (1 - b * 2) * 1.1f;
+
+        Vector3 rightPos = rightColDir * rightDistance - cameraRot * Vector3.forward * camera.nearClipPlane;
         shootViewPos = backPos + rightPos;
         transform.rotation = cameraRot;
-
     }
     Vector3 shootViewPos;  //射击视角计算出的位置
-
-
+    
 
     public void SwitchCameraMode(ViewMode mode)
     {

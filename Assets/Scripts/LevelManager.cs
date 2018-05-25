@@ -9,6 +9,7 @@ public class LevelManager : MonoBehaviour
     void Start()
     {
         Physics.gravity = new Vector3(0f, -9.8f, 0f) * gravityScale; //设置重力
+        //Time.timeScale = 0.1f;
     }
     
     // Update is called once per frame

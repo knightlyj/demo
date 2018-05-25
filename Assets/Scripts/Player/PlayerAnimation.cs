@@ -64,140 +64,16 @@ public partial class Player
     const int lowerAniLayer = 2;
     const int wholeAniLayer = 3;
 
-    void SetUpperAnimation(string clip, float startTime = 0f, float fadeInTime = 0.1f, float speed = 1f)
-    {
-        SwitchBodyMode(true);
-        animator.CrossFade(Animator.StringToHash(clip), fadeInTime, upperAniLayer, startTime);
-        animator.speed = speed;
-    }
 
-    void SetLowerAnimation(string clip, float startTime = 0f, float fadeInTime = 0.1f, float speed = 1f)
-    {
-        SwitchBodyMode(true);
-        animator.CrossFade(Animator.StringToHash(clip), fadeInTime, lowerAniLayer, startTime);
-        animator.speed = speed;
-    }
-
-    void SetWholeAnimation(string clip, float startTime = 0f, float fadeInTime = 0.1f, float speed = 1f)
-    {
-        SwitchBodyMode(false);
-        animator.CrossFade(Animator.StringToHash(clip), fadeInTime, wholeAniLayer, startTime);
-        animator.speed = speed;
-    }
-
+    delegate void OnAnimationEvent(AnimationEvent aniEvent);
+    event OnAnimationEvent onAnimationEvent;
     //动作完成
     void AnimationEventHandler(AnimationEvent aniEvent)
     {
-        if (curActionType != ActionType.Empty)
-        {
-            if (aniEvent.stringParameter.Equals("Done"))
-            {
-                OnActionDone();
-            }
-            else if (aniEvent.stringParameter.Equals("CanInput"))
-            {
-                this.canInputAction = true;
-            }
-            else
-            {
-                actions[(int)curActionType].OnAnimationEvent(aniEvent);
-            }
-        }
+        if (onAnimationEvent != null)
+            onAnimationEvent(aniEvent);
     }
 
-    enum UpperAniState
-    {
-        Empty,
-        Idle,
-        Move,
-        Block,
-    }
-    UpperAniState upperAniState = UpperAniState.Empty;
-
-    enum LowerAniState
-    {
-        Empty,
-        Idle,
-        Move,
-    }
-    LowerAniState lowerAniState = LowerAniState.Empty;
-
-    void UpperSuitLowerAnimation()
-    {
-        if (lowerAniState == LowerAniState.Idle)
-        {
-            AnimatorStateInfo info = animator.GetNextAnimatorStateInfo(lowerAniLayer);
-            //根据右手武器做不同动作
-            WeaponData wd = WeaponConfig.GetWeaponData(rightWeaponType);
-            if (twoHanded)
-            {
-                SetUpperAnimation(wd.upperIdleTwoHanded, info.normalizedTime);
-            }
-            else
-            {
-                SetUpperAnimation(wd.upperIdle, info.normalizedTime);
-
-            }
-            upperAniState = UpperAniState.Idle;
-        }
-        else if (lowerAniState == LowerAniState.Move)
-        {
-            AnimatorStateInfo info = animator.GetNextAnimatorStateInfo(lowerAniLayer);
-            //根据右手武器做不同动作
-            WeaponData wd = WeaponConfig.GetWeaponData(rightWeaponType);
-            if (twoHanded)
-            {
-                SetUpperAnimation(wd.upperMoveTwoHanded, info.normalizedTime);
-            }
-            else
-            {
-                SetUpperAnimation(wd.upperMove, info.normalizedTime);
-            }
-            upperAniState = UpperAniState.Move;
-        }
-    }
-
-    //播放idle动画
-    void AnimateUpperIdle()
-    {
-        WeaponData wd = WeaponConfig.GetWeaponData(rightWeaponType);
-        if (twoHanded)
-        {
-            SetUpperAnimation(wd.upperIdleTwoHanded);
-        }
-        else
-        {
-            SetUpperAnimation(wd.upperIdle);
-
-        }
-        upperAniState = UpperAniState.Idle;
-    }
-    void AnimateLowerIdle()
-    {
-        SetLowerAnimation("Idle");
-        lowerAniState = LowerAniState.Idle;
-    }
-
-    //播放移动动画
-    void AnimateUpperMove()
-    {
-        //根据右手武器做不同动作
-        WeaponData wd = WeaponConfig.GetWeaponData(rightWeaponType);
-        if (twoHanded)
-        {
-            SetUpperAnimation(wd.upperMoveTwoHanded);
-        }
-        else
-        {
-            SetUpperAnimation(wd.upperMove);
-        }
-        upperAniState = UpperAniState.Move;
-    }
-    void AnimateLowerMove()
-    {
-        SetLowerAnimation("Move");
-        lowerAniState = LowerAniState.Move;
-    }
     //设置walk和run的blend比例
     float walkRun
     {
@@ -211,18 +87,228 @@ public partial class Player
         }
     }
 
-    //播放jump动画
-    void AnimateJump()
+    //设置瞄准时的上下blend比例
+    public float aimUp
     {
-        upperAniState = UpperAniState.Empty;
-        lowerAniState = LowerAniState.Empty;
-        SetWholeAnimation("JumpUp");
+        set
+        {
+            animator.SetFloat("AimUp", value);
+        }
+        get
+        {
+            return animator.GetFloat("AimUp");
+        }
     }
-    //播放roll动画
-    void AnimateRoll()
+
+    enum UpperAniClip
     {
-        upperAniState = UpperAniState.Empty;
-        lowerAniState = LowerAniState.Empty;
-        SetWholeAnimation("Roll");
+        Empty,
+        Idle,
+        Move,
+        Aim,
+        Strafe,
+        BlockMove,
+        BlockIdle,
+        BlockStrafe,
+        SwtichWeapon,
+    }
+    UpperAniClip curUpperAniClip = UpperAniClip.Empty;
+    //设置上半身动作
+    void SetUpperAniClip(UpperAniClip clip, bool reset = false)
+    {
+        if (curUpperAniClip == clip && !reset)
+        {
+            return;
+        }
+        else
+        {
+            curWholeAniClip = WholeAniClip.Empty;
+            curUpperAniClip = clip;
+            SwitchBodyMode(true);
+            switch (clip)
+            {
+                case UpperAniClip.Idle:
+                    animator.CrossFade(Animator.StringToHash("Idle"), 0.1f, upperAniLayer, 0);
+                    break;
+                case UpperAniClip.Move:
+                    animator.CrossFade(Animator.StringToHash("Move"), 0.1f, upperAniLayer, 0);
+                    break;
+                case UpperAniClip.Aim:
+                    animator.CrossFade(Animator.StringToHash("Aim"), 0.1f, upperAniLayer, 0);
+                    break;
+                case UpperAniClip.BlockIdle:
+                    break;
+                case UpperAniClip.BlockMove:
+                    break;
+                case UpperAniClip.SwtichWeapon:
+                    break;
+            }
+        }
+    }
+
+    enum LowerAniClip
+    {
+        Empty,
+        Idle,
+        Move,
+        Aim,
+        Strafe,
+    }
+    LowerAniClip curLowerAniClip = LowerAniClip.Empty;
+    //设置下半身动作
+    void SetLowerAniClip(LowerAniClip clip, bool reset = false)
+    {
+        if (curLowerAniClip == clip && !reset)
+        {
+            return;
+        }
+        else
+        {
+            curWholeAniClip = WholeAniClip.Empty;
+            curLowerAniClip = clip;
+            SwitchBodyMode(true);
+            switch (clip)
+            {
+                case LowerAniClip.Idle:
+                    animator.CrossFade(Animator.StringToHash("Idle"), 0.1f, lowerAniLayer, 0);
+                    break;
+                case LowerAniClip.Move:
+                    animator.CrossFade(Animator.StringToHash("Move"), 0.1f, lowerAniLayer, 0);
+                    break;
+                case LowerAniClip.Aim:
+                    animator.CrossFade(Animator.StringToHash("Aim"), 0.1f, lowerAniLayer, 0);
+                    break;
+            }
+        }
+    }
+
+    enum WholeAniClip
+    {
+        Empty,
+        Roll,
+        Jump,
+        Fall,
+    }
+    WholeAniClip curWholeAniClip = WholeAniClip.Empty;
+    //设置全身动作
+    void SetWholeAniClip(WholeAniClip clip, bool reset = false)
+    {
+        if (curWholeAniClip == clip && !reset)
+        {
+            return;
+        }
+        else
+        {
+            curUpperAniClip = UpperAniClip.Empty;
+            curLowerAniClip = LowerAniClip.Empty;
+            curWholeAniClip = clip;
+            SwitchBodyMode(false);
+            switch (clip)
+            {
+                case WholeAniClip.Roll:
+                    animator.CrossFade(Animator.StringToHash("Roll"), 0.1f, wholeAniLayer, 0);
+                    break;
+                case WholeAniClip.Jump:
+                    animator.CrossFade(Animator.StringToHash("JumpUp"), 0.1f, wholeAniLayer, 0);
+                    break;
+                case WholeAniClip.Fall:
+                    animator.CrossFade(Animator.StringToHash("Fall"), 0.1f, wholeAniLayer, 0);
+                    break;
+            }
+        }
+    }
+
+    void UpperSuitLowerAnimation()
+    {
+        UpperAniClip clip = UpperAniClip.Empty;
+        switch (curLowerAniClip)
+        {
+            case LowerAniClip.Aim:
+                clip = UpperAniClip.Aim;
+                break;
+            case LowerAniClip.Idle:
+                clip = UpperAniClip.Idle;
+                break;
+            case LowerAniClip.Move:
+                clip = UpperAniClip.Move;
+                break;
+            case LowerAniClip.Strafe:
+                clip = UpperAniClip.Strafe;
+                break;
+        }
+        SetUpperAniClip(clip);
+    }
+
+    public bool shootIk = false;
+    public bool footIk = false;
+    [SerializeField]
+    Transform leftFoot = null;
+    [SerializeField]
+    Transform rightFoot = null;
+    void OnAnimatorIK()
+    {
+        if (shootIk)
+        {
+            animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1);
+            animator.SetIKPosition(AvatarIKGoal.LeftHand, rightHand.position);
+            animator.SetIKRotation(AvatarIKGoal.LeftHand, rightHand.rotation * Quaternion.Euler(0, -90, 0));
+        }
+        else
+        {
+            animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 0);
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 0);
+        }
+
+
+        if (footIk)
+        {   //stand
+
+            animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
+            animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1);
+            animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 1);
+
+            float bb = 1.2f;
+            //left foot
+            Vector3 leftUp = leftFoot.position + Vector3.up * 0.5f;
+            RaycastHit hitInfo;
+            if (Physics.Raycast(leftUp, Vector3.down, out hitInfo, bb, groundLayerMask))
+            {
+                Vector3 leftPosition = leftUp + Vector3.down * (hitInfo.distance - 0.15f);
+                animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftPosition);
+                Vector3 footFoward = leftFoot.up;  //脚的上方,是世界坐标前方
+                float dd = CommonHelper.DirDerivativeOnPlane(hitInfo.normal, footFoward);
+                footFoward.y = dd;
+                animator.SetIKRotation(AvatarIKGoal.LeftFoot, Quaternion.LookRotation(footFoward));
+            }
+            else
+            {
+
+            }
+
+            //right foot
+            Vector3 rightUp = rightFoot.position + Vector3.up * 0.5f;
+            if (Physics.Raycast(rightUp, Vector3.down, out hitInfo, bb, groundLayerMask))
+            {
+                Vector3 rightPosition = rightUp + Vector3.down * (hitInfo.distance - 0.15f);
+                animator.SetIKPosition(AvatarIKGoal.RightFoot, rightPosition);
+                Vector3 footFoward = rightFoot.up;  //脚的上方,是世界坐标前方
+                float dd = CommonHelper.DirDerivativeOnPlane(hitInfo.normal, footFoward);
+                footFoward.y = dd;
+                animator.SetIKRotation(AvatarIKGoal.RightFoot, Quaternion.LookRotation(footFoward));
+            }
+            else
+            {
+
+            }
+        }
+        else
+        {
+            animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 0);
+            animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 0);
+            animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 0);
+            animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 0);
+        }
     }
 }

@@ -14,7 +14,7 @@ public static class CommonHelper
     {
         float sign = Mathf.Sign(b - a);
         step = Mathf.Abs(step);
-        if(sign > 0)
+        if (sign > 0)
         {
             if (a + step > b)
                 return b;
@@ -128,4 +128,54 @@ public static class CommonHelper
         }
     }
 
+    public static float YawOfVector3(Vector3 vec)
+    {
+        vec.y = 0;
+        float yaw = Mathf.Acos(vec.z / vec.magnitude) * Mathf.Rad2Deg;
+        if (vec.x < 0)
+            yaw = -yaw;
+
+        return yaw;
+    }
+
+    //用degree
+    public static float DirDerivativeOnPlane(Vector3 normal, float yaw)
+    {
+        yaw = yaw * Mathf.Deg2Rad;  //三角函数需要用radian
+        float cosYaw = Mathf.Cos(yaw);
+        float sinYaw = Mathf.Sin(yaw);
+        float Yx = -(normal.x / normal.y);
+        float Yz = -(normal.z / normal.y);
+        return sinYaw * Yx + cosYaw * Yz;
+    }
+
+
+    public static float DirDerivativeOnPlane(Vector3 normal, Vector3 dir)
+    {
+        dir.y = 0;
+        float magnitude = dir.magnitude;
+        if (FloatEqual(magnitude, 0)) //防止除0,normal水平时,返回0
+            return 0;
+
+        float cosYaw = dir.z / magnitude;
+        float sinYaw = dir.x / magnitude;
+        float Yx = -(normal.x / normal.y);
+        float Yz = -(normal.z / normal.y);
+        return sinYaw * Yx + cosYaw * Yz;
+    }
+
+    //用degree
+    public static Vector3 DirOnPlane(Vector3 normal, float yaw)
+    {
+        Vector3 dir = Quaternion.AngleAxis(yaw, Vector3.up) * Vector3.forward;
+        
+        float dd = 0;//在这个yaw上的方向导数
+        if (!FloatEqual(normal.y, 0))  //法线接近水平,结果为infinity,这里设置为0吧 
+        {
+            dd = DirDerivativeOnPlane(normal, yaw);
+        }
+        dir.y = dd;
+        dir.Normalize();
+        return dir;
+    }
 }

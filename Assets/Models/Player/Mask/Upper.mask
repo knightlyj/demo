@@ -6,7 +6,7 @@ AvatarMask:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Upper
-  m_Mask: 01000000000000000100000000000000000000000100000001000000010000000100000001000000010000000100000001000000
+  m_Mask: 01000000010000000100000000000000000000000100000001000000010000000100000001000000010000000100000001000000
   m_Elements:
   - m_Path: 
     m_Weight: 1
@@ -17,11 +17,11 @@ AvatarMask:
   - m_Path: Motion/B_Pelvis
     m_Weight: 0
   - m_Path: Motion/B_Pelvis/B_Spine
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1/B_Spine2
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1/B_Spine2/B_L_Clavicle
     m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1/B_Spine2/B_L_Clavicle/B_L_UpperArm
@@ -99,9 +99,9 @@ AvatarMask:
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1/B_Spine2/B_R_Clavicle/B_R_UpperArm/B_R_Forearm/B_R_Hand/B_R_Finger4/B_R_Finger41/B_R_Finger42
     m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1/B_Spine2/B_Neck
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_Spine/B_Spine1/B_Spine2/B_Neck/B_Head
-    m_Weight: 0
+    m_Weight: 1
   - m_Path: Motion/B_Pelvis/B_L_Thigh
     m_Weight: 0
   - m_Path: Motion/B_Pelvis/B_L_Thigh/B_L_Calf

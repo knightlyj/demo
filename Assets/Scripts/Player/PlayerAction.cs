@@ -5,24 +5,11 @@ using System;
 //带硬直的动作,都在这里处理
 public partial class Player
 {
-    //动作硬直类型
-    public enum ActionDelayType
-    {
-        Empty,
-        Upper,
-        Whole,
-    }
-    ActionDelayType actionDelay = ActionDelayType.Empty;
-    public void SetActionDelay(ActionDelayType delay)
-    {
-        actionDelay = delay;
-    }
-
     enum ActionType
     {
         Empty, Roll, Jump, Attack, JumpAttack, ChargeAttack, GetHit,
     }
-    
+
     ActionBase[] actions = null;
     void ActionInit()
     {
@@ -32,17 +19,19 @@ public partial class Player
         actions[(int)ActionType.Jump] = new JumpAction();
     }
 
-    protected bool canInputAction = true;
     ActionType curActionType = ActionType.Empty;
     void IntoAction(ActionType actionType)
     {
         //结束当前动作
-        if(curActionType != ActionType.Empty)
-            actions[(int)curActionType].Stop();
+        if (curActionType != ActionType.Empty)
+        {
+            actions[(int)curActionType].OnStop();
+            onAnimationEvent -= actions[(int)curActionType].OnAnimationEvent;
+        }
         //开始新动作
         curActionType = actionType;
         actions[(int)actionType].Start(this);
-        canInputAction = false;
+        onAnimationEvent += actions[(int)actionType].OnAnimationEvent;
     }
 
     void SimulateAction()
@@ -53,13 +42,16 @@ public partial class Player
         }
     }
 
-    void OnActionDone()
+    void StopAction()
     {
-        actions[(int)curActionType].Stop();
-        curActionType = ActionType.Empty;
-        canInputAction = true;
+        if (curActionType != ActionType.Empty)
+        {
+            actions[(int)curActionType].OnStop();
+            onAnimationEvent -= actions[(int)curActionType].OnAnimationEvent;
+            curActionType = ActionType.Empty;
+        }
     }
-    
+
 
     protected bool inAction { get { return this.curActionType != ActionType.Empty; } }
 }

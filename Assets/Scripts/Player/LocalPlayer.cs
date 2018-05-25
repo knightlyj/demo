@@ -11,8 +11,9 @@ public static class KeyboardInput
     public static readonly KeyCode rightHand = KeyCode.Mouse1;
     public static readonly KeyCode strongAttack = KeyCode.LeftShift;
 
-    public static readonly KeyCode jump = KeyCode.F;
-    public static readonly KeyCode runRoll = KeyCode.Space;
+    public static readonly KeyCode jump = KeyCode.Space;
+    public static readonly KeyCode roll = KeyCode.LeftAlt;
+    public static readonly KeyCode run = KeyCode.LeftShift;
 
     public static readonly KeyCode lockTarget = KeyCode.Mouse2;
 }
@@ -26,11 +27,12 @@ public static class GamePadInput
     public static readonly string cameraY = "JoystickCameraY";
 
     public static readonly KeyCode jump = KeyCode.JoystickButton1;
-    public static readonly KeyCode runRoll = KeyCode.JoystickButton1;
+    public static readonly KeyCode roll = KeyCode.JoystickButton1;
+    public static readonly KeyCode run = KeyCode.JoystickButton1;
     public static readonly KeyCode lockTarget = KeyCode.JoystickButton9;
 
-    public static readonly KeyCode leftHand1 = KeyCode.JoystickButton4;
-    public static readonly KeyCode rightHand1 = KeyCode.JoystickButton5;
+    public static readonly KeyCode leftHand = KeyCode.JoystickButton4;
+    public static readonly KeyCode rightHand = KeyCode.JoystickButton5;
 
     public static bool leftHand2 { get { return Input.GetAxis("LTRT") > 0.7f; } }
     public static bool rightHand2 { get { return Input.GetAxis("LTRT") < -0.7f; } }
@@ -68,6 +70,7 @@ public class LocalPlayer : Player
         cameraControl = GameObject.FindWithTag("MainCamera").GetComponent<CameraControl>();
         cameraControl.cameraYaw = this.orientation;
         UnLockTarget();
+
     }
 
     protected new void OnDestroy()
@@ -79,15 +82,16 @@ public class LocalPlayer : Player
     // Update is called once per frame
     protected new void Update()
     {
-        UpdateInput();
+
         base.Update();
 
         //更新UI的精力条
         UnityHelper.GetUIManager().SetPlayerEnergy(energyPoint / maxEnergy);
     }
-    
+
     protected new void FixedUpdate()
     {
+        UpdateInput();
         base.FixedUpdate();
     }
 
@@ -96,9 +100,18 @@ public class LocalPlayer : Player
     {
         input.Clear();
 
-        UpdateRunRoll();
         UpdateInputYaw();
 
+        //跑
+        if (Input.GetKey(KeyboardInput.run) || Input.GetKey(GamePadInput.run))
+        {
+            input.run = true;
+        }
+        //翻滚
+        if (Input.GetKeyDown(KeyboardInput.roll) || Input.GetKeyDown(GamePadInput.roll))
+        {
+            input.roll = true;
+        }
         //跳跃
         if (Input.GetKeyDown(KeyboardInput.jump) || Input.GetKeyDown(GamePadInput.jump))
         {
@@ -107,43 +120,21 @@ public class LocalPlayer : Player
         //左手攻击
         if (Input.GetKeyDown(KeyboardInput.leftHand))
         {
-            if (Input.GetKey(KeyboardInput.strongAttack))
-            {
-                input.leftHand2 = true;
-            }
-            else
-            {
-                input.leftHand1 = true;
-            }
+            input.leftHand = true;
         }
-        if (Input.GetKeyDown(GamePadInput.leftHand1))
+        if (Input.GetKeyDown(GamePadInput.leftHand))
         {
-            input.leftHand1 = true;
-        }
-        else if (GamePadInput.leftHand2)
-        {
-            input.leftHand2 = true;
+            input.leftHand = true;
         }
 
         //右手攻击
         if (Input.GetKeyDown(KeyboardInput.rightHand))
         {
-            if (Input.GetKey(KeyboardInput.strongAttack))
-            {
-                input.rightHand2 = true;
-            }
-            else
-            {
-                input.rightHand1 = true;
-            }
+            input.rightHand = true;
         }
-        if (Input.GetKeyDown(GamePadInput.rightHand1))
+        if (Input.GetKeyDown(GamePadInput.rightHand))
         {
-            input.rightHand1 = true;
-        }
-        else if (GamePadInput.rightHand2)
-        {
-            input.rightHand2 = true;
+            input.rightHand = true;
         }
 
         //锁定目标
@@ -234,46 +225,6 @@ public class LocalPlayer : Player
             default:
                 break;
         }
-    }
-
-    DateTime runDownTime = DateTime.Now;
-    bool lastRunDown = false;
-    bool runLongDown = false;  //长按
-    void UpdateRunRoll()
-    {
-        bool runDown = Input.GetKey(KeyboardInput.runRoll) || Input.GetKey(GamePadInput.runRoll);
-        if (runDown)
-        {
-            if (!lastRunDown)
-            { //button down
-                runDownTime = DateTime.Now;
-            }
-            else
-            { //long pressed
-                TimeSpan span = DateTime.Now - runDownTime;
-                if (span.TotalMilliseconds > 300)
-                {
-                    input.run = true;
-                    runLongDown = true;
-                }
-            }
-        }
-        else
-        {
-            if (lastRunDown)
-            { //button up
-                if (!runLongDown)
-                {
-                    input.roll = true;
-                }
-                else
-                {
-                    input.run = false;
-                    runLongDown = false;
-                }
-            }
-        }
-        lastRunDown = runDown;
     }
 
     void LockTarget()

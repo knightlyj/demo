@@ -9,8 +9,7 @@ public partial class Player
         public override void Start(Player player)
         {
             base.Start(player);
-            player.AnimateJump();  //设置动画
-            player.SetActionDelay(Player.ActionDelayType.Whole);
+            player.SetWholeAniClip(WholeAniClip.Jump, true);  //设置动画
             jumpYaw = player.orientation;
         }
 
@@ -41,13 +40,24 @@ public partial class Player
 
         public override void OnAnimationEvent(AnimationEvent aniEvent)
         {
-            if (aniEvent.stringParameter.Equals("JumpUp"))
+            if (aniEvent.animatorStateInfo.IsName("JumpUp"))
             {
-                Vector3 moveDir = Quaternion.AngleAxis(player.orientation, Vector3.up) * Vector3.forward;
-                player.rigidBody.velocity = new Vector3(moveDir.x * Player.runSpeed * 1.2f, player.rigidBody.velocity.y, moveDir.z * Player.runSpeed * 1.2f);
-                player.rigidBody.AddForce(new Vector3(0, Player.jumpForce, 0));
-                upForceCount = 3;
-                jumped = true;
+                if (aniEvent.stringParameter.Equals("JumpUp"))
+                {
+                    Vector3 moveDir = Quaternion.AngleAxis(player.orientation, Vector3.up) * Vector3.forward;
+                    player.rigidBody.velocity = new Vector3(moveDir.x * Player.runSpeed * 1.2f, player.rigidBody.velocity.y, moveDir.z * Player.runSpeed * 1.2f);
+                    player.rigidBody.AddForce(new Vector3(0, Player.jumpForce, 0));
+                    upForceCount = 3;
+                    jumped = true;
+                }
+                else if (aniEvent.stringParameter.Equals("Done"))
+                {
+                    player.StopAction();
+                }
+            }
+            else
+            { //不应该运行到这里
+                Debug.LogError("JumpAction.OnAnimationEvent >> unexpected animator state");
             }
         }
     }

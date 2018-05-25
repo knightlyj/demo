@@ -10,6 +10,8 @@ public partial class Player
         virtual public void Start(Player player)
         {
             this.player = player;
+            player.footIk = false;
+            player.shootIk = false;
         }
 
         virtual public void Update()
@@ -17,7 +19,7 @@ public partial class Player
 
         }
 
-        virtual public void Stop()
+        virtual public void OnStop()
         {
 
         }
