@@ -84,7 +84,6 @@ public class CameraControl : MonoBehaviour
             }
         }
         fixedCount = 0;
-
     }
 
     int fixedCount = 0;

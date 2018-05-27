@@ -68,7 +68,7 @@ public class LocalPlayer : Player
 
         //镜头设置及初始化
         cameraControl = GameObject.FindWithTag("MainCamera").GetComponent<CameraControl>();
-        cameraControl.cameraYaw = this.orientation;
+        cameraControl.cameraYaw = this.yaw;
         UnLockTarget();
 
     }
@@ -118,21 +118,21 @@ public class LocalPlayer : Player
             input.jump = true;
         }
         //左手攻击
-        if (Input.GetKeyDown(KeyboardInput.leftHand))
+        if (Input.GetKey(KeyboardInput.leftHand))
         {
             input.leftHand = true;
         }
-        if (Input.GetKeyDown(GamePadInput.leftHand))
+        if (Input.GetKey(GamePadInput.leftHand))
         {
             input.leftHand = true;
         }
 
         //右手攻击
-        if (Input.GetKeyDown(KeyboardInput.rightHand))
+        if (Input.GetKey(KeyboardInput.rightHand))
         {
             input.rightHand = true;
         }
-        if (Input.GetKeyDown(GamePadInput.rightHand))
+        if (Input.GetKey(GamePadInput.rightHand))
         {
             input.rightHand = true;
         }
@@ -249,7 +249,7 @@ public class LocalPlayer : Player
 
         if (target == null)
         {
-            cameraControl.ResetCamera(this.orientation);
+            cameraControl.ResetCamera(this.yaw);
         }
     }
 

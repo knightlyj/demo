@@ -1,6 +1,0 @@
-id,idle动画,双手Idle动画,move动画,双手move动画,block动画,备注
-1,Idle-Sword,Idle-Sword2Hand,Move-Sword,Move-Sword2Hand,,Empty
-2,Idle-Sword,Idle-Sword2Hand,Move-Sword,Move-Sword2Hand,,Sword
-3,Idle-Sword,Idle-Sword2Hand,Move-Sword,Move-Sword2Hand,,Shield
-4,,,,,,HugeSword
-5,,,,,,HugeAxe

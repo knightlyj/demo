@@ -65,6 +65,11 @@ public partial class Player
     const int wholeAniLayer = 3;
 
 
+    static class AniEventName
+    {
+       public static readonly string Done = "Done";
+    }
+
     delegate void OnAnimationEvent(AnimationEvent aniEvent);
     event OnAnimationEvent onAnimationEvent;
     //动作完成
@@ -100,7 +105,7 @@ public partial class Player
         }
     }
 
-    enum UpperAniClip
+    enum UpperAniState
     {
         Empty,
         Idle,
@@ -111,42 +116,46 @@ public partial class Player
         BlockIdle,
         BlockStrafe,
         SwtichWeapon,
+        Shoot,
     }
-    UpperAniClip curUpperAniClip = UpperAniClip.Empty;
+    UpperAniState curUpperAniState = UpperAniState.Empty;
     //设置上半身动作
-    void SetUpperAniClip(UpperAniClip clip, bool reset = false)
+    void SetUpperAniState(UpperAniState state, bool reset = false)
     {
-        if (curUpperAniClip == clip && !reset)
+        if (curUpperAniState == state && !reset)
         {
             return;
         }
         else
         {
-            curWholeAniClip = WholeAniClip.Empty;
-            curUpperAniClip = clip;
+            curWholeAniState = WholeAniState.Empty;
+            curUpperAniState = state;
             SwitchBodyMode(true);
-            switch (clip)
+            switch (state)
             {
-                case UpperAniClip.Idle:
+                case UpperAniState.Idle:
                     animator.CrossFade(Animator.StringToHash("Idle"), 0.1f, upperAniLayer, 0);
                     break;
-                case UpperAniClip.Move:
+                case UpperAniState.Move:
                     animator.CrossFade(Animator.StringToHash("Move"), 0.1f, upperAniLayer, 0);
                     break;
-                case UpperAniClip.Aim:
+                case UpperAniState.Aim:
                     animator.CrossFade(Animator.StringToHash("Aim"), 0.1f, upperAniLayer, 0);
                     break;
-                case UpperAniClip.BlockIdle:
+                case UpperAniState.BlockIdle:
                     break;
-                case UpperAniClip.BlockMove:
+                case UpperAniState.BlockMove:
                     break;
-                case UpperAniClip.SwtichWeapon:
+                case UpperAniState.SwtichWeapon:
+                    break;
+                case UpperAniState.Shoot:
+                    animator.CrossFade(Animator.StringToHash("Shoot"), 0.1f, upperAniLayer, 0);
                     break;
             }
         }
     }
 
-    enum LowerAniClip
+    enum LowerAniState
     {
         Empty,
         Idle,
@@ -154,65 +163,79 @@ public partial class Player
         Aim,
         Strafe,
     }
-    LowerAniClip curLowerAniClip = LowerAniClip.Empty;
+    LowerAniState curLowerAniState = LowerAniState.Empty;
     //设置下半身动作
-    void SetLowerAniClip(LowerAniClip clip, bool reset = false)
+    void SetLowerAniState(LowerAniState state, bool reset = false)
     {
-        if (curLowerAniClip == clip && !reset)
+        if (curLowerAniState == state && !reset)
         {
             return;
         }
         else
         {
-            curWholeAniClip = WholeAniClip.Empty;
-            curLowerAniClip = clip;
+            curWholeAniState = WholeAniState.Empty;
+            curLowerAniState = state;
             SwitchBodyMode(true);
-            switch (clip)
+            switch (state)
             {
-                case LowerAniClip.Idle:
+                case LowerAniState.Idle:
                     animator.CrossFade(Animator.StringToHash("Idle"), 0.1f, lowerAniLayer, 0);
                     break;
-                case LowerAniClip.Move:
+                case LowerAniState.Move:
                     animator.CrossFade(Animator.StringToHash("Move"), 0.1f, lowerAniLayer, 0);
                     break;
-                case LowerAniClip.Aim:
+                case LowerAniState.Aim:
                     animator.CrossFade(Animator.StringToHash("Aim"), 0.1f, lowerAniLayer, 0);
+                    break;
+                case LowerAniState.Strafe:
+                    animator.CrossFade(Animator.StringToHash("Strafe"), 0.1f, lowerAniLayer, 0);
                     break;
             }
         }
     }
 
-    enum WholeAniClip
+    enum WholeAniState
     {
         Empty,
         Roll,
         Jump,
         Fall,
+        Attack,
     }
-    WholeAniClip curWholeAniClip = WholeAniClip.Empty;
+    WholeAniState curWholeAniState = WholeAniState.Empty;
     //设置全身动作
-    void SetWholeAniClip(WholeAniClip clip, bool reset = false)
+    void SetWholeAniState(WholeAniState clip, bool reset = false, string stateName = null)
     {
-        if (curWholeAniClip == clip && !reset)
+        if (curWholeAniState == clip && !reset)
         {
             return;
         }
         else
         {
-            curUpperAniClip = UpperAniClip.Empty;
-            curLowerAniClip = LowerAniClip.Empty;
-            curWholeAniClip = clip;
+            curUpperAniState = UpperAniState.Empty;
+            curLowerAniState = LowerAniState.Empty;
+            curWholeAniState = clip;
             SwitchBodyMode(false);
             switch (clip)
             {
-                case WholeAniClip.Roll:
+                case WholeAniState.Roll:
                     animator.CrossFade(Animator.StringToHash("Roll"), 0.1f, wholeAniLayer, 0);
                     break;
-                case WholeAniClip.Jump:
+                case WholeAniState.Jump:
                     animator.CrossFade(Animator.StringToHash("JumpUp"), 0.1f, wholeAniLayer, 0);
                     break;
-                case WholeAniClip.Fall:
+                case WholeAniState.Fall:
                     animator.CrossFade(Animator.StringToHash("Fall"), 0.1f, wholeAniLayer, 0);
+                    break;
+                case WholeAniState.Attack:
+                    if(stateName != null)
+                    {
+                        animator.CrossFade(Animator.StringToHash(stateName), 0.1f, wholeAniLayer, 0);
+                    }
+                    else
+                    {
+                        animator.CrossFade(Animator.StringToHash("Attack1"), 0.1f, wholeAniLayer, 0);
+                    }
                     break;
             }
         }
@@ -220,27 +243,27 @@ public partial class Player
 
     void UpperSuitLowerAnimation()
     {
-        UpperAniClip clip = UpperAniClip.Empty;
-        switch (curLowerAniClip)
+        UpperAniState clip = UpperAniState.Empty;
+        switch (curLowerAniState)
         {
-            case LowerAniClip.Aim:
-                clip = UpperAniClip.Aim;
+            case LowerAniState.Aim:
+                clip = UpperAniState.Aim;
                 break;
-            case LowerAniClip.Idle:
-                clip = UpperAniClip.Idle;
+            case LowerAniState.Idle:
+                clip = UpperAniState.Idle;
                 break;
-            case LowerAniClip.Move:
-                clip = UpperAniClip.Move;
+            case LowerAniState.Move:
+                clip = UpperAniState.Move;
                 break;
-            case LowerAniClip.Strafe:
-                clip = UpperAniClip.Strafe;
+            case LowerAniState.Strafe:
+                clip = UpperAniState.Strafe;
                 break;
         }
-        SetUpperAniClip(clip);
+        SetUpperAniState(clip);
     }
 
-    public bool shootIk = false;
-    public bool footIk = false;
+    bool shootIk = false;
+    bool footIk = false;
     [SerializeField]
     Transform leftFoot = null;
     [SerializeField]

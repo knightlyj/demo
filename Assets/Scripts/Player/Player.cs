@@ -39,6 +39,7 @@ public partial class Player : MonoBehaviour
     public const float jumpForce = 200;
     public const float walkSpeed = 4;
     public const float runSpeed = 7;
+    public const float strafeSpeed = 2f;
     public const float moveForce = 80;
     public const float moveForceInAir = 10;
     public const float moveSpeedInAir = 2;
@@ -55,7 +56,7 @@ public partial class Player : MonoBehaviour
     public const float rollEnergyCost = 35f; //roll消耗的energy
     public const float runEnergyCost = 50f;  //run消耗energy, per second
     public const float jumpEnergyCost = 35f; //jump消耗的energy
-    
+
     [HideInInspector]
     public Rigidbody rigidBody = null;
     Animator animator = null;
@@ -75,16 +76,14 @@ public partial class Player : MonoBehaviour
         _rightHand = UnityHelper.FindChildRecursive(transform, "B_R_Hand");
         _leftHand = UnityHelper.FindChildRecursive(transform, "B_L_Hand");
 
-        ActionInit();
+        StateInit();
     }
 
     // Use this for initialization
     protected void Start()
     {
-        //ChangeRightWeapon(WeaponType.Sword);
-        //ChangeLeftWeapon(WeaponType.Sword);
         //角色朝向初始化
-        this.orientation = transform.eulerAngles.y;
+        this.yaw = transform.eulerAngles.y;
     }
 
     protected void OnDestroy()
@@ -99,66 +98,102 @@ public partial class Player : MonoBehaviour
     // Update is called once per frame
     protected void Update()
     {
+        UpdateState();
         SmoothOrientation(); //角色朝向平滑过渡
     }
 
-
+    protected bool grounded = false;
+    [SerializeField]
+    protected LayerMask groundLayerMask;
+    protected Vector3 groundNormal;
+    float groundCheckRadius = 0.5f;
     protected void FixedUpdate()
     {
-        Simulate(); //根据输入,模拟角色运动
+        GroundCheck();
+
+        FixedUpdateState();
+        UpdateEnergy();
     }
 
-    //***************************角色朝向的代码******************************
-    public float orientation //角色朝向,基于y轴旋转
+    //落地检测
+    void GroundCheck()
     {
-        set
+        RaycastHit hitInfo;
+        Vector3 origin = transform.position + Vector3.up * 0.6f;
+        if (Physics.SphereCast(origin, groundCheckRadius, Vector3.down, out hitInfo, 0.15f, groundLayerMask))
         {
-            _orientation = value;
-            _orientation = _orientation - Mathf.Floor(_orientation / 360f) * 360f; //范围在0~360之间
-            StartSmoothOrientation();
-        }
-        get
-        {
-            return this._orientation;
-        }
-    }
-    float _orientation = 0f;
-
-    //角色朝向平滑过渡
-    float smoothOrientation = 0; //实际显示的朝向
-    const float smoothOriBaseStepLen = 300;
-    float smoothOriStepLen = 0;
-    void StartSmoothOrientation()
-    {  //这里计算环形插值
-        float diff = this.orientation - smoothOrientation;
-        float absDiff = Mathf.Abs(diff);
-        if (absDiff > 270)
-        {
-            smoothOriStepLen = smoothOriBaseStepLen * 4;
-        }
-        else if (absDiff > 180)
-        {
-            smoothOriStepLen = smoothOriBaseStepLen * 3;
-        }
-        else if (absDiff > 90)
-        {
-            smoothOriStepLen = smoothOriBaseStepLen * 2;
+            rigidBody.drag = 6f;
+            grounded = true;
+            groundNormal = hitInfo.normal;
         }
         else
         {
-            smoothOriStepLen = smoothOriBaseStepLen;
+            rigidBody.drag = 0f;
+            grounded = false;
+            groundNormal = Vector3.up;
+        }
+    }
+
+    //***************************角色朝向的代码******************************
+    public float yaw //角色朝向,基于y轴旋转
+    {
+        set
+        {
+            _yaw = value;
+            _yaw = _yaw - Mathf.Floor(_yaw / 360f) * 360f; //范围在0~360之间
+            StartSmoothYaw();
+        }
+        get
+        {
+            return this._yaw;
+        }
+    }
+    float _yaw = 0f;
+
+    public float immediateYaw
+    {
+        set
+        {
+            _yaw = value;
+            smoothYaw = value;
+        }
+    }
+
+    //角色朝向平滑过渡
+    float smoothYaw = 0; //实际显示的朝向
+    const float smoothYawBaseStepLen = 300;
+    float smoothYawStepLen = 0;
+    void StartSmoothYaw()
+    {  //这里计算环形插值
+        float diff = this.yaw - smoothYaw;
+        float absDiff = Mathf.Abs(diff);
+        if (absDiff > 270)
+        {
+            smoothYawStepLen = smoothYawBaseStepLen * 4;
+        }
+        else if (absDiff > 180)
+        {
+            smoothYawStepLen = smoothYawBaseStepLen * 3;
+        }
+        else if (absDiff > 90)
+        {
+            smoothYawStepLen = smoothYawBaseStepLen * 2;
+        }
+        else
+        {
+            smoothYawStepLen = smoothYawBaseStepLen;
         }
 
     }
     void SmoothOrientation()
     {
-        smoothOrientation = CommonHelper.AngleTowards(smoothOrientation, orientation, smoothOriStepLen * Time.deltaTime);
-        transform.eulerAngles = new Vector3(0, smoothOrientation, 0);
+        smoothYaw = CommonHelper.AngleTowards(smoothYaw, yaw, smoothYawStepLen * Time.deltaTime);
+        transform.eulerAngles = new Vector3(0, smoothYaw, 0);
     }
 
 
     //武器类型
-    WeaponType weaponType = WeaponType.Melee;
+    WeaponType weaponType = WeaponType.Pistol;
     //右手武器脚本
     WeaponObj rightWeapon = null;
     //更换右手武器
