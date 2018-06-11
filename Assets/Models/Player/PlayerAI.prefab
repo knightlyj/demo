@@ -128,8 +128,7 @@ GameObject:
   - 136: {fileID: 136000013950343558}
   - 54: {fileID: 54000013554155610}
   - 114: {fileID: 114000011196578348}
-  - 114: {fileID: 114000010985601294}
-  - 114: {fileID: 114000013134459410}
+  - 114: {fileID: 114000011285982580}
   m_Layer: 9
   m_Name: PlayerAI
   m_TagString: AI
@@ -1818,17 +1817,6 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
---- !u!114 &114000010985601294
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010911869972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 486616e53ae7f0a41814b3112e6edfb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114000011196578348
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1842,7 +1830,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _aim: {fileID: 4000013624378950}
   _sight: {fileID: 4000012898367316}
---- !u!114 &114000013134459410
+--- !u!114 &114000011285982580
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -1850,13 +1838,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000010911869972}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55da3c1828d4b324686f044cc67cb32f, type: 3}
+  m_Script: {fileID: 11500000, guid: cd53ddf2807df424588596e7457a6952, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aniModule: {fileID: 0}
-  rigidBody: {fileID: 0}
-  hitSrcPos: {x: 0, y: 0, z: 0}
-  target: {fileID: 0}
+  id: 0
+  targetId: -1
+  healthPoint: 1000
+  energyPoint: 200
+  animator: {fileID: 0}
+  weaponType: 0
+  blocking: 0
+  shootIk: 0
+  footIk: 0
+  footIKLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  leftFoot: {fileID: 4000010662631166}
+  rightFoot: {fileID: 4000013212038586}
 --- !u!136 &136000013950343558
 CapsuleCollider:
   m_ObjectHideFlags: 1

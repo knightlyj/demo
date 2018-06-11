@@ -7,7 +7,7 @@ TagManager:
   - WatchPoint
   - LocalPlayer
   - Collide
-  - AI
+  - AIPlayer
   - LevelManager
   - UIManager
   layers:

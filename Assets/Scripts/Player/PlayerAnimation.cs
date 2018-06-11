@@ -5,73 +5,12 @@ using UnityEngine.Events;
 
 public partial class Player
 {
-    bool curHalfBodyMode = true; //当前是否半身模式?
-    void SwitchBodyMode(bool halfBodyMode) //半身或全身模式
-    {
-        if (curHalfBodyMode != halfBodyMode)
-        {
-            curHalfBodyMode = halfBodyMode;
-
-            if (halfBodyMode)
-            {   //半身模式
-                StopCoroutine("ToWholeBodyMode"); //关闭全身模式
-                StartCoroutine("ToHalfBodyMode"); //切换到半身模式
-            }
-            else
-            {   //全身模式
-                StopCoroutine("ToHalfBodyMode"); //关闭半身模式
-                StartCoroutine("ToWholeBodyMode"); //切换到全身模式
-            }
-        }
-    }
-
-    float aniModeStep = 0.1f;
-    IEnumerator ToHalfBodyMode()
-    {
-        float rate = 0;
-        while (rate < 1.0f)
-        {
-            rate += aniModeStep;
-            if (rate > 1.0f)
-                rate = 1;
-
-            animator.SetLayerWeight(1, rate);
-            animator.SetLayerWeight(2, rate);
-            animator.SetLayerWeight(3, 1 - rate);
-
-            yield return null;
-        }
-    }
-
-    IEnumerator ToWholeBodyMode()
-    {
-        float rate = 1.0f;
-        while (rate > 0f)
-        {
-            rate -= aniModeStep;
-            if (rate < 0f)
-                rate = 0f;
-
-            animator.SetLayerWeight(1, rate);
-            animator.SetLayerWeight(2, rate);
-            animator.SetLayerWeight(3, 1 - rate);
-
-            yield return null;
-        }
-    }
-
     const int upperAniLayer = 1;
     const int lowerAniLayer = 2;
-    const int wholeAniLayer = 3;
+    const float defTransTime = 0.1f;
 
-
-    static class AniEventName
-    {
-       public static readonly string Done = "Done";
-    }
-
-    delegate void OnAnimationEvent(AnimationEvent aniEvent);
-    event OnAnimationEvent onAnimationEvent;
+    public delegate void OnAnimationEvent(AnimationEvent aniEvent);
+    public event OnAnimationEvent onAnimationEvent;
     //动作完成
     void AnimationEventHandler(AnimationEvent aniEvent)
     {
@@ -80,7 +19,7 @@ public partial class Player
     }
 
     //设置walk和run的blend比例
-    float walkRun
+    public float walkRun
     {
         set
         {
@@ -105,22 +44,51 @@ public partial class Player
         }
     }
 
-    enum UpperAniState
+    //strafe的blend参数
+    public float strafeForward
+    {
+        set
+        {
+            animator.SetFloat("StrafeForward", value);
+        }
+        get
+        {
+            return animator.GetFloat("StrafeForward");
+        }
+    }
+
+    public float strafeRight
+    {
+        set
+        {
+            animator.SetFloat("StrafeRight", value);
+        }
+        get
+        {
+            return animator.GetFloat("StrafeRight");
+        }
+    }
+
+    public enum UpperAniState
     {
         Empty,
         Idle,
         Move,
         Aim,
         Strafe,
-        BlockMove,
         BlockIdle,
-        BlockStrafe,
-        SwtichWeapon,
+        MeleeStrafe,
+        SwapWeapon,
         Shoot,
+        Roll,
+        Jump,
+        Fall,
+        Attack,
+        GetHit,
     }
     UpperAniState curUpperAniState = UpperAniState.Empty;
     //设置上半身动作
-    void SetUpperAniState(UpperAniState state, bool reset = false)
+    public void SetUpperAniState(UpperAniState state, bool reset = false, string stateName = null, float transTime = defTransTime, float startTime = 0f)
     {
         if (curUpperAniState == state && !reset)
         {
@@ -128,44 +96,70 @@ public partial class Player
         }
         else
         {
-            curWholeAniState = WholeAniState.Empty;
             curUpperAniState = state;
-            SwitchBodyMode(true);
             switch (state)
             {
                 case UpperAniState.Idle:
-                    animator.CrossFade(Animator.StringToHash("Idle"), 0.1f, upperAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Idle"), transTime, upperAniLayer, startTime);
                     break;
                 case UpperAniState.Move:
-                    animator.CrossFade(Animator.StringToHash("Move"), 0.1f, upperAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Move"), transTime, upperAniLayer, startTime);
                     break;
                 case UpperAniState.Aim:
-                    animator.CrossFade(Animator.StringToHash("Aim"), 0.1f, upperAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Aim"), transTime, upperAniLayer, startTime);
                     break;
                 case UpperAniState.BlockIdle:
+                    animator.CrossFade(Animator.StringToHash("BlockIdle"), transTime, upperAniLayer, startTime);
                     break;
-                case UpperAniState.BlockMove:
-                    break;
-                case UpperAniState.SwtichWeapon:
+                case UpperAniState.SwapWeapon:
+                    animator.CrossFade(Animator.StringToHash("SwapWeapon"), transTime, upperAniLayer, startTime);
                     break;
                 case UpperAniState.Shoot:
-                    animator.CrossFade(Animator.StringToHash("Shoot"), 0.1f, upperAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Shoot"), transTime, upperAniLayer, startTime);
+                    break;
+                case UpperAniState.Jump:
+                    animator.CrossFade(Animator.StringToHash("Jump"), transTime, upperAniLayer, startTime);
+                    break;
+                case UpperAniState.Fall:
+                    animator.CrossFade(Animator.StringToHash("Fall"), transTime, upperAniLayer, startTime);
+                    break;
+                case UpperAniState.Roll:
+                    animator.CrossFade(Animator.StringToHash("Roll"), transTime, upperAniLayer, startTime);
+                    break;
+                case UpperAniState.Attack:
+                    if (stateName != null)
+                        animator.CrossFade(Animator.StringToHash(stateName), transTime, upperAniLayer, startTime);
+                    else
+                        animator.CrossFade(Animator.StringToHash("Attack1"), transTime, upperAniLayer, startTime);
+                    break;
+                case UpperAniState.GetHit:
+                    if (stateName != null)
+                        animator.CrossFade(Animator.StringToHash(stateName), transTime, upperAniLayer, startTime);
+                    else
+                        animator.CrossFade(Animator.StringToHash("GetHitFront"), transTime, upperAniLayer, startTime);
                     break;
             }
         }
     }
 
-    enum LowerAniState
+    public enum LowerAniState
     {
         Empty,
         Idle,
         Move,
         Aim,
-        Strafe,
+        BlockIdle,
+        MeleeStrafe,
+        AimStrafe,
+        Roll,
+        Jump,
+        Fall,
+        Attack,
+        GetHit,
     }
     LowerAniState curLowerAniState = LowerAniState.Empty;
     //设置下半身动作
-    void SetLowerAniState(LowerAniState state, bool reset = false)
+    public void SetLowerAniState(LowerAniState state, bool reset = false, string stateName = null, float transTime = defTransTime)
     {
         if (curLowerAniState == state && !reset)
         {
@@ -173,75 +167,53 @@ public partial class Player
         }
         else
         {
-            curWholeAniState = WholeAniState.Empty;
             curLowerAniState = state;
-            SwitchBodyMode(true);
             switch (state)
             {
                 case LowerAniState.Idle:
-                    animator.CrossFade(Animator.StringToHash("Idle"), 0.1f, lowerAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Idle"), transTime, lowerAniLayer, 0);
                     break;
                 case LowerAniState.Move:
-                    animator.CrossFade(Animator.StringToHash("Move"), 0.1f, lowerAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Move"), transTime, lowerAniLayer, 0);
                     break;
                 case LowerAniState.Aim:
-                    animator.CrossFade(Animator.StringToHash("Aim"), 0.1f, lowerAniLayer, 0);
+                    animator.CrossFade(Animator.StringToHash("Aim"), transTime, lowerAniLayer, 0);
                     break;
-                case LowerAniState.Strafe:
-                    animator.CrossFade(Animator.StringToHash("Strafe"), 0.1f, lowerAniLayer, 0);
+                case LowerAniState.AimStrafe:
+                    animator.CrossFade(Animator.StringToHash("AimStrafe"), transTime, lowerAniLayer, 0);
                     break;
-            }
-        }
-    }
-
-    enum WholeAniState
-    {
-        Empty,
-        Roll,
-        Jump,
-        Fall,
-        Attack,
-    }
-    WholeAniState curWholeAniState = WholeAniState.Empty;
-    //设置全身动作
-    void SetWholeAniState(WholeAniState clip, bool reset = false, string stateName = null)
-    {
-        if (curWholeAniState == clip && !reset)
-        {
-            return;
-        }
-        else
-        {
-            curUpperAniState = UpperAniState.Empty;
-            curLowerAniState = LowerAniState.Empty;
-            curWholeAniState = clip;
-            SwitchBodyMode(false);
-            switch (clip)
-            {
-                case WholeAniState.Roll:
-                    animator.CrossFade(Animator.StringToHash("Roll"), 0.1f, wholeAniLayer, 0);
+                case LowerAniState.Jump:
+                    animator.CrossFade(Animator.StringToHash("Jump"), transTime, lowerAniLayer, 0);
                     break;
-                case WholeAniState.Jump:
-                    animator.CrossFade(Animator.StringToHash("JumpUp"), 0.1f, wholeAniLayer, 0);
+                case LowerAniState.Roll:
+                    animator.CrossFade(Animator.StringToHash("Roll"), transTime, lowerAniLayer, 0);
                     break;
-                case WholeAniState.Fall:
-                    animator.CrossFade(Animator.StringToHash("Fall"), 0.1f, wholeAniLayer, 0);
+                case LowerAniState.Fall:
+                    animator.CrossFade(Animator.StringToHash("Fall"), transTime, lowerAniLayer, 0);
                     break;
-                case WholeAniState.Attack:
-                    if(stateName != null)
-                    {
-                        animator.CrossFade(Animator.StringToHash(stateName), 0.1f, wholeAniLayer, 0);
-                    }
+                case LowerAniState.Attack:
+                    if (stateName != null)
+                        animator.CrossFade(Animator.StringToHash(stateName), transTime, lowerAniLayer, 0);
                     else
-                    {
-                        animator.CrossFade(Animator.StringToHash("Attack1"), 0.1f, wholeAniLayer, 0);
-                    }
+                        animator.CrossFade(Animator.StringToHash("Attack1"), transTime, lowerAniLayer, 0);
+                    break;
+                case LowerAniState.BlockIdle:
+                    animator.CrossFade(Animator.StringToHash("BlockIdle"), transTime, lowerAniLayer, 0);
+                    break;
+                case LowerAniState.MeleeStrafe:
+                    animator.CrossFade(Animator.StringToHash("MeleeStrafe"), transTime, lowerAniLayer, 0);
+                    break;
+                case LowerAniState.GetHit:
+                    if (stateName != null)
+                        animator.CrossFade(Animator.StringToHash(stateName), transTime, lowerAniLayer, 0);
+                    else
+                        animator.CrossFade(Animator.StringToHash("GetHitFront"), transTime, lowerAniLayer, 0);
                     break;
             }
         }
     }
 
-    void UpperSuitLowerAnimation()
+    public void UpperSuitLowerAnimation()
     {
         UpperAniState clip = UpperAniState.Empty;
         switch (curLowerAniState)
@@ -255,15 +227,27 @@ public partial class Player
             case LowerAniState.Move:
                 clip = UpperAniState.Move;
                 break;
-            case LowerAniState.Strafe:
-                clip = UpperAniState.Strafe;
+            case LowerAniState.AimStrafe:
+                clip = UpperAniState.Aim;
+                break;
+            case LowerAniState.MeleeStrafe:
+                clip = UpperAniState.MeleeStrafe;
+                break;
+            case LowerAniState.BlockIdle:
+                clip = UpperAniState.BlockIdle;
                 break;
         }
-        SetUpperAniState(clip);
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(lowerAniLayer);
+        SetUpperAniState(clip, true, null, defTransTime, info.normalizedTime);
     }
 
-    bool shootIk = false;
-    bool footIk = false;
+    [HideInInspector]
+    public bool shootIk = false;
+    [HideInInspector]
+    public bool footIk = false;
+
+    [SerializeField]
+    LayerMask footIKLayer = 0;
     [SerializeField]
     Transform leftFoot = null;
     [SerializeField]
@@ -296,7 +280,7 @@ public partial class Player
             //left foot
             Vector3 leftUp = leftFoot.position + Vector3.up * 0.5f;
             RaycastHit hitInfo;
-            if (Physics.Raycast(leftUp, Vector3.down, out hitInfo, bb, groundLayerMask))
+            if (Physics.Raycast(leftUp, Vector3.down, out hitInfo, bb, footIKLayer))
             {
                 Vector3 leftPosition = leftUp + Vector3.down * (hitInfo.distance - 0.15f);
                 animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftPosition);
@@ -312,7 +296,7 @@ public partial class Player
 
             //right foot
             Vector3 rightUp = rightFoot.position + Vector3.up * 0.5f;
-            if (Physics.Raycast(rightUp, Vector3.down, out hitInfo, bb, groundLayerMask))
+            if (Physics.Raycast(rightUp, Vector3.down, out hitInfo, bb, footIKLayer))
             {
                 Vector3 rightPosition = rightUp + Vector3.down * (hitInfo.distance - 0.15f);
                 animator.SetIKPosition(AvatarIKGoal.RightFoot, rightPosition);

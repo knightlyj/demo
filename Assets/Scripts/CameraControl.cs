@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+using UnityStandardAssets.CrossPlatformInput;
 
 public class CameraControl : MonoBehaviour
 {
@@ -30,22 +30,13 @@ public class CameraControl : MonoBehaviour
     }
 
     Vector3 watchPoint;
-    LocalPlayer localPlayer;
     ViewMode curViewMode = ViewMode.Normal;
-    float viewWeight = 0f;
+    float viewWeight = 1f;
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            if (curViewMode == ViewMode.Normal)
-                SwitchCameraMode(ViewMode.Shoot);
-            else
-                SwitchCameraMode(ViewMode.Normal);
-        }
-
         //更新watch point位置
-        localPlayer = UnityHelper.FindLocalPlayer();
+        Player localPlayer = GlobalVariables.localPlayer;
         if (localPlayer != null)
         {
             Transform sight = localPlayer.GetComponent<CreatureCommon>().sight;
@@ -109,6 +100,18 @@ public class CameraControl : MonoBehaviour
     float joystickRatio = 200f;
     void UpdateInput()
     {
+        if (Application.platform == RuntimePlatform.Android || GlobalVariables.mobileUIOnPC)
+        {
+            UpdateInputOnMobile();
+        }
+        else
+        {
+            UpdateInputOnPC();
+        }
+    }
+
+    void UpdateInputOnPC()
+    {
         //计算鼠标输入
         float mouseYaw = Input.GetAxis("Mouse X") * mouseRatio;
         float mousePith = Input.GetAxis("Mouse Y") * mouseRatio;
@@ -148,16 +151,42 @@ public class CameraControl : MonoBehaviour
             this.cameraPitch = -maxPitch;
     }
 
+    void UpdateInputOnMobile()
+    {
+        const float turnRatio = 200f;
+        Vector2 turn;
+        turn.x = CrossPlatformInputManager.GetAxis("CameraX");
+        turn.y = -CrossPlatformInputManager.GetAxis("CameraY");
+
+        float deltaYaw = turn.x * Time.deltaTime * turnRatio;
+        float deltaPitch = turn.y * Time.deltaTime * turnRatio;
+
+        if (deltaYaw != 0 || deltaPitch != 0)
+        {
+            resetNormalCamera = false;
+        }
+
+        this.cameraYaw += deltaYaw;
+        this.cameraPitch += deltaPitch;
+
+        //镜头pitch范围限制
+        if (this.cameraPitch > maxPitch)
+            this.cameraPitch = maxPitch;
+        else if (this.cameraPitch < -maxPitch)
+            this.cameraPitch = -maxPitch;
+    }
+
     //****************普通视角,近战使用*************************
     void UpdateNormalView()
     {
-        if (localPlayer.target == null)
-        {   //非锁定状态,根据输入更新角度
-            UpdateFreeCamera();
-        }
-        else
+        Player localPlayer = GlobalVariables.localPlayer;
+        if (localPlayer.targetId >= 0)
         {   //锁定状态,追踪目标
             UpdateLockedCamera();
+        }
+        else
+        {   //非锁定状态,根据输入更新角度
+            UpdateFreeCamera();
         }
     }
 
@@ -188,8 +217,10 @@ public class CameraControl : MonoBehaviour
 
     void UpdateLockedCamera()
     {
-        LocalPlayer localPlayer = UnityHelper.FindLocalPlayer();
-        Transform aim = localPlayer.target.GetComponent<CreatureCommon>().aim;
+        //这里在距离过近,接近0时,会导致float为nan,不过正常情况下不会出现位置重叠,暂不处理
+        Player localPlayer = GlobalVariables.localPlayer;
+        Player target = UnityHelper.GetLevelManager().GetPlayer(localPlayer.targetId);
+        Transform aim = target.GetComponent<CreatureCommon>().aim;
         Vector3 toTarget = aim.position - watchPoint;
         float targetPitch = -Mathf.Asin(toTarget.y / toTarget.magnitude) * Mathf.Rad2Deg;
         targetPitch += 15f;
@@ -199,7 +230,7 @@ public class CameraControl : MonoBehaviour
             targetPitch = maxPitch;
         else if (targetPitch < -maxPitch)
             targetPitch = -maxPitch;
-        
+
         float targetYaw = CommonHelper.YawOfVector3(toTarget);
 
         float ratio = 0.08f * fixedCount;
@@ -211,7 +242,6 @@ public class CameraControl : MonoBehaviour
     }
 
     const float maxNormalViewDist = 5.0f; //最大镜头距离
-    bool t2 = true;
     //普通视角,镜头碰撞处理
     void NormalViewCollide()
     {
@@ -254,7 +284,6 @@ public class CameraControl : MonoBehaviour
         Vector3 backColDir = Quaternion.Euler(0, this.cameraYaw, 0) * -Vector3.forward;
 
         float a = 1 - Mathf.Abs(cameraPitch) / maxPitch;
-        a = 1f;
         float backDistance = a * 0.25f + 0.25f;
 
         Vector3 backPos = watchPoint + backColDir * backDistance;
@@ -268,7 +297,6 @@ public class CameraControl : MonoBehaviour
         }
 
         float b = rightDistance / shootViewDistance;
-        b = 1f;
         if (b < 0.5f)
             backPos += Vector3.up * (1 - b * 2) * 1.1f;
 
@@ -277,7 +305,7 @@ public class CameraControl : MonoBehaviour
         transform.rotation = cameraRot;
     }
     Vector3 shootViewPos;  //射击视角计算出的位置
-    
+
 
     public void SwitchCameraMode(ViewMode mode)
     {

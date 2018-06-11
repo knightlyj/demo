@@ -27,4 +27,18 @@ public class UIManager : MonoBehaviour {
     {
         energyBar.SetRatio(ratio);
     }
+
+    [SerializeField]
+    Transform mobileUI = null;
+    void OnEnable()
+    {
+        if(Application.platform == RuntimePlatform.Android || GlobalVariables.mobileUIOnPC)
+        {
+            mobileUI.gameObject.SetActive(true);
+        }
+        else
+        {
+            mobileUI.gameObject.SetActive(false);
+        }
+    }
 }

@@ -30,8 +30,8 @@ public static class CommonHelper
         }
     }
 
-    //角度差值,以顺时针为正方向
-    static public float AngleDiff(float from, float to)
+    //角度差值,按最近的方向,返回值为-180 ~ 180,顺时针为正值
+    static public float AngleDiffClosest(float from, float to)
     {
         from = from - Mathf.Floor(from / 360f) * 360f; //范围在0~360之间
         to = to - Mathf.Floor(to / 360f) * 360f; //范围在0~360之间
@@ -132,6 +132,15 @@ public static class CommonHelper
     {
         vec.y = 0;
         float yaw = Mathf.Acos(vec.z / vec.magnitude) * Mathf.Rad2Deg;
+        if (vec.x < 0)
+            yaw = -yaw;
+
+        return yaw;
+    }
+
+    public static float YawOfVector2(Vector2 vec)
+    {
+        float yaw = Mathf.Acos(vec.y / vec.magnitude) * Mathf.Rad2Deg;
         if (vec.x < 0)
             yaw = -yaw;
 
