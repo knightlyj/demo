@@ -10,6 +10,7 @@ TagManager:
   - AIPlayer
   - LevelManager
   - UIManager
+  - RemotePlayer
   layers:
   - Default
   - TransparentFX

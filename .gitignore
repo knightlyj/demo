@@ -8,3 +8,5 @@
 *.tmp
 *.pidb.meta
 *.suo
+log.txt
+output_log.txt

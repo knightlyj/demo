@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Net.Sockets;
+using System.Net;
+using System.Collections.Generic;
 
 public static class CommonHelper
 {
@@ -8,7 +11,7 @@ public static class CommonHelper
     {
         return Mathf.Abs(a - b) < 0.001f;
     }
-
+    
     //浮点数towards
     static public float FloatTowards(float a, float b, float step)
     {
@@ -187,4 +190,31 @@ public static class CommonHelper
         dir.Normalize();
         return dir;
     }
+
+
+    public static bool IpLegal(string ip)
+    {
+        try
+        {
+            System.Net.IPAddress.Parse(ip);
+        }
+        catch
+        {
+            return false;
+        }
+        return true;
+    }
+    
+    public static string GetIpAddress()
+    {
+        IPHostEntry ipHost = Dns.GetHostEntry(Dns.GetHostName());
+        foreach(IPAddress ipAddr in ipHost.AddressList)
+        {
+
+            if (ipAddr.AddressFamily == AddressFamily.InterNetwork)
+                return ipAddr.ToString();
+        }
+        return null;
+    }
+
 }

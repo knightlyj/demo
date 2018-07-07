@@ -10,12 +10,28 @@ public enum WeaponType
     Pistol,
 }
 
+public enum PlayerType
+{
+    Unknown,
+    Remote,
+    Local,
+    LocalAI,
+}
+
 public partial class Player : MonoBehaviour
 {
     [HideInInspector]
     public int id;
     [HideInInspector]
+    public string nameInGame;
+
+    [HideInInspector]
     public int targetId = -1;
+
+    [HideInInspector]
+    public int connectId = -1;
+
+    public PlayerType playerType = PlayerType.Unknown;
 
     //物理引擎各种配置
     public const float rollSpeed = 9;
@@ -26,7 +42,7 @@ public partial class Player : MonoBehaviour
     public const float moveForce = 80;
     public const float moveForceInAir = 10;
     public const float moveSpeedInAir = 2;
-    
+
     //角色属性
     public float healthPoint = maxHealth;
     public float energyPoint = maxEnergy;
@@ -40,6 +56,7 @@ public partial class Player : MonoBehaviour
     [HideInInspector]
     public Animator animator = null;
 
+
     //************左右手transform*******************
     public Transform rightHand { get { return this._rightHand; } }
     Transform _rightHand = null;
@@ -47,10 +64,11 @@ public partial class Player : MonoBehaviour
     public Transform leftArm { get { return this._leftArm; } }
     Transform _leftArm = null;
 
+    Rigidbody rigidBody = null;
     void Awake()
     {
         animator = GetComponent<Animator>();
-
+        rigidBody = GetComponent<Rigidbody>();
         _rightHand = UnityHelper.FindChildRecursive(transform, "B_R_Hand");
         _leftArm = UnityHelper.FindChildRecursive(transform, "B_L_Forearm");
 
@@ -66,14 +84,14 @@ public partial class Player : MonoBehaviour
     {
 
     }
-    
+
     // Update is called once per frame
     void Update()
     {
 
     }
 
-    
+
     void FixedUpdate()
     {
 
@@ -146,5 +164,33 @@ public partial class Player : MonoBehaviour
 
     }
 
-    
+
+    public Protocol.PlayerInfo AchievePlayerInfo()
+    {
+        Protocol.PlayerInfo info = new Protocol.PlayerInfo();
+        info.id = id;
+        info.name = nameInGame;
+        info.yaw = transform.eulerAngles.y;
+
+        Vector3 velocity = rigidBody.velocity;
+        Vector3 position = transform.position;
+        info.velocityX = velocity.x;
+        info.velocityY = velocity.y;
+        info.velocityZ = velocity.z;
+        info.positionX = position.x;
+        info.positionY = position.y;
+        info.positionZ = position.z;
+
+        info.weapon = this.weaponType;
+
+        GetUpperAniState(out info.upperAniState, out info.upperAniNormTime);
+        GetLowerAniState(out info.lowerAniState, out info.lowerAniNormTime);
+
+        info.walkRun = walkRun;
+        info.aimUp = aimUp;
+        info.strafeForward = strafeForward;
+        info.strafeRight = strafeRight;
+        return info;
+    }
+
 }

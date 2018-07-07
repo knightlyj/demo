@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class Bar : MonoBehaviour
 {
     RectTransform rtBorder;
-    RectTransform rtEmpty;
+    //RectTransform rtEmpty;
     RectTransform rtLost;
     RectTransform rtPoint;
 
@@ -16,7 +16,7 @@ public class Bar : MonoBehaviour
         if (!init)
         {
             rtBorder = transform.FindChild("Border") as RectTransform;
-            rtEmpty = transform.FindChild("Empty") as RectTransform;
+            //rtEmpty = transform.FindChild("Empty") as RectTransform;
             rtLost = transform.FindChild("Lost") as RectTransform;
             rtPoint = transform.FindChild("XPoint") as RectTransform;
             init = true;
@@ -104,4 +104,5 @@ public class Bar : MonoBehaviour
             inLost = true;
         }
     }
+    
 }
