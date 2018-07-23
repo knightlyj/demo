@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using Protocol;
 
-public class ClientManager : MonoBehaviour
+public class ClientAgent : MonoBehaviour
 {
     LevelManager lm = null;
     // Use this for initialization
@@ -15,11 +15,11 @@ public class ClientManager : MonoBehaviour
         lm = GetComponent<LevelManager>();
         if (GlobalVariables.clientInitInfo != null)
         {
-            InitClientGame(GlobalVariables.clientInitInfo);
+            OnInitClientGame(GlobalVariables.clientInitInfo);
         }
         else
         { //
-            Debug.LogError("ClientManager.Start >> no init game info");
+            Debug.LogError("ClientAgent.Start >> no init game info");
         }
     }
 
@@ -46,33 +46,45 @@ public class ClientManager : MonoBehaviour
             SendPlayerState();
         }
     }
-    
+
     void OnDateEvent(Protocol.GameMsg msg, int connection)
     {
         if (msg.type == GameMsg.MsgType.PlayerJoin)
         {   //新增玩家
             PlayerJoin join = msg.content as PlayerJoin;
             if (join != null)
-                RemotePlayerJoin(join);
+                OnRemotePlayerJoin(join);
         }
         else if (msg.type == GameMsg.MsgType.PlayerQuit)
         {//移出
             PlayerQuit quit = msg.content as PlayerQuit;
             if (quit != null)
-                RemotePlayerQuit(quit);
+                OnRemotePlayerQuit(quit);
         }
         else if (msg.type == GameMsg.MsgType.ServerGameState)
         {
             //更新
             ServerGameState state = msg.content as ServerGameState;
             if (state != null)
-                UpdateGameInfo(state);
+                OnUpdateGameInfo(state);
         }
         else if (msg.type == GameMsg.MsgType.InitServerGameInfo)
         { //开始游戏
             InitServerGameInfo state = msg.content as InitServerGameInfo;
             if (state != null)
-                InitClientGame(state);
+                OnInitClientGame(state);
+        }
+        else if (msg.type == GameMsg.MsgType.Damage)
+        {
+            HitPlayer hit = msg.content as HitPlayer;
+            if (hit != null)
+                OnDamage(hit);
+        }
+        else if (msg.type == GameMsg.MsgType.Shoot)
+        {
+            PlayerShoot shoot = msg.content as PlayerShoot;
+            if (shoot != null)
+                OnShoot(shoot);
         }
     }
     void OnConnectEvent(int connection)
@@ -92,7 +104,7 @@ public class ClientManager : MonoBehaviour
     }
 
     bool initRecieved = false;
-    void InitClientGame(InitServerGameInfo info)
+    void OnInitClientGame(InitServerGameInfo info)
     {
         if (!initRecieved)
         {
@@ -119,24 +131,27 @@ public class ClientManager : MonoBehaviour
         }
     }
 
-    void UpdateGameInfo(ServerGameState info)
+    void OnUpdateGameInfo(ServerGameState state)
     {
         if (initRecieved)
         {
-            foreach (PlayerInfo remoteInfo in info.info)
+            foreach (PlayerInfo info in state.info)
             {
-                Player player = lm.GetPlayer(remoteInfo.id);
-                if (player != null && player.playerType == PlayerType.Remote)
+                Player player = lm.GetPlayer(info.id);
+                if (player != null)
                 {
-                    // 状态设置
-                    RemotePlayerController rpc = player.GetComponent<RemotePlayerController>();
-                    rpc.ApplyRemoteInfo(remoteInfo);
+                    if (player.playerType == PlayerType.Remote)
+                    {
+                        // 状态设置
+                        RemotePlayerController rpc = player.GetComponent<RemotePlayerController>();
+                        rpc.ApplyRemoteInfo(info);
+                    }
                 }
             }
         }
     }
 
-    void RemotePlayerJoin(PlayerJoin join)
+    void OnRemotePlayerJoin(PlayerJoin join)
     {
         if (initRecieved)
         {
@@ -150,13 +165,41 @@ public class ClientManager : MonoBehaviour
         }
     }
 
-    void RemotePlayerQuit(PlayerQuit quit)
+    void OnRemotePlayerQuit(PlayerQuit quit)
     {
         if (initRecieved)
         {
             foreach (int id in quit.ids)
             {
                 lm.RemovePlayer(id);
+            }
+        }
+    }
+
+    void OnDamage(HitPlayer hit)
+    {
+        Player src = lm.GetPlayer(hit.sourceId);
+        Player p = lm.GetPlayer(hit.targetId);
+        if (p != null)
+        {
+            if (p.playerType == PlayerType.Local)
+            {
+                Vector3 point = new Vector3(hit.hitPosX, hit.hitPosY, hit.hitPosZ);
+                p.Damage(src, hit.damage, point);
+            }
+        }
+    }
+
+    void OnShoot(PlayerShoot shoot)
+    {
+        Player p = lm.GetPlayer(shoot.id);
+        if (p != null)
+        {
+            if (p.playerType == PlayerType.Remote)
+            {
+                RemotePlayerController rpc = p.GetComponent<RemotePlayerController>();
+                Vector3 targePoint = new Vector3(shoot.targetPointX, shoot.targetPointY, shoot.targetPointZ);
+                rpc.Shoot(targePoint);
             }
         }
     }
@@ -170,11 +213,11 @@ public class ClientManager : MonoBehaviour
             Protocol.ClientLocalPlayerInfo info = new ClientLocalPlayerInfo();
             info.info = p.AchievePlayerInfo();
             GameMsg msg = new GameMsg(GameMsg.MsgType.ClientLocalPlayerInfo, info);
-            Client.SendMessage(msg, false);
+            Client.SendMessage(msg, UnityEngine.Networking.QosType.StateUpdate);
         }
         else
         {
-            Debug.LogError("ClientManager.SendPlayerState >> local player is null");
+            Debug.LogError("ClientAgent.SendPlayerState >> local player is null");
         }
     }
 
@@ -185,11 +228,35 @@ public class ClientManager : MonoBehaviour
         {
             Protocol.QuitGameReq quit = new QuitGameReq();
             GameMsg msg = new GameMsg(GameMsg.MsgType.QuitGameReq, quit);
-            Client.SendMessage(msg, true);
+            Client.SendMessage(msg, UnityEngine.Networking.QosType.ReliableSequenced);
         }
         else
         {
-            Debug.LogError("ClientManager.SendPlayerState >> local player is null");
+            Debug.LogError("ClientAgent.SendPlayerState >> local player is null");
         }
+    }
+
+    public void SendDamage(Player src, Player target, Vector3 pos, float damage)
+    {
+        Protocol.HitPlayer hit = new Protocol.HitPlayer();
+        hit.sourceId = src.id;
+        hit.targetId = target.id;
+        hit.damage = damage;
+        hit.hitPosX = pos.x;
+        hit.hitPosY = pos.y;
+        hit.hitPosZ = pos.z;
+        GameMsg msg = new GameMsg(GameMsg.MsgType.Damage, hit);
+        Client.SendMessage(msg, UnityEngine.Networking.QosType.ReliableSequenced);
+    }
+
+    public void SendShoot(int id, Vector3 pos)
+    {
+        Protocol.PlayerShoot shoot = new PlayerShoot();
+        shoot.id = id;
+        shoot.targetPointX = pos.x;
+        shoot.targetPointY = pos.y;
+        shoot.targetPointZ = pos.z;
+        GameMsg msg = new GameMsg(GameMsg.MsgType.Shoot, shoot);
+        Client.SendMessage(msg, UnityEngine.Networking.QosType.AllCostDelivery);
     }
 }

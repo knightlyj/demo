@@ -389,6 +389,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 874cbf95619e2a1408cd51f15ca9ec1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  btnConfirm: {fileID: 114000011514374604}
+  btnCancel: {fileID: 114000011947434246}
 --- !u!222 &222000010633540576
 CanvasRenderer:
   m_ObjectHideFlags: 1

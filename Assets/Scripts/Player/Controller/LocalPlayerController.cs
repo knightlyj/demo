@@ -8,9 +8,9 @@ public partial class LocalPlayerController : MonoBehaviour
     [HideInInspector]
     public Rigidbody rigidBody = null;
 
-    public PlayerInput input; //输入
+    public GameInput input; //输入
     Player player = null;
-    LocalPlayerAgent agent = null;
+    IPlayerInput agent = null;
 
 
     void Awake()
@@ -25,11 +25,11 @@ public partial class LocalPlayerController : MonoBehaviour
     {
         if (tag == StringAssets.localPlayerTag)
         {
-            agent = new LocalPlayerAgent();
+            agent = new LocalPlayerInput();
         }
         else if (tag == StringAssets.AIPlayerTag)
         {
-
+            agent = new LocalAIInput();
         }
         else
         {
@@ -43,7 +43,9 @@ public partial class LocalPlayerController : MonoBehaviour
 
     void OnDestroy()
     {
-
+        EventManager.RemoveListener(EventId.PlayerDamage, player.id, this.OnPlayerDamage);
+        EventManager.RemoveListener(EventId.PlayerRevive, player.id, this.OnPlayerRevive);
+        EventManager.RemoveListener(EventId.PlayerDie, player.id, this.OnPlayerDie);
     }
     
     DateTime lastLockTime = DateTime.Now;
@@ -250,6 +252,30 @@ public partial class LocalPlayerController : MonoBehaviour
         get
         {
             return input.aimAngle.x;
+        }
+    }
+
+    public void HitOtherPlayer(Player target, Vector3 hitPoint, float damage)
+    {
+        if (GlobalVariables.hostType == HostType.Server)
+        {
+            if (target.playerType == PlayerType.LocalAI)
+            {
+                target.Damage(player, damage, hitPoint);
+            }
+            else if (target.playerType == PlayerType.Remote)
+            {
+                ServerAgent sm = UnityHelper.GetServerAgent();
+                sm.SendDamage(player, target, hitPoint, damage);
+            }
+        }
+        else if (GlobalVariables.hostType == HostType.Client)
+        {
+            if (target.playerType == PlayerType.Remote)
+            {
+                ClientAgent cm = UnityHelper.GetClientAgent();
+                cm.SendDamage(player, target, hitPoint, damage);
+            }
         }
     }
     

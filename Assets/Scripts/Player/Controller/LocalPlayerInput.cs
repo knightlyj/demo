@@ -38,7 +38,7 @@ public static class GamePadInput
     public static bool run { get { return Input.GetAxis("LTRT") < -0.7f; } }
 }
 
-public struct PlayerInput
+public struct GameInput
 {
     public bool hasMove;  //有输入方向
     public float moveYaw;
@@ -78,17 +78,14 @@ public enum EightDir
     FrontRight,
 }
 
-public class PlayerAgent
+interface IPlayerInput
 {
-    virtual public void UpdateInput(ref PlayerInput input, LocalPlayerController controller)
-    {
-
-    }
+    void UpdateInput(ref GameInput input, LocalPlayerController controller);
 }
 
-public class LocalPlayerAgent : PlayerAgent
+public class LocalPlayerInput : IPlayerInput
 {
-    override public void UpdateInput(ref PlayerInput input, LocalPlayerController controller)
+    public void UpdateInput(ref GameInput input, LocalPlayerController controller)
     {
         input.Clear();
 
@@ -106,7 +103,7 @@ public class LocalPlayerAgent : PlayerAgent
         }
     }
 
-    void UpdateMoveYawOnPC(ref PlayerInput input)
+    void UpdateMoveYawOnPC(ref GameInput input)
     {
         
         //处理输入方向
@@ -183,7 +180,7 @@ public class LocalPlayerAgent : PlayerAgent
         }
     }
 
-    void UpdateInputOnPC(ref PlayerInput input)
+    void UpdateInputOnPC(ref GameInput input)
     {
         UpdateMoveYawOnPC(ref input);
 
@@ -240,7 +237,7 @@ public class LocalPlayerAgent : PlayerAgent
         }
     }
 
-    void UpdateInputOnMobile(ref PlayerInput input)
+    void UpdateInputOnMobile(ref GameInput input)
     {
         //***********move******************
         const float runThreshold = 0.75f;

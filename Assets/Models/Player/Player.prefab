@@ -1697,7 +1697,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010192556884}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.53546256, y: 0.18127687, z: 0.17288023}
@@ -1721,7 +1721,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013939459544}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.7051876, y: 0.21263433, z: 0.1444112}
@@ -1733,7 +1733,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014215526010}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.53392804, y: 0.19904757, z: 0.15994008}
@@ -1745,7 +1745,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013854064544}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.29277962, y: 0.33593577, z: 0.2471137}
@@ -1757,7 +1757,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011874419002}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.70137054, y: 0.22088592, z: 0.18112853}
@@ -1794,11 +1794,19 @@ MonoBehaviour:
   nameInGame: 
   targetId: -1
   connectId: -1
-  healthPoint: 1000
+  playerType: 0
+  _healthPoint: 1000
   energyPoint: 200
   animator: {fileID: 0}
+  hitLayer:
+    serializedVersion: 2
+    m_Bits: 2304
   weaponType: 0
+  weaponCollision: {fileID: 0}
+  gun: {fileID: 0}
   blocking: 0
+  enemyMat: {fileID: 2100000, guid: df7676168cf8d6941ba2680042b2e4ed, type: 2}
+  localMat: {fileID: 2100000, guid: 6e10ea0198a5eda4298973be9197ac6e, type: 2}
   shootIk: 0
   footIk: 0
   footIKLayer:

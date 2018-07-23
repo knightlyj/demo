@@ -226,13 +226,13 @@ public class MoveState : StateBase
 
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniEvent.animatorStateInfo.IsName("SwapWeapon"))
+        if (aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.swapWeapon)
         {
-            if (aniEvent.stringParameter.Equals("Swap"))
+            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.swap))
             {
                 player.ChangeWeapon(nextWeapon);
             }
-            else if (aniEvent.stringParameter.Equals("Done"))
+            else if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.done))
             {
                 player.UpperSuitLowerAnimation();
                 nextWeapon = WeaponType.Empty;

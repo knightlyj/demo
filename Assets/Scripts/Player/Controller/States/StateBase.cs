@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 public enum PlayerStateType
 {
-    Empty, Move, Aim, Roll, Jump, InAir, Attack, GetHit,
+    Empty, Move, Aim, Roll, Jump, InAir, Attack, GetHit, Die,
 }
 
 public class StateBase

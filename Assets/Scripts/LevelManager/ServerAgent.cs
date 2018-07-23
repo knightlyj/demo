@@ -4,7 +4,7 @@ using Protocol;
 using System.Collections.Generic;
 using System;
 
-public class ServerManager : MonoBehaviour
+public class ServerAgent : MonoBehaviour
 {
     enum ConnState
     {
@@ -34,6 +34,7 @@ public class ServerManager : MonoBehaviour
         Server.Init();
         lm = GetComponent<LevelManager>();
         lm.AddPlayer(ControllerType.Local, idCount++, SystemInfo.deviceName);
+        lm.AddPlayer(ControllerType.LocalAI, idCount++, SystemInfo.deviceName);
     }
 
     void OnDestroy()
@@ -101,7 +102,7 @@ public class ServerManager : MonoBehaviour
                     GameMsg msg = new GameMsg(GameMsg.MsgType.PlayerQuit, quit);
                     int length;
                     byte[] data = MsgPacker.Pack(msg, out length);
-                    SendToAllClientsInGame(data, length, true);
+                    SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.ReliableSequenced);
                 }
             }
 
@@ -116,7 +117,7 @@ public class ServerManager : MonoBehaviour
             Connection conn = connDict[connId];
             if (conn == null)
             {  //不应该发生
-                Debug.LogError("ServerManager.OnDateEvent>> connection is null");
+                Debug.LogError("ServerAgent.OnDateEvent>> connection is null");
                 return;
             }
             // 设置conn的lastTime
@@ -152,6 +153,22 @@ public class ServerManager : MonoBehaviour
                 if (state != null)
                 {
                     OnClientLocalState(state, conn);
+                }
+            }
+            else if (msg.type == GameMsg.MsgType.Damage)
+            {
+                HitPlayer hit = msg.content as HitPlayer;
+                if (hit != null)
+                {
+                    OnDamage(hit, conn);
+                }
+            }
+            else if(msg.type == GameMsg.MsgType.Shoot)
+            {
+                PlayerShoot shoot = msg.content as PlayerShoot;
+                if(shoot != null)
+                {
+                    OnShoot(shoot, conn);
                 }
             }
         }
@@ -206,7 +223,7 @@ public class ServerManager : MonoBehaviour
                     inGamePlayerCount++;
                 }
             }
-            Server.SendMessage(new GameMsg(GameMsg.MsgType.JoinGameRsp, rsp), conn.connId, true);
+            Server.SendMessage(new GameMsg(GameMsg.MsgType.JoinGameRsp, rsp), conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
         }
     }
 
@@ -224,7 +241,7 @@ public class ServerManager : MonoBehaviour
             //其他玩家的信息 
             info.elsePlayers = new PlayerInfo[lm.playerCount - 1];
             lm.AchievePlayerInfo(info.elsePlayers, p.id);
-            Server.SendMessage(new GameMsg(GameMsg.MsgType.InitServerGameInfo, info), conn.connId, true);
+            Server.SendMessage(new GameMsg(GameMsg.MsgType.InitServerGameInfo, info), conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
 
 
             //通知其他玩家 
@@ -235,7 +252,7 @@ public class ServerManager : MonoBehaviour
             int length;
             byte[] data = MsgPacker.Pack(msg, out length);
 
-            SendToAllClientsInGame(data, length, conn.connId, true);
+            SendToAllClientsInGame(data, length, conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
         }
     }
 
@@ -249,6 +266,12 @@ public class ServerManager : MonoBehaviour
         {   //游戏玩家-1,并通知其他玩家
             inGamePlayerCount--;
 
+            LevelManager lm = UnityHelper.GetLevelManager();
+            lm.RemovePlayer(conn.playerId);
+
+            UIManager um = UnityHelper.GetUIManager();
+            um.AddScrollMessage(string.Format("{0}离开游戏", conn.playerName));
+
             Protocol.PlayerQuit quit = new PlayerQuit();
             quit.ids = new int[1];
             quit.ids[0] = conn.playerId;
@@ -257,7 +280,7 @@ public class ServerManager : MonoBehaviour
             int length;
             byte[] data = MsgPacker.Pack(msg, out length);
 
-            SendToAllClientsInGame(data, length, true);
+            SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.ReliableSequenced);
         }
         else if (conn.state == ConnState.WaitForReady)
         {   //游戏玩家-1,
@@ -285,31 +308,71 @@ public class ServerManager : MonoBehaviour
                 }
                 else
                 {//???不应该发生
-                    Debug.LogError("ServerManager.OnClientLocalState >> player has no remote controller component");
+                    Debug.LogError("ServerAgent.OnClientLocalState >> player has no remote controller component");
                 }
             }
             else
             {   //???不应该发生
-                Debug.LogError("ServerManager.OnClientLocalState >> player doesn't exist");
+                Debug.LogError("ServerAgent.OnClientLocalState >> player doesn't exist");
             }
         }
     }
 
-    void SendToAllClientsInGame(byte[] data, int length, bool reliable = false)
+    void OnDamage(HitPlayer hit, Connection conn)
+    {
+        if (conn.state == ConnState.InGame)
+        {
+            Player src = lm.GetPlayer(hit.sourceId);
+            Player p = lm.GetPlayer(hit.targetId);
+            if (p != null)
+            {
+                if (p.playerType == PlayerType.Local || p.playerType == PlayerType.LocalAI)
+                {   //这里偷懒了,没有做任何判定
+                    Vector3 point = new Vector3(hit.hitPosX, hit.hitPosY, hit.hitPosZ);
+                    p.Damage(src, hit.damage, point);
+                }
+                else if (p.playerType == PlayerType.Remote)
+                {
+                    SendDamage(hit);
+                }
+            }
+        }
+    }
+
+    void OnShoot(PlayerShoot shoot, Connection conn)
+    {
+        if (conn.state == ConnState.InGame)
+        {
+            Player p = lm.GetPlayer(shoot.id);
+            if (p != null)
+            {
+                if (p.playerType == PlayerType.Remote)
+                {
+                    RemotePlayerController rpc = p.GetComponent<RemotePlayerController>();
+                    Vector3 targePoint = new Vector3(shoot.targetPointX, shoot.targetPointY, shoot.targetPointZ);
+                    rpc.Shoot(targePoint);
+                    
+                    SendShoot(shoot);
+                }
+            }
+        }
+    }
+
+    void SendToAllClientsInGame(byte[] data, int length, UnityEngine.Networking.QosType qos)
     {
         foreach (Connection c in connDict.Values)
         {
             if (c.state == ConnState.InGame)
-                Server.SendMessage(data, length, c.connId, reliable);
+                Server.SendMessage(data, length, c.connId, qos);
         }
     }
 
-    void SendToAllClientsInGame(byte[] data, int length, int ignoreId, bool reliable = false)
+    void SendToAllClientsInGame(byte[] data, int length, int ignoreId, UnityEngine.Networking.QosType qos)
     {
         foreach (Connection c in connDict.Values)
         {
             if (c.state == ConnState.InGame && c.connId != ignoreId)
-                Server.SendMessage(data, length, c.connId, reliable);
+                Server.SendMessage(data, length, c.connId, qos);
         }
     }
 
@@ -325,6 +388,70 @@ public class ServerManager : MonoBehaviour
         int length;
         byte[] data = MsgPacker.Pack(msg, out length);
 
-        SendToAllClientsInGame(data, length, false);
+        SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.StateUpdate);
+    }
+
+    public void SendDamage(Player src, Player target, Vector3 pos, float damage)
+    {
+        foreach (Connection conn in connDict.Values)
+        {
+            if (conn.state == ConnState.InGame)
+            {
+                if (conn.playerId == target.id)
+                {
+                    Protocol.HitPlayer hit = new Protocol.HitPlayer();
+                    hit.sourceId = src.id;
+                    hit.targetId = target.id;
+                    hit.damage = damage;
+                    hit.hitPosX = pos.x;
+                    hit.hitPosY = pos.y;
+                    hit.hitPosZ = pos.z;
+                    GameMsg msg = new GameMsg(GameMsg.MsgType.Damage, hit);
+                    Server.SendMessage(msg, conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
+                }
+            }
+        }
+    }
+
+    public void SendDamage(HitPlayer hit)
+    {
+        foreach (Connection conn in connDict.Values)
+        {
+            if (conn.state == ConnState.InGame)
+            {
+                if (conn.playerId == hit.targetId)
+                {
+                    GameMsg msg = new GameMsg(GameMsg.MsgType.Damage, hit);
+                    Server.SendMessage(msg, conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
+                }
+            }
+        }
+    }
+
+    public void SendShoot(int id, Vector3 pos)
+    {
+        Protocol.PlayerShoot shoot = new PlayerShoot();
+        shoot.id = id;
+        shoot.targetPointX = pos.x;
+        shoot.targetPointY = pos.y;
+        shoot.targetPointZ = pos.z;
+        GameMsg msg = new GameMsg(GameMsg.MsgType.Shoot, shoot);
+        
+        //直接打包信息,避免多次打包
+        int length;
+        byte[] data = MsgPacker.Pack(msg, out length);
+
+        SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.AllCostDelivery);
+    }
+
+    public void SendShoot(Protocol.PlayerShoot shoot)
+    {
+        GameMsg msg = new GameMsg(GameMsg.MsgType.Shoot, shoot);
+
+        //直接打包信息,避免多次打包
+        int length;
+        byte[] data = MsgPacker.Pack(msg, out length);
+
+        SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.AllCostDelivery);
     }
 }

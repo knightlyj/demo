@@ -25,12 +25,12 @@ public class LevelManager : MonoBehaviour
 
         if (GlobalVariables.hostType == HostType.Server)
         {
-            ServerManager sm = GetComponent<ServerManager>();
+            ServerAgent sm = GetComponent<ServerAgent>();
             sm.enabled = true;
         }
         else if (GlobalVariables.hostType == HostType.Client)
         {
-            ClientManager cm = GetComponent<ClientManager>();
+            ClientAgent cm = GetComponent<ClientAgent>();
             cm.enabled = true;
         }
     }
@@ -39,13 +39,13 @@ public class LevelManager : MonoBehaviour
     {
         if (GlobalVariables.hostType == HostType.Server)
         {
-            ServerManager sm = GetComponent<ServerManager>();
+            ServerAgent sm = GetComponent<ServerAgent>();
             sm.enabled = false;
 
         }
         else if (GlobalVariables.hostType == HostType.Client)
         {
-            ClientManager cm = GetComponent<ClientManager>();
+            ClientAgent cm = GetComponent<ClientAgent>();
             cm.enabled = false;
         }
     }
@@ -59,7 +59,6 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField]
     Transform playerPrefab = null;
-
 
     Dictionary<int, Player> playerDict = new Dictionary<int, Player>();
 
@@ -105,6 +104,7 @@ public class LevelManager : MonoBehaviour
                 player.tag = StringAssets.remoteplayerTag;
                 player.playerType = PlayerType.Remote;
                 player.gameObject.AddComponent<RemotePlayerController>();
+                
                 break;
             default:
                 break;
@@ -116,6 +116,14 @@ public class LevelManager : MonoBehaviour
             player.nameInGame = name;
             playerDict.Add(player.id, player);
         }
+
+        if(type == ControllerType.Remote || type == ControllerType.LocalAI)
+        {
+            UIManager um = UnityHelper.GetUIManager();
+            um.AddPlayerInfoPanel(player);
+            um.AddScrollMessage(string.Format("玩家{0}加入游戏", player.nameInGame));
+        }
+
         return player;
     }
 
@@ -189,5 +197,45 @@ public class LevelManager : MonoBehaviour
             }
         }
         return true;
+    }
+
+    public enum ParticleEffectType
+    {
+        Shoot,
+        HitGround,
+        HitPlayer,
+    }
+
+    [SerializeField]
+    Transform shootEffectPrefab = null;
+    [SerializeField]
+    Transform hitGroundEffectPrefab = null;
+    [SerializeField]
+    Transform hitPlayerEffectPrefab = null;
+
+    public void CreateParticleEffect(ParticleEffectType type, Vector3 position, Vector3 forward)
+    {
+        Transform effect = null;
+        switch (type)
+        {
+            case ParticleEffectType.Shoot:
+                effect = Instantiate(shootEffectPrefab) as Transform;
+                break;
+            case ParticleEffectType.HitGround:
+                effect = Instantiate(hitGroundEffectPrefab) as Transform;
+                break;
+            case ParticleEffectType.HitPlayer:
+                effect = Instantiate(hitPlayerEffectPrefab) as Transform;
+                break;
+            default:
+                break;
+        }
+        ParticleSystem ps = effect.GetComponent<ParticleSystem>();
+        effect.position = position;
+        effect.forward = forward;
+        if (!ps.loop)
+        {
+            Destroy(effect.gameObject, ps.startLifetime);
+        }
     }
 }

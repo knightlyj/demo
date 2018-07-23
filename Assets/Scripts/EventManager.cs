@@ -1,41 +1,71 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 public enum EventId
 {
-    LocalPlayerCreate, //本地玩家创建
-    LocalPlayerDestroy, //本地玩家销毁
-
-    LocalPlayerLoad, //读取玩家存档
+    Empty = 0,
+    PlayerDamage,
+    PlayerDie,
+    PlayerRevive,
+    PlayerDestory, //玩家销毁
 }
 
 public static class EventManager
 {
+    struct EventKey
+    {
+        public EventId id;
+        public int session;
+        
+    }
+
     public delegate void Listener(System.Object sender, System.Object eventArg);
-    static Listener[] EventListener;
-
-    static EventManager()
+    static Dictionary<EventKey, Listener> eventListenerDict = new Dictionary<EventKey, Listener>();
+    
+    public static void AddListener(EventId id, int session, Listener listener)
     {
-        Array a = Enum.GetValues(typeof(EventId));
-        EventListener = new Listener[a.Length];
-    }
-
-    public static void AddListener(EventId id, Listener listener)
-    {
-        EventListener[(int)id] += listener;
-    }
-
-    public static void RemoveListener(EventId id, Listener listener)
-    {
-        EventListener[(int)id] -= listener;
-    }
-
-    public static void RaiseEvent(EventId id, System.Object sender, System.Object eventArg)
-    {
-        if(EventListener[(int)id] != null)
+        EventKey key = new EventKey();
+        key.id = id;
+        key.session = session;
+        if (eventListenerDict.ContainsKey(key))
         {
-            EventListener[(int)id](sender, eventArg);
+            eventListenerDict[key] += listener;
+        }
+        else
+        {
+            eventListenerDict.Add(key, listener);
+        }
+    }
+
+    public static void RemoveListener(EventId id, int session, Listener listener)
+    {
+        EventKey key = new EventKey();
+        key.id = id;
+        key.session = session;
+        if (eventListenerDict.ContainsKey(key))
+        {
+            eventListenerDict[key] -= listener;
+            if(eventListenerDict[key] == null)
+            {
+                eventListenerDict.Remove(key);
+            }
+        }
+    }
+
+    public static void RaiseEvent(EventId id, int session, System.Object sender, System.Object eventArg)
+    {
+        EventKey key = new EventKey();
+        key.id = id;
+        key.session = session;
+        if (eventListenerDict.ContainsKey(key))
+        {
+            Listener temp = eventListenerDict[key];
+            if (temp != null)
+            {
+                temp(sender, eventArg);
+            }
         }
     }
 }

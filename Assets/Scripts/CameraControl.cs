@@ -110,31 +110,71 @@ public class CameraControl : MonoBehaviour
         }
     }
 
+    const float maxPadYawSpeed = 1.5f;
+    float _padYawSpeed = 0f;
+    float gamePadYawSpeed
+    {
+        set
+        {
+            _padYawSpeed = value;
+            if (_padYawSpeed < -maxPadYawSpeed)
+                _padYawSpeed = -maxPadYawSpeed;
+            else if (_padYawSpeed > maxPadYawSpeed)
+                _padYawSpeed = maxPadYawSpeed;
+        }
+        get
+        {
+            return _padYawSpeed;
+        }
+    }
+
+    const float maxPadPitchSpeed = 1f;
+    float _padPitchSpeed = 0f;
+    float gamePadPitchSpeed
+    {
+        set
+        {
+            _padPitchSpeed = value;
+            if (_padPitchSpeed < -maxPadPitchSpeed)
+                _padPitchSpeed = -maxPadPitchSpeed;
+            else if (_padPitchSpeed > maxPadPitchSpeed)
+                _padPitchSpeed = maxPadPitchSpeed;
+        }
+        get
+        {
+            return _padPitchSpeed;
+        }
+    }
     void UpdateInputOnPC()
     {
         //计算鼠标输入
         float mouseYaw = Input.GetAxis("Mouse X") * mouseRatio;
         float mousePith = Input.GetAxis("Mouse Y") * mouseRatio;
         //计算手柄输入
-        float gamePadYaw = Input.GetAxis(GamePadInput.cameraX);
-        float gamepadPitch = Input.GetAxis(GamePadInput.cameraY);
+        float gamePadX = Input.GetAxis(GamePadInput.cameraX);
+        float gamepadY = Input.GetAxis(GamePadInput.cameraY);
 
-        if (gamePadYaw > GamePadInput.joystickThreshold)
-            gamePadYaw = -joystickRatio * Time.deltaTime;
-        else if (gamePadYaw < -GamePadInput.joystickThreshold)
-            gamePadYaw = joystickRatio * Time.deltaTime;
+        float padTurnAcc = Time.deltaTime * 5;
+        if (gamePadX > GamePadInput.joystickThreshold)
+            gamePadYawSpeed -= padTurnAcc;
+        else if (gamePadX < -GamePadInput.joystickThreshold)
+            gamePadYawSpeed += padTurnAcc;
         else
-            gamePadYaw = 0;
+            gamePadYawSpeed = 0;
 
-        if (gamepadPitch > GamePadInput.joystickThreshold)
-            gamepadPitch = joystickRatio * Time.deltaTime;
-        else if (gamepadPitch < -GamePadInput.joystickThreshold)
-            gamepadPitch = -joystickRatio * Time.deltaTime;
+        if (gamepadY > GamePadInput.joystickThreshold)
+            gamePadPitchSpeed += padTurnAcc;
+        else if (gamepadY < -GamePadInput.joystickThreshold)
+            gamePadPitchSpeed -= padTurnAcc;
         else
-            gamepadPitch = 0;
+            gamePadPitchSpeed = 0;
 
-        float deltaYaw = mouseYaw + gamePadYaw;
-        float deltaPitch = -(mousePith + gamepadPitch);
+
+        float deltaPadYaw = gamePadYawSpeed * joystickRatio * Time.deltaTime;
+        float deltaPadPitch = gamePadPitchSpeed * joystickRatio * Time.deltaTime;
+
+        float deltaYaw = mouseYaw + deltaPadYaw;
+        float deltaPitch = -(mousePith + deltaPadPitch);
 
         if (deltaYaw != 0 || deltaPitch != 0)
         {

@@ -5,50 +5,72 @@ using UnityEngine.UI;
 public class Bar : MonoBehaviour
 {
     RectTransform rtBorder;
-    //RectTransform rtEmpty;
+    RectTransform rtEmpty;
     RectTransform rtLost;
     RectTransform rtPoint;
 
     bool init = false;
     //RectTransform rtBorder
+
+    Image imgBorder;
+    Image imgEmpty;
+    Image imgLost;
+    Image imgPoint;
     void Init()
     {
         if (!init)
         {
             rtBorder = transform.FindChild("Border") as RectTransform;
-            //rtEmpty = transform.FindChild("Empty") as RectTransform;
+            rtEmpty = transform.FindChild("Empty") as RectTransform;
             rtLost = transform.FindChild("Lost") as RectTransform;
             rtPoint = transform.FindChild("XPoint") as RectTransform;
+
+            imgBorder = rtBorder.GetComponent<Image>();
+            imgEmpty = rtEmpty.GetComponent<Image>();
+            imgLost = rtLost.GetComponent<Image>();
+            imgPoint = rtPoint.GetComponent<Image>();
+
             init = true;
         }
     }
 
+    public void SetAlpha(float alpha)
+    {
+        Color c = new Color(1, 1, 1, alpha);
+        imgBorder.color = c;
+        imgEmpty.color = c;
+        imgLost.color = c;
+        imgPoint.color = c;
+    }
+
     void Awake()
     {
-        Init(); 
+        Init();
     }
 
     // Use this for initialization
     void Start()
     {
-        //这种UI尺寸直接硬编码了,计算出point bar的最大尺寸
-        Rect rectBorder = rtBorder.rect;
-        pointSize.x = rectBorder.width - 12;
-        pointSize.y = rectBorder.height - 7;
+        
     }
-    
+
     [SerializeField]
     float delay = 0.5f;
     [SerializeField]
     float lostSpeed = 0.8f;
-    
+
     Vector2 pointSize;
-    
+
     bool inLost = false;
     float delayTimer = 0;
     // Update is called once per frame
     void Update()
     {
+        //这种UI尺寸直接硬编码了,计算出point bar的最大尺寸
+        Rect rectBorder = rtBorder.rect;
+        pointSize.x = rectBorder.width - 12;
+        pointSize.y = rectBorder.height - 7;
+
         if (inLost)
         { //带延迟的lost bar
             delayTimer -= Time.deltaTime;
@@ -69,7 +91,7 @@ public class Bar : MonoBehaviour
         }
     }
 
-    float pointRatio = 1.0f;
+    public float pointRatio = 1.0f;
     void SetPointRatioView()
     {
         float toRight = pointSize.x * (1.0f - pointRatio) + 6;
@@ -90,19 +112,24 @@ public class Bar : MonoBehaviour
         else if (ratio < 0)
             ratio = 0;
 
-        pointRatio = ratio;
-        if(pointRatio > lostRatio)
+        
+        if (pointRatio > lostRatio)
         {
-            lostRatio = pointRatio;
+            pointRatio = ratio;
             SetPointRatioView();
+            lostRatio = pointRatio;
             SetLostRatioView();
         }
         else
         {
+            if (!CommonHelper.FloatEqual(pointRatio, ratio))
+            {
+                delayTimer = delay;
+                inLost = true;
+            }
+            pointRatio = ratio;
             SetPointRatioView();
-            delayTimer = delay;
-            inLost = true;
         }
     }
-    
+
 }

@@ -108,6 +108,18 @@ public static class UnityHelper
         return go.GetComponent<LevelManager>();
     }
 
+    public static ClientAgent GetClientAgent()
+    {
+        GameObject go = GameObject.FindWithTag("LevelManager");
+        return go.GetComponent<ClientAgent>();
+    }
+
+    public static ServerAgent GetServerAgent()
+    {
+        GameObject go = GameObject.FindWithTag("LevelManager");
+        return go.GetComponent<ServerAgent>();
+    }
+
     public static UIManager GetUIManager()
     {
         GameObject go = GameObject.FindWithTag("UIManager");

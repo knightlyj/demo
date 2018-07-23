@@ -1191,7 +1191,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1000010897042700, guid: befa6d31a6142384ab41b278fd330977, type: 2}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 114000011592475466, guid: befa6d31a6142384ab41b278fd330977,
         type: 2}
@@ -1420,6 +1420,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loading: {fileID: 788195638}
   msgBox: {fileID: 136333402}
+  playerInfoPanelPrefab: {fileID: 0}
+  scrollMessage: {fileID: 0}
   mobileUI: {fileID: 0}
 --- !u!1 &1704276461
 GameObject:

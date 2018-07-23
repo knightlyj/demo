@@ -2,7 +2,7 @@
 using System.Collections;
 
 
-public class WeaponObj : MonoBehaviour
+public class WeaponCollision : MonoBehaviour
 {
     new Collider collider = null;
     void Awake()
@@ -22,11 +22,11 @@ public class WeaponObj : MonoBehaviour
         }
     }
 
-    public delegate void OnHitCallback(Collider other);
+    public delegate void OnHitCallback(Collision collision);
     public OnHitCallback onHit;
-    void OnTriggerEnter(Collider other)
+    void OnCollisionEnter(Collision collision)
     {
         if (onHit != null)
-            onHit(other);
+            onHit(collision);
     }
 }

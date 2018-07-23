@@ -6,9 +6,11 @@ public class RemotePlayerController : MonoBehaviour
 {
     Rigidbody rigidBody = null;
     Player player = null;
+    Collider collider = null;
     void Awake()
     {
         rigidBody = GetComponent<Rigidbody>();
+        collider = GetComponent<Collider>();
         rigidBody.useGravity = false;
         player = GetComponent<Player>();
         groundLayerMask = 1 << LayerMask.NameToLayer(StringAssets.groundLayerName);
@@ -28,15 +30,16 @@ public class RemotePlayerController : MonoBehaviour
     void Update()
     {
         SmoothOrientation(); //角色朝向平滑过渡
+
     }
-    
+
     void FixedUpdate()
     {
         GroundCheck();
-      
+
         ChaseShadow();
         ChaseAniParam();
-        
+
         int curLowerAniStateHash;
         float curLowerNormTime;
         player.GetLowerAniState(out curLowerAniStateHash, out curLowerNormTime);
@@ -53,7 +56,18 @@ public class RemotePlayerController : MonoBehaviour
         {
             player.footIk = false;
         }
-        
+
+
+        if (curLowerAniStateHash == Player.StateNameHash.die)
+        {
+            collider.isTrigger = true;
+            rigidBody.isKinematic = true;
+        }
+        else
+        {
+            collider.isTrigger = false;
+            rigidBody.isKinematic = false;
+        }
     }
 
     bool grounded = false;
@@ -84,7 +98,7 @@ public class RemotePlayerController : MonoBehaviour
     void ChaseShadow()
     {
         float sqrMag = posDiff.sqrMagnitude;
-        if(sqrMag > 0.05f)
+        if (sqrMag > 0.05f)
         {
             float stepLen = chaseVelocity * Time.fixedDeltaTime;
 
@@ -156,11 +170,35 @@ public class RemotePlayerController : MonoBehaviour
         player.strafeForward = CommonHelper.FloatTowards(player.strafeForward, tarStrafeForward, Time.fixedDeltaTime * 5f);
         player.strafeRight = CommonHelper.FloatTowards(player.strafeRight, tarStrafeRight, Time.fixedDeltaTime * 5f);
     }
-    
+
+    public void Shoot(Vector3 targetPoint)
+    {
+        if (player.gun != null)
+        {
+            RaycastHit hitInfo;
+            if (player.gun.Shoot(targetPoint, player.hitLayer, out hitInfo))
+            {
+                LevelManager lm = UnityHelper.GetLevelManager();
+                Collider collider = hitInfo.collider;
+                if (collider.gameObject.layer == LayerMask.NameToLayer(StringAssets.bodyLayerName))
+                {
+                    if (lm != null)
+                        lm.CreateParticleEffect(LevelManager.ParticleEffectType.HitPlayer, hitInfo.point, hitInfo.normal);
+                }
+                else if (collider.gameObject.layer == LayerMask.NameToLayer(StringAssets.groundLayerName))
+                {
+                    if (lm != null)
+                        lm.CreateParticleEffect(LevelManager.ParticleEffectType.HitGround, hitInfo.point, hitInfo.normal);
+                }
+            }
+        }
+    }
+
     public void ApplyRemoteInfo(Protocol.PlayerInfo info)
     {
         if (info == null)
             return;
+        player.healthPoint = info.hp;
         Vector3 velocity = new Vector3(info.velocityX, info.velocityY, info.velocityZ);
         Vector3 position = new Vector3(info.positionX, info.positionY, info.positionZ);
         rigidBody.velocity = velocity;
@@ -177,10 +215,11 @@ public class RemotePlayerController : MonoBehaviour
         }
         faceYaw = info.yaw;
 
-        if(player.weaponType != info.weapon)
+        if (player.weaponType != info.weapon)
         {
             player.ChangeWeapon(info.weapon);
         }
+        player.blocking = info.blocking;
 
         tarWalkRun = info.walkRun;
         tarAimUp = info.aimUp;
@@ -207,7 +246,7 @@ public class RemotePlayerController : MonoBehaviour
                 player.SetUpperAniState(info.upperAniState, true, 0.1f, info.upperAniNormTime);
             }
         }
-        
+
         if (info.lowerAniState != curLowerAniStateHash)
         {
             player.SetLowerAniState(info.lowerAniState, true, 0.1f, 0);
@@ -220,6 +259,6 @@ public class RemotePlayerController : MonoBehaviour
                 player.SetLowerAniState(info.lowerAniState, true, 0.1f, info.lowerAniNormTime);
             }
         }
-        
+
     }
 }

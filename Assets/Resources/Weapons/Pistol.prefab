@@ -21,6 +21,7 @@ GameObject:
   - 4: {fileID: 4000010761646124}
   - 33: {fileID: 33000012541108858}
   - 23: {fileID: 23000010422126740}
+  - 114: {fileID: 114000012286209016}
   m_Layer: 0
   m_Name: Pistol
   m_TagString: Untagged
@@ -28,6 +29,35 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1000013528201856
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010424262974}
+  - 108: {fileID: 108000010439124562}
+  m_Layer: 0
+  m_Name: Muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000010424262974
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013528201856}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.655, y: 0, z: 0.149}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000010761646124}
+  m_RootOrder: 0
 --- !u!4 &4000010761646124
 Transform:
   m_ObjectHideFlags: 1
@@ -38,7 +68,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_Children: []
+  m_Children:
+  - {fileID: 4000010424262974}
   m_Father: {fileID: 0}
   m_RootOrder: 0
 --- !u!23 &23000010422126740
@@ -54,7 +85,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 6e10ea0198a5eda4298973be9197ac6e, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -77,3 +108,55 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010334905542}
   m_Mesh: {fileID: 4300024, guid: 040ffa37ce9c91e4e843c922c36d1540, type: 3}
+--- !u!108 &108000010439124562
+Light:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013528201856}
+  m_Enabled: 0
+  serializedVersion: 7
+  m_Type: 2
+  m_Color: {r: 1, g: 0.89705884, b: 0.1985294, a: 1}
+  m_Intensity: 3.93
+  m_Range: 10
+  m_SpotAngle: 30
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_Lightmapping: 4
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+--- !u!114 &114000012286209016
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010334905542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f9f9c67796d38a428b06b49ce9acac4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shootLight: {fileID: 108000010439124562}
+  shootEffectPrefab: {fileID: 400000, guid: 0bd11145ced4539458f937fc4609544a, type: 2}
+  hitGroundEffectPrefab: {fileID: 400000, guid: ef39ae7291c751249b296f00bf6fb042,
+    type: 2}
+  hitPlayerEffectPrefab: {fileID: 400000, guid: ef39ae7291c751249b296f00bf6fb042,
+    type: 2}
+  muzzle: {fileID: 4000010424262974}

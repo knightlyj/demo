@@ -31,6 +31,7 @@ public partial class Player : MonoBehaviour
     [HideInInspector]
     public int connectId = -1;
 
+    [HideInInspector]
     public PlayerType playerType = PlayerType.Unknown;
 
     //物理引擎各种配置
@@ -44,7 +45,26 @@ public partial class Player : MonoBehaviour
     public const float moveSpeedInAir = 2;
 
     //角色属性
-    public float healthPoint = maxHealth;
+    public float _healthPoint = maxHealth;
+    public float healthPoint
+    {
+        set
+        {
+            if(_healthPoint > 0 && value <= 0)
+            {
+                EventManager.RaiseEvent(EventId.PlayerDie, this.id, this, null);
+            }
+            else if(_healthPoint <= 0 && value > 0)
+            {
+                EventManager.RaiseEvent(EventId.PlayerRevive, this.id, this, null);
+            }
+            _healthPoint = value;
+        }
+        get
+        {
+            return _healthPoint;
+        }
+    }
     public float energyPoint = maxEnergy;
     public const float maxHealth = 1000f; //最大血量
     public const float maxEnergy = 200f; //最大精力
@@ -77,12 +97,13 @@ public partial class Player : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        SetupMaterial();
         ChangeWeapon(WeaponType.Melee);
     }
 
     void OnDestroy()
     {
-
+        EventManager.RaiseEvent(EventId.PlayerDestory, id, this, null);
     }
 
     // Update is called once per frame
@@ -96,13 +117,17 @@ public partial class Player : MonoBehaviour
     {
 
     }
-
+    public LayerMask hitLayer;
     //武器类型
     [HideInInspector]
     public WeaponType weaponType = WeaponType.Empty;
     //右手武器脚本
     GameObject rightWeapon = null;
     GameObject shield = null;
+    [HideInInspector]
+    public WeaponCollision weaponCollision = null;
+    [HideInInspector]
+    public Gun gun = null;
     [HideInInspector]
     public bool blocking = false;
     //更换右手武器
@@ -114,6 +139,8 @@ public partial class Player : MonoBehaviour
             {  //原来有武器的话,要销毁
                 Destroy(rightWeapon.gameObject);
                 rightWeapon = null;
+                weaponCollision = null;
+                gun = null;
             }
             if (shield != null)
             {
@@ -122,54 +149,104 @@ public partial class Player : MonoBehaviour
             }
 
             this.weaponType = weapon;
-            //GameObject goWeapon = null;
             if (weapon == WeaponType.Melee)
             {
                 //在右手上加上武器
                 UnityEngine.Object res = Resources.Load("Weapons/Sword");
                 rightWeapon = GameObject.Instantiate(res, this.rightHand, false) as GameObject;
+                weaponCollision = rightWeapon.GetComponent<WeaponCollision>();
 
                 res = Resources.Load("Weapons/Shield");
                 shield = GameObject.Instantiate(res, this.leftArm, false) as GameObject;
+                
             }
             else if (weapon == WeaponType.Pistol)
             {
                 //在右手上加上武器
                 UnityEngine.Object res = Resources.Load("Weapons/Pistol");
                 rightWeapon = GameObject.Instantiate(res, this.rightHand, false) as GameObject;
+
+                gun = rightWeapon.GetComponent<Gun>();
             }
 
-            //if (goWeapon != null)
-            //{
-            //    //设置碰撞回调,并关掉武器碰撞
-            //    rightWeapon = goWeapon.GetComponent<WeaponObj>();
-            //    rightWeapon.onHit = this.OnHitOther;
-            //    rightWeapon.colliderEanbled = false;
-            //}
+            if(rightWeapon != null)
+            {
+                MeshRenderer mr = rightWeapon.GetComponent<MeshRenderer>();
+                if (playerType == PlayerType.Remote || playerType == PlayerType.LocalAI)
+                {
+                    mr.material = enemyMat;
+                }
+            }
+
+            if (shield != null)
+            {
+                MeshRenderer mr = shield.GetComponent<MeshRenderer>();
+                if (playerType == PlayerType.Remote || playerType == PlayerType.LocalAI)
+                {
+                    mr.material = enemyMat;
+                }
+            }
+
+            if (weaponCollision != null)
+            {
+                weaponCollision.colliderEanbled = false;
+            }
         }
     }
 
-    //开启武器碰撞
-    public void EnableMainWeapon()
-    {
-    }
-    //关闭武器碰撞
-    public void DisableMainWeapon()
-    {
-    }
-
-    //武器碰撞到其他player时的回调
-    void OnHitOther(Collider other)
+    void KnockBack(float distance)
     {
 
     }
 
+    [SerializeField]
+    Material enemyMat = null;
 
+    [SerializeField]
+    Material localMat = null;
+
+    public void SetupMaterial()
+    {
+        if (playerType == PlayerType.Remote || playerType == PlayerType.LocalAI)
+        {
+            SkinnedMeshRenderer sm = transform.FindChild("RPG-Character-Mesh").GetComponent<SkinnedMeshRenderer>();
+            sm.material = enemyMat;
+        }
+    }
+
+    public void Damage(Player src, float d, Vector3 hitPoint)
+    {//直接用伤害来源者的位置判断格挡了
+        bool damage = false;
+        if (src != null)
+        {
+            if (this.blocking)
+            {
+                Vector3 dir = src.transform.position - transform.position;
+                float angle = Vector3.Angle(dir, transform.forward);
+                if (angle > 90f)
+                {
+                    damage = true;
+                }
+            }
+            else
+            {
+                damage = true;
+            }
+        }
+        if (damage)
+        {
+            EventManager.RaiseEvent(EventId.PlayerDamage, this.id, this, hitPoint);
+            this.healthPoint -= d;
+        }
+    }
+    
     public Protocol.PlayerInfo AchievePlayerInfo()
     {
         Protocol.PlayerInfo info = new Protocol.PlayerInfo();
         info.id = id;
         info.name = nameInGame;
+        info.hp = this.healthPoint;
+
         info.yaw = transform.eulerAngles.y;
 
         Vector3 velocity = rigidBody.velocity;
@@ -182,6 +259,7 @@ public partial class Player : MonoBehaviour
         info.positionZ = position.z;
 
         info.weapon = this.weaponType;
+        info.blocking = this.blocking;
 
         GetUpperAniState(out info.upperAniState, out info.upperAniNormTime);
         GetLowerAniState(out info.lowerAniState, out info.lowerAniNormTime);

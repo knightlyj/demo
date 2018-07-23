@@ -29,11 +29,11 @@ public class UIManager : MonoBehaviour
 
     [SerializeField]
     MessageBox msgBox = null;
-    public void MessageBox(string msg, bool hasCancel, MessageBox.MsgBoxCb cb)
+    public void MessageBox(string msg, bool hasCancel, MessageBox.MsgBoxCb cb, string[] buttonText = null)
     {
         if (msgBox != null)
         {
-            msgBox.ShowMessage(msg, hasCancel, cb);
+            msgBox.ShowMessage(msg, hasCancel, cb, buttonText);
         }
         else
         {
@@ -41,33 +41,56 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public bool ShowWnd(string name)
+    [SerializeField]
+    Transform playerInfoPanelPrefab = null;
+    public void AddPlayerInfoPanel(Player p)
     {
-        Transform trWnd = transform.FindChild(name);
-        if (trWnd != null)
+        if (playerInfoPanelPrefab != null)
         {
-            trWnd.gameObject.SetActive(true);
-            return true;
-        }
-        else
-        {
-            return false;
+            Transform trPanel = Instantiate(playerInfoPanelPrefab, transform) as Transform;
+            PlayerInfoPanel panel = trPanel.GetComponent<PlayerInfoPanel>();
+
+            panel.player = p;
         }
     }
 
-    public bool HideWnd(string name)
+    [SerializeField]
+    ScrollMessage scrollMessage = null;
+    public void AddScrollMessage(string str)
     {
-        Transform trWnd = transform.FindChild(name);
-        if (trWnd != null)
+        if (scrollMessage != null)
         {
-            trWnd.gameObject.SetActive(false);
-            return true;
-        }
-        else
-        {
-            return false;
+            scrollMessage.AddMessage(str);
         }
     }
+
+    //public bool ShowWnd(string name)
+    //{
+    //    Transform trWnd = transform.FindChild(name);
+    //    if (trWnd != null)
+    //    {
+    //        trWnd.gameObject.SetActive(true);
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        return false;
+    //    }
+    //}
+
+    //public bool HideWnd(string name)
+    //{
+    //    Transform trWnd = transform.FindChild(name);
+    //    if (trWnd != null)
+    //    {
+    //        trWnd.gameObject.SetActive(false);
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        return false;
+    //    }
+    //}
 
 
     [SerializeField]
@@ -84,6 +107,26 @@ public class UIManager : MonoBehaviour
             {
                 mobileUI.gameObject.SetActive(false);
             }
+        }
+    }
+
+    [SerializeField]
+    Transform frontSight = null;
+    public bool showFrontSight
+    {
+        set
+        {
+            if (frontSight != null)
+            {
+                frontSight.gameObject.SetActive(value);
+            }
+        }
+        get
+        {
+            if (frontSight != null)
+                return frontSight.gameObject.activeInHierarchy;
+            else
+                return false;
         }
     }
 

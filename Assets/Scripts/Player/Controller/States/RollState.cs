@@ -31,9 +31,9 @@ public class RollState : StateBase
 
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniEvent.animatorStateInfo.IsName("Roll"))
+        if (aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.roll)
         {
-            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.Done))
+            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.done))
             {
                 controller.IntoState(PlayerStateType.Move);
             }

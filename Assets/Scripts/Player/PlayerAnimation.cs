@@ -22,6 +22,7 @@ public partial class Player
         public static readonly int getHitBack = Animator.StringToHash("GetHitBack");
         public static readonly int aimStrafe = Animator.StringToHash("AimStrafe");
         public static readonly int meleeStrafe = Animator.StringToHash("MeleeStrafe");
+        public static readonly int die = Animator.StringToHash("Die");
     }
 
     const int upperAniLayer = 1;

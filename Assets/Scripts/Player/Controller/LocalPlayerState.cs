@@ -16,8 +16,14 @@ public partial class LocalPlayerController
         states[(int)PlayerStateType.Aim] = new AimState();
         states[(int)PlayerStateType.Roll] = new RollState();
         states[(int)PlayerStateType.Jump] = new JumpState();
+        states[(int)PlayerStateType.Die] = new DieState();
+        states[(int)PlayerStateType.GetHit] = new NormalDelayState();
 
         IntoState(PlayerStateType.Move, null);
+
+        EventManager.AddListener(EventId.PlayerDamage, player.id, this.OnPlayerDamage);
+        EventManager.AddListener(EventId.PlayerDie, player.id, this.OnPlayerDie);
+        EventManager.AddListener(EventId.PlayerRevive, player.id, this.OnPlayerRevive);
     }
 
     PlayerStateType curState = PlayerStateType.Empty;
@@ -72,7 +78,35 @@ public partial class LocalPlayerController
 
     public static class AniEventName
     {
-        public static readonly string Done = "Done";
+        public static readonly string done = "Done";
+        public static readonly string startAttack = "StartAttack";
+        public static readonly string endAttack = "EndAttack";
+        public static readonly string swap = "Swap";
     }
 
+    void OnPlayerDie(System.Object sender, System.Object eventArg)
+    {
+        IntoState(PlayerStateType.Die);
+    }
+
+    void OnPlayerRevive(System.Object sender, System.Object eventArg)
+    {
+        IntoState(PlayerStateType.Move);
+    }
+
+    void OnPlayerDamage(System.Object sender, System.Object eventArg)
+    {
+        Vector3 point = (Vector3)eventArg;
+        Vector3 dir = point - transform.position;
+        dir.y = 0f;
+        float dot = Vector3.Dot(dir, transform.forward);
+        if (dot > 0)
+        {
+            IntoState(PlayerStateType.GetHit, "GetHitFront");
+        }
+        else
+        {
+            IntoState(PlayerStateType.GetHit, "GetHitBack");
+        }
+    }
 }

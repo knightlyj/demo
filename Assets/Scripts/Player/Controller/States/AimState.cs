@@ -5,6 +5,7 @@ using System;
 public class AimState : StateBase
 {
     CameraControl cameraControl;
+
     public override void Start(Player player, LocalPlayerController controller, System.Object param)
     {
         base.Start(player, controller, param);
@@ -17,6 +18,15 @@ public class AimState : StateBase
         targetStrafeForward = 0f;
         targetStrafeRight = 0f;
         inAirTime = 0;
+
+        if (player.playerType == PlayerType.Local)
+        {
+            UIManager um = UnityHelper.GetUIManager();
+            if (um != null)
+            {
+                um.showFrontSight = true;
+            }
+        }
     }
 
     DateTime lastShootTime = DateTime.Now;
@@ -55,9 +65,9 @@ public class AimState : StateBase
             else if (controller.input.mainHand)
             {
                 TimeSpan span = DateTime.Now - lastShootTime;
-                if (span.TotalMilliseconds > 500)
+                if (span.TotalMilliseconds > 300)
                 {
-                    player.SetUpperAniState(Player.StateNameHash.shoot);
+                    Shoot();
                     lastShootTime = DateTime.Now;
                 }
             }
@@ -108,15 +118,80 @@ public class AimState : StateBase
         base.OnStop();
         cameraControl = GameObject.FindWithTag("MainCamera").GetComponent<CameraControl>();
         cameraControl.SwitchCameraMode(CameraControl.ViewMode.Normal);
+
+        if (player.playerType == PlayerType.Local)
+        {
+            UIManager um = UnityHelper.GetUIManager();
+            if (um != null)
+            {
+                um.showFrontSight = false;
+            }
+        }
     }
 
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniEvent.animatorStateInfo.IsName("Shoot"))
+        if (aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.shoot)
         {
-            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.Done))
+            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.done))
             {
                 player.SetUpperAniState(Player.StateNameHash.aim);
+            }
+        }
+    }
+
+    void Shoot()
+    {
+        if (player.gun != null)
+        {
+            player.SetUpperAniState(Player.StateNameHash.shoot);
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            Vector3 targetPoint;
+            RaycastHit hitInfo;
+            if (Physics.Raycast(ray, out hitInfo, 100f, player.hitLayer))
+            {
+                targetPoint = hitInfo.point;
+
+            }
+            else
+            {
+                targetPoint = Camera.main.transform.position + ray.direction * 100f;
+            }
+            
+            if (player.gun.Shoot(targetPoint, player.hitLayer, out hitInfo))
+            {
+                LevelManager lm = UnityHelper.GetLevelManager();
+                Collider collider = hitInfo.collider;
+                if (collider.gameObject.layer == LayerMask.NameToLayer(StringAssets.bodyLayerName))
+                {
+                    Player p = UnityHelper.FindObjectUpward<Player>(collider.transform);
+                    if (p != null)
+                    {
+                        if (lm != null)
+                            lm.CreateParticleEffect(LevelManager.ParticleEffectType.HitPlayer, hitInfo.point, hitInfo.normal);
+                        controller.HitOtherPlayer(p, hitInfo.point, 20f);
+                    }
+                    else
+                    {
+                        Debug.LogError("AimState.Shoot >> hit body, but can't find Player component");
+                    }
+                }
+                else if (collider.gameObject.layer == LayerMask.NameToLayer(StringAssets.groundLayerName))
+                {
+                    if (lm != null)
+                        lm.CreateParticleEffect(LevelManager.ParticleEffectType.HitGround, hitInfo.point, hitInfo.normal);
+                }
+            }
+
+            if (GlobalVariables.hostType == HostType.Server)
+            {
+                ServerAgent sa = UnityHelper.GetServerAgent();
+                sa.SendShoot(player.id, targetPoint);
+            }
+            else if(GlobalVariables.hostType == HostType.Client)
+            {
+                ClientAgent ca = UnityHelper.GetClientAgent();
+                ca.SendShoot(player.id, targetPoint);
             }
         }
     }

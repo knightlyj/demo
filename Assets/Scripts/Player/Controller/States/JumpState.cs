@@ -26,9 +26,9 @@ public class JumpState : StateBase
 
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
-        if (aniEvent.animatorStateInfo.IsName("Jump"))
+        if (aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.jump)
         {
-            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.Done))
+            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.done))
             {
                 controller.IntoState(PlayerStateType.InAir);
             }

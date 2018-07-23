@@ -50,7 +50,7 @@ public class LoginManager : MonoBehaviour
     {
         loading.onLoadingDone -= this.OnLoadingDone;
         ClientReady ready = new ClientReady();
-        Client.SendMessage(new GameMsg(GameMsg.MsgType.ClientReady, ready), true);
+        Client.SendMessage(new GameMsg(GameMsg.MsgType.ClientReady, ready), UnityEngine.Networking.QosType.ReliableSequenced);
     }
 
     Loading loading = null;
@@ -93,7 +93,7 @@ public class LoginManager : MonoBehaviour
     {
         JoinGameReq req = new JoinGameReq(SystemInfo.deviceName);
         GameMsg msg = new GameMsg(GameMsg.MsgType.JoinGameReq, req);
-        Client.SendMessage(msg, true);
+        Client.SendMessage(msg, UnityEngine.Networking.QosType.ReliableSequenced);
     }
 
     void OnDisconnectEvent(int connection)

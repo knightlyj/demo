@@ -43,11 +43,6 @@ public class StartMenu : MonoBehaviour
     bool useDefaultIpAndPort = true;
     void OnJoinClick()
     {
-        if(GlobalVariables.hostType == HostType.Client)
-        {
-            return;
-        }
-
         string ip = inputIp.text;
         if (CommonHelper.IpLegal(ip))
         {
@@ -76,7 +71,7 @@ public class StartMenu : MonoBehaviour
         {
             if (useDefaultIpAndPort)
             {
-                port = 8888;
+                port = 7887;
             }
             else
             {

@@ -17,8 +17,9 @@ public static class Client
     public static int serverPort = -1;
     public static string serverIp = null;
 
-    static int reliableChannelId;
-    static int stateChannelId;
+    static int reliableSequencedChannel;
+    static int stateUpdateChannel;
+    static int allCostChannel;
     static int localHostId = -1;
     static int connectionId = -1;
 
@@ -28,19 +29,20 @@ public static class Client
     {
         if (!initialized)
         {
-            
+
             NetworkTransport.Init();
             ConnectionConfig config = new ConnectionConfig();
 
-            reliableChannelId = config.AddChannel(QosType.ReliableSequenced);
-            stateChannelId = config.AddChannel(QosType.StateUpdate);
+            reliableSequencedChannel = config.AddChannel(QosType.ReliableSequenced);
+            stateUpdateChannel = config.AddChannel(QosType.StateUpdate);
+            allCostChannel = config.AddChannel(QosType.AllCostDelivery);
             HostTopology topology = new HostTopology(config, 1);
 
             localHostId = NetworkTransport.AddHost(topology);
 
             initialized = true;
         }
-        
+
     }
 
     public static void Connect()
@@ -49,7 +51,7 @@ public static class Client
         connectionId = NetworkTransport.Connect(localHostId, serverIp, serverPort, 0, out error);
         Debug.Log("clent connect to " + serverIp + ": " + serverPort);
     }
-    
+
     const int bufferSize = 4096;
     static byte[] recBuffer = new byte[bufferSize];
     // Update is called once per frame
@@ -123,22 +125,38 @@ public static class Client
             initialized = false;
         }
     }
-    
-    static public bool SendMessage(GameMsg msg, bool reliable = false)
+
+    static public bool SendMessage(GameMsg msg, QosType qos)
     {
         if (localHostId < 0 || connectionId < 0)
             return false;
         int length;
         byte[] data = MsgPacker.Pack(msg, out length);
         byte error;
-        if (!reliable)
+        switch (qos)
         {
-            return NetworkTransport.Send(localHostId, connectionId, stateChannelId, data, length, out error);
+            case QosType.Unreliable:
+                break;
+            case QosType.UnreliableFragmented:
+                break;
+            case QosType.UnreliableSequenced:
+                break;
+            case QosType.Reliable:
+                break;
+            case QosType.ReliableFragmented:
+                break;
+            case QosType.ReliableSequenced:
+                return NetworkTransport.Send(localHostId, connectionId, reliableSequencedChannel, data, length, out error);
+            case QosType.StateUpdate:
+                return NetworkTransport.Send(localHostId, connectionId, stateUpdateChannel, data, length, out error);
+            case QosType.ReliableStateUpdate:
+                break;
+            case QosType.AllCostDelivery:
+                return NetworkTransport.Send(localHostId, connectionId, allCostChannel, data, length, out error);
+            default:
+                break;
         }
-        else
-        {
-            return NetworkTransport.Send(localHostId, connectionId, reliableChannelId, data, length, out error);
-        }
+        return false;
     }
-    
+
 }

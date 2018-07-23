@@ -26,7 +26,10 @@ namespace Protocol
             PlayerQuit,
             InitServerGameInfo,  //在client加入后,第一次发送此消息
             ServerGameState, //后续状态更新
-            
+
+            //either
+            Damage,
+            Shoot,
         }
 
         public MsgType type = MsgType.None;
@@ -72,6 +75,9 @@ namespace Protocol
     {
         public int id;
         public string name;
+
+        public float hp;
+
         public float yaw;
         public float velocityX;
         public float velocityY;
@@ -80,6 +86,7 @@ namespace Protocol
         public float positionY;
         public float positionZ;
         public WeaponType weapon;
+        public bool blocking;
 
         //动画状态信息
         public int upperAniState;
@@ -123,4 +130,26 @@ namespace Protocol
         public PlayerInfo clientLocalPlayer;
         public PlayerInfo[] elsePlayers;
     }
+
+    [Serializable]
+    public class HitPlayer
+    {
+        public int sourceId;
+        public int targetId;
+        public float damage;
+        public float hitPosX;
+        public float hitPosY;
+        public float hitPosZ;
+    }
+
+    [Serializable]
+    public class PlayerShoot
+    {
+        public int id;
+        
+        public float targetPointX;
+        public float targetPointY;
+        public float targetPointZ;
+    }
+    
 }
