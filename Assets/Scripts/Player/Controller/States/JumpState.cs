@@ -10,7 +10,7 @@ public class JumpState : StateBase
         player.SetLowerAniState(Player.StateNameHash.jump, true);  //设置动画
 
         upForceCount = 5;
-
+        
     }
 
     int upForceCount = 0;

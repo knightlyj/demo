@@ -14,6 +14,8 @@ public class RemotePlayerController : MonoBehaviour
         rigidBody.useGravity = false;
         player = GetComponent<Player>();
         groundLayerMask = 1 << LayerMask.NameToLayer(StringAssets.groundLayerName);
+
+        player.onAnimationEvent += this.OnAnimationEvent;
     }
 
     // Use this for initialization
@@ -31,6 +33,11 @@ public class RemotePlayerController : MonoBehaviour
     {
         SmoothOrientation(); //角色朝向平滑过渡
 
+    }
+
+    void OnDestroy()
+    {
+        player.onAnimationEvent -= this.OnAnimationEvent;
     }
 
     void FixedUpdate()
@@ -189,6 +196,7 @@ public class RemotePlayerController : MonoBehaviour
                 {
                     if (lm != null)
                         lm.CreateParticleEffect(LevelManager.ParticleEffectType.HitGround, hitInfo.point, hitInfo.normal);
+                    
                 }
             }
         }
@@ -219,7 +227,7 @@ public class RemotePlayerController : MonoBehaviour
         {
             player.ChangeWeapon(info.weapon);
         }
-        player.blocking = info.blocking;
+        player.invincible = info.invincible;
 
         tarWalkRun = info.walkRun;
         tarAimUp = info.aimUp;
@@ -237,6 +245,11 @@ public class RemotePlayerController : MonoBehaviour
         if (info.upperAniState != curUpperAniStateHash)
         {
             player.SetUpperAniState(info.upperAniState, true, 0.1f, 0);
+            if(info.upperAniState == Player.StateNameHash.roll)
+            {
+                AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "roll", typeof(AudioClip));
+                player.audioSource.PlayOneShot(clip, 1f);
+            }
         }
         else
         {
@@ -249,7 +262,14 @@ public class RemotePlayerController : MonoBehaviour
 
         if (info.lowerAniState != curLowerAniStateHash)
         {
+            if (curLowerAniStateHash == Player.StateNameHash.fall)
+            {
+                AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "foot2", typeof(AudioClip));
+                player.audioSource.PlayOneShot(clip, 1f);
+            }
+
             player.SetLowerAniState(info.lowerAniState, true, 0.1f, 0);
+            
         }
         else
         {
@@ -260,5 +280,33 @@ public class RemotePlayerController : MonoBehaviour
             }
         }
 
+    }
+
+    DateTime lastStepTime = DateTime.Now;
+    DateTime lastSwingTime = DateTime.Now;
+    void OnAnimationEvent(AnimationEvent aniEvent)
+    {
+        if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.step))
+        {
+            TimeSpan span = DateTime.Now - lastStepTime;
+            if (span.TotalMilliseconds > 150f)
+            {
+                int s = UnityEngine.Random.Range(1, 4);
+                AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "foot" + s, typeof(AudioClip));
+                player.audioSource.PlayOneShot(clip, 0.5f);
+                lastStepTime = DateTime.Now;
+            }
+        }
+        else if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.startAttack))
+        {
+            TimeSpan span = DateTime.Now - lastSwingTime;
+            if (span.TotalMilliseconds > 250f)
+            {
+                int r = UnityEngine.Random.Range(1, 3);
+                AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "sword" + r, typeof(AudioClip));
+                player.audioSource.PlayOneShot(clip, 0.5f);
+                lastSwingTime = DateTime.Now;
+            }
+        }
     }
 }

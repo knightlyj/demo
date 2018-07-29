@@ -58,6 +58,7 @@ public class AttackState : StateBase
         }
     }
 
+    DateTime lastSwingTime = DateTime.Now;
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
         if (aniEvent.animatorStateInfo.IsName(actionName))
@@ -69,6 +70,15 @@ public class AttackState : StateBase
             }
             else if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.startAttack))
             {
+                TimeSpan span = DateTime.Now - lastSwingTime;
+                if (span.TotalMilliseconds > 250f)
+                {
+                    int r = UnityEngine.Random.Range(1, 3);
+                    AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "sword" + r, typeof(AudioClip));
+                    player.audioSource.PlayOneShot(clip, 0.8f);
+                    lastSwingTime = DateTime.Now;
+                }
+
                 if (wc != null)
                     wc.colliderEanbled = true;
             }
@@ -84,15 +94,15 @@ public class AttackState : StateBase
     void OnWeaponHit(Collision collision)
     {
         
-        Player player = UnityHelper.FindObjectUpward<Player>(collision.collider.transform); 
-        if (player != null)
+        Player target = UnityHelper.FindObjectUpward<Player>(collision.collider.transform); 
+        if (target != null)
         {
-            if (player.playerType != PlayerType.Local)
+            if (target.id != this.player.id)
             {
                 bool alreadyHit = false;
                 foreach (Player p in hitList)
                 {
-                    if (player == p)
+                    if (target == p)
                     {
                         alreadyHit = true;
                         break;
@@ -100,8 +110,8 @@ public class AttackState : StateBase
                 }
                 if (!alreadyHit)
                 {
-                    hitList.Add(player);
-                    controller.HitOtherPlayer(player, collision.contacts[0].point, 200f);
+                    hitList.Add(target);
+                    controller.HitOtherPlayer(target, collision.contacts[0].point, 200f);
                 }
             }
         }

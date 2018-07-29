@@ -22,6 +22,10 @@ public class NormalDelayState : StateBase
         {
             aniStateHash = Player.StateNameHash.getHitBack;
         }
+        else if(actionName == "BlockGetHit")
+        {
+            aniStateHash = Player.StateNameHash.blockGetHit;
+        }
 
 
         player.animator.updateMode = AnimatorUpdateMode.AnimatePhysics;

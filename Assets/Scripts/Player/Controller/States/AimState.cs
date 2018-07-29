@@ -62,17 +62,21 @@ public class AimState : StateBase
             {  //退出瞄准状态
                 controller.IntoState(PlayerStateType.Move);
             }
-            else if (controller.input.mainHand)
-            {
-                TimeSpan span = DateTime.Now - lastShootTime;
-                if (span.TotalMilliseconds > 300)
-                {
-                    Shoot();
-                    lastShootTime = DateTime.Now;
-                }
-            }
             else
             {
+                if (controller.input.mainHand)
+                {
+                    TimeSpan span = DateTime.Now - lastShootTime;
+                    if (span.TotalMilliseconds > 300)
+                    {
+                        if (controller.EnergyCost(Player.shootEnergyCost) > 0)
+                        {
+                            Shoot();
+                            lastShootTime = DateTime.Now;
+                        }
+                    }
+                }
+
                 if (!controller.input.hasMove) //没输入方向
                 {
                     player.SetLowerAniState(Player.StateNameHash.aim);
@@ -110,6 +114,7 @@ public class AimState : StateBase
         base.Update();
         controller.immediateYaw = controller.aimYaw;
         float aimUpRatio = 1f - ((controller.aimPitch + 90f) / 180f);
+        aimUpRatio += 0.06f;
         player.aimUp = aimUpRatio;
     }
 
@@ -169,7 +174,7 @@ public class AimState : StateBase
                     {
                         if (lm != null)
                             lm.CreateParticleEffect(LevelManager.ParticleEffectType.HitPlayer, hitInfo.point, hitInfo.normal);
-                        controller.HitOtherPlayer(p, hitInfo.point, 20f);
+                        controller.HitOtherPlayer(p, hitInfo.point, 100f);
                     }
                     else
                     {

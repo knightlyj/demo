@@ -11,6 +11,7 @@ public partial class Player
         public static readonly int move = Animator.StringToHash("Move");
         public static readonly int aim = Animator.StringToHash("Aim");
         public static readonly int blockIdle = Animator.StringToHash("BlockIdle");
+        public static readonly int blockGetHit = Animator.StringToHash("BlockGetHit");
         public static readonly int swapWeapon = Animator.StringToHash("SwapWeapon");
         public static readonly int shoot = Animator.StringToHash("Shoot");
         public static readonly int jump = Animator.StringToHash("Jump");

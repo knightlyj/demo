@@ -1,11 +1,19 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
+    [SerializeField]
+    Button btnShowMenu = null;
     void Awake()
     {
         UnityHelper.StartWriteLogFile();
+
+        if (btnShowMenu)
+        {
+            btnShowMenu.onClick.AddListener(this.ShowOrHideMenu);
+        }
     }
 
     void OnApplicationQuit()
@@ -22,32 +30,62 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ShowOrHideMenu();
+        }
     }
 
-    public Loading loading = null;
+    void OnDestroy()
+    {
+        if (btnShowMenu)
+        {
+            btnShowMenu.onClick.RemoveListener(this.ShowOrHideMenu);
+        }
+    }
+    
+    [SerializeField]
+    Transform menu = null;
+    void ShowOrHideMenu()
+    {
+        if (menu)
+        {
+            menu.gameObject.SetActive(!menu.gameObject.activeInHierarchy);
+            menu.SetAsLastSibling();
+        }
+    }
 
     [SerializeField]
-    MessageBox msgBox = null;
+    Transform msgBoxPrefab = null;
     public void MessageBox(string msg, bool hasCancel, MessageBox.MsgBoxCb cb, string[] buttonText = null)
     {
-        if (msgBox != null)
+        if (msgBoxPrefab)
         {
-            msgBox.ShowMessage(msg, hasCancel, cb, buttonText);
-        }
-        else
-        {
-            Debug.LogError("UIManager.MessageBox >> MessageBox is null");
+            RectTransform rtMsgBox = Instantiate(msgBoxPrefab, transform) as RectTransform;
+            rtMsgBox.SetAsLastSibling();
+            rtMsgBox.offsetMin = Vector2.zero;
+            rtMsgBox.offsetMax = Vector2.zero;
+            MessageBox msgBox = rtMsgBox.GetComponent<MessageBox>();
+            if (msgBox != null)
+            {
+                msgBox.ShowMessage(msg, hasCancel, cb, buttonText);
+            }
+            else
+            {
+                Debug.LogError("UIManager.MessageBox >> MessageBox is null");
+            }
         }
     }
 
     [SerializeField]
     Transform playerInfoPanelPrefab = null;
+    [SerializeField]
+    Transform elsePlayerPanel = null;
     public void AddPlayerInfoPanel(Player p)
     {
-        if (playerInfoPanelPrefab != null)
+        if (playerInfoPanelPrefab != null && elsePlayerPanel != null)
         {
-            Transform trPanel = Instantiate(playerInfoPanelPrefab, transform) as Transform;
+            Transform trPanel = Instantiate(playerInfoPanelPrefab, elsePlayerPanel) as Transform;
             PlayerInfoPanel panel = trPanel.GetComponent<PlayerInfoPanel>();
 
             panel.player = p;

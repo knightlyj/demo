@@ -100,7 +100,7 @@ public class ClientAgent : MonoBehaviour
 
     void MsgBoxCb(bool confirm)
     {
-        SceneManager.LoadScene(StringAssets.mainMenuSceneName);
+        UnityHelper.LoadSceneAsync(StringAssets.mainMenuSceneName);
     }
 
     bool initRecieved = false;

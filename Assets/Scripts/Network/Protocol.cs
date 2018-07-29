@@ -86,7 +86,7 @@ namespace Protocol
         public float positionY;
         public float positionZ;
         public WeaponType weapon;
-        public bool blocking;
+        public bool invincible;
 
         //动画状态信息
         public int upperAniState;

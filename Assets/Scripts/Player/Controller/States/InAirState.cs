@@ -13,6 +13,8 @@ public class InAirState : StateBase
     {
         if (controller.grounded)
         {
+            AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "foot2", typeof(AudioClip));
+            player.audioSource.PlayOneShot(clip, 1f);
             controller.IntoState(PlayerStateType.Move);
         }
         else

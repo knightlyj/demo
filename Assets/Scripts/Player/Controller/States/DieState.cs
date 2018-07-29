@@ -12,6 +12,7 @@ public class DieState : StateBase
         Collider col = player.GetComponent<Collider>();
         col.isTrigger = true;
         controller.rigidBody.isKinematic = true;
+        alreadyMsgBox = false;
     }
 
     public override void Update()
@@ -35,11 +36,11 @@ public class DieState : StateBase
         }
         else
         {
-            SceneManager.LoadScene(StringAssets.mainMenuSceneName);
+            UnityHelper.LoadSceneAsync(StringAssets.mainMenuSceneName);
         }
     }
 
-
+    bool alreadyMsgBox = false;
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
         if (aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.die)
@@ -48,8 +49,12 @@ public class DieState : StateBase
             {
                 if (player.playerType == PlayerType.Local)
                 {
-                    UIManager um = UnityHelper.GetUIManager();
-                    um.MessageBox("You Died", true, this.OnMsgBox, new string[] { "重生", "退出" });
+                    if (!alreadyMsgBox)
+                    {
+                        alreadyMsgBox = true;
+                        UIManager um = UnityHelper.GetUIManager();
+                        um.MessageBox("You Died", true, this.OnMsgBox, new string[] { "重生", "退出" });
+                    }
                 }
                 else if (player.playerType == PlayerType.LocalAI)
                 {

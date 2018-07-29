@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System;
 using System.IO;
@@ -94,11 +95,23 @@ public static class UnityHelper
         return default(T);
     }
 
+    public static bool LoadSceneAsync(string sceneName, LoadingTask task = LoadingTask.Nothing)
+    {
+        if(Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Loading.targetSceneName = sceneName;
+            Loading.loadingTask = task;
+            SceneManager.LoadScene(StringAssets.loadingSceneName);
+            return true;
+        }
+        return false;
+    }
+
     //找到main camera
     public static CameraControl GetCameraControl()
     {
-        GameObject go = GameObject.FindWithTag("MainCamera");
-        return go.GetComponent<CameraControl>();
+        Camera c = Camera.main;
+        return c.GetComponent<CameraControl>();
     }
 
 

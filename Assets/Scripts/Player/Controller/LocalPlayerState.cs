@@ -17,10 +17,11 @@ public partial class LocalPlayerController
         states[(int)PlayerStateType.Roll] = new RollState();
         states[(int)PlayerStateType.Jump] = new JumpState();
         states[(int)PlayerStateType.Die] = new DieState();
-        states[(int)PlayerStateType.GetHit] = new NormalDelayState();
+        states[(int)PlayerStateType.NormalDelay] = new NormalDelayState();
 
         IntoState(PlayerStateType.Move, null);
 
+        EventManager.AddListener(EventId.PlayerBlock, player.id, this.OnPlayerBlock);
         EventManager.AddListener(EventId.PlayerDamage, player.id, this.OnPlayerDamage);
         EventManager.AddListener(EventId.PlayerDie, player.id, this.OnPlayerDie);
         EventManager.AddListener(EventId.PlayerRevive, player.id, this.OnPlayerRevive);
@@ -82,6 +83,9 @@ public partial class LocalPlayerController
         public static readonly string startAttack = "StartAttack";
         public static readonly string endAttack = "EndAttack";
         public static readonly string swap = "Swap";
+        public static readonly string invincible = "Invincible";
+        public static readonly string notInvincible = "NotInvincible";
+        public static readonly string step = "Step";
     }
 
     void OnPlayerDie(System.Object sender, System.Object eventArg)
@@ -102,11 +106,16 @@ public partial class LocalPlayerController
         float dot = Vector3.Dot(dir, transform.forward);
         if (dot > 0)
         {
-            IntoState(PlayerStateType.GetHit, "GetHitFront");
+            IntoState(PlayerStateType.NormalDelay, "GetHitFront");
         }
         else
         {
-            IntoState(PlayerStateType.GetHit, "GetHitBack");
+            IntoState(PlayerStateType.NormalDelay, "GetHitBack");
         }
+    }
+
+    void OnPlayerBlock(System.Object sender, System.Object eventArg)
+    {
+       IntoState(PlayerStateType.NormalDelay, "BlockGetHit");
     }
 }

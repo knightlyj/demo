@@ -17,7 +17,7 @@ public class ScrollMessage : MonoBehaviour
     ScrollRect scrollRect = null;
 
     List<string> messages = new List<string>(maxMsgCount);
-    const int maxMsgCount = 10;
+    const int maxMsgCount = 5;
 
     Image image = null;
     void Awake()
@@ -26,7 +26,7 @@ public class ScrollMessage : MonoBehaviour
 
         scrollRect = GetComponent<ScrollRect>();
         scrollRect.onValueChanged.AddListener(OnScroll);
-        
+
     }
 
     DateTime lastScrollTime = DateTime.Now;
@@ -40,11 +40,6 @@ public class ScrollMessage : MonoBehaviour
     float hideTimer = 5f;
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            AddMessage(DateTime.Now.ToString() + ": switch weapon");
-        }
-
         hideTimer += Time.deltaTime;
         if (hideTimer > 3f)
         {
@@ -59,6 +54,7 @@ public class ScrollMessage : MonoBehaviour
                 alpha = 1f;
         }
         SetAlpha();
+        
     }
 
     void SetAlpha()
@@ -99,11 +95,12 @@ public class ScrollMessage : MonoBehaviour
         }
         content.text = sb.ToString();
 
-        TimeSpan span = DateTime.Now - lastScrollTime;
-        if (span.TotalSeconds > 5)
-        {   //一段时间没拖动,会跳到最新消息
-            scrollRect.normalizedPosition = Vector2.zero;
-        }
+        //禁用rancast target了
+        //TimeSpan span = DateTime.Now - lastScrollTime;
+        //if (span.TotalSeconds > 5)
+        //{   //一段时间没拖动,会跳到最新消息
+        scrollRect.normalizedPosition = Vector2.zero;
+        //}
 
         hideTimer = 0f;
     }

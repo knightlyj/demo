@@ -18,6 +18,8 @@ public static class GlobalVariables {
     public static UIManager uiManager = null;
 
     public static Protocol.InitServerGameInfo clientInitInfo = null;
+
+    public static bool menuOpened = false;
 }
 
 static class StringAssets
@@ -26,6 +28,7 @@ static class StringAssets
     /// scenes
     /// </summary>
     public readonly static string mainMenuSceneName = "Menu";
+    public readonly static string loadingSceneName = "Loading";
     public readonly static string gamePlaySceneName = "GamePlay";
 
     /// <summary>
@@ -41,5 +44,10 @@ static class StringAssets
     public readonly static string AIPlayerTag = "AIPlayer";
     public readonly static string remoteplayerTag = "RemotePlayer";
 
+    /// <summary>
+    /// sound
+    /// </summary>
+    public readonly static string soundPath = "Sound/";
+    public readonly static string bgmPath = "Sound/BGM/";
 
 }

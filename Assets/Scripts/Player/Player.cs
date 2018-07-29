@@ -40,7 +40,7 @@ public partial class Player : MonoBehaviour
     public const float walkSpeed = 4;
     public const float runSpeed = 7;
     public const float strafeSpeed = 2f;
-    public const float moveForce = 80;
+    public const float moveForce = 160;
     public const float moveForceInAir = 10;
     public const float moveSpeedInAir = 2;
 
@@ -72,10 +72,14 @@ public partial class Player : MonoBehaviour
     public const float rollEnergyCost = 35f; //roll消耗的energy
     public const float runEnergyCost = 50f;  //run消耗energy, per second
     public const float jumpEnergyCost = 35f; //jump消耗的energy
+    public const float attackEnergyCost = 40f;
+    public const float shootEnergyCost = 40f;
 
     [HideInInspector]
     public Animator animator = null;
 
+    [HideInInspector]
+    public AudioSource audioSource = null;
 
     //************左右手transform*******************
     public Transform rightHand { get { return this._rightHand; } }
@@ -89,6 +93,7 @@ public partial class Player : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         rigidBody = GetComponent<Rigidbody>();
+        audioSource = GetComponent<AudioSource>();
         _rightHand = UnityHelper.FindChildRecursive(transform, "B_R_Hand");
         _leftArm = UnityHelper.FindChildRecursive(transform, "B_L_Forearm");
 
@@ -130,6 +135,8 @@ public partial class Player : MonoBehaviour
     public Gun gun = null;
     [HideInInspector]
     public bool blocking = false;
+    [HideInInspector]
+    public bool invincible = false;
     //更换右手武器
     public void ChangeWeapon(WeaponType weapon)
     {
@@ -193,17 +200,9 @@ public partial class Player : MonoBehaviour
             }
         }
     }
-
-    void KnockBack(float distance)
-    {
-
-    }
-
+    
     [SerializeField]
     Material enemyMat = null;
-
-    [SerializeField]
-    Material localMat = null;
 
     public void SetupMaterial()
     {
@@ -216,27 +215,42 @@ public partial class Player : MonoBehaviour
 
     public void Damage(Player src, float d, Vector3 hitPoint)
     {//直接用伤害来源者的位置判断格挡了
-        bool damage = false;
-        if (src != null)
+        if (invincible)
         {
-            if (this.blocking)
+
+        }
+        else
+        {
+            bool damage = false;
+            if (src != null)
             {
-                Vector3 dir = src.transform.position - transform.position;
-                float angle = Vector3.Angle(dir, transform.forward);
-                if (angle > 90f)
+                if (this.blocking)
+                {
+                    Vector3 dir = src.transform.position - transform.position;
+                    float angle = Vector3.Angle(dir, transform.forward);
+                    if (angle > 90f)
+                    {
+                        damage = true;
+                    }
+                    else
+                    {
+                        EventManager.RaiseEvent(EventId.PlayerBlock, this.id, this, null);
+
+                        PlayBlockSound();
+                    }
+                }
+                else
                 {
                     damage = true;
                 }
             }
-            else
+            if (damage)
             {
-                damage = true;
+                EventManager.RaiseEvent(EventId.PlayerDamage, this.id, this, hitPoint);
+                this.healthPoint -= d;
+
+                PlayHitBodySound();
             }
-        }
-        if (damage)
-        {
-            EventManager.RaiseEvent(EventId.PlayerDamage, this.id, this, hitPoint);
-            this.healthPoint -= d;
         }
     }
     
@@ -259,7 +273,7 @@ public partial class Player : MonoBehaviour
         info.positionZ = position.z;
 
         info.weapon = this.weaponType;
-        info.blocking = this.blocking;
+        info.invincible = this.invincible;
 
         GetUpperAniState(out info.upperAniState, out info.upperAniNormTime);
         GetLowerAniState(out info.lowerAniState, out info.lowerAniNormTime);
@@ -271,4 +285,16 @@ public partial class Player : MonoBehaviour
         return info;
     }
 
+    public void PlayBlockSound()
+    {
+        AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "hitBlock", typeof(AudioClip));
+        audioSource.PlayOneShot(clip, 0.2f);
+    }
+
+    public void PlayHitBodySound()
+    {
+        int s = UnityEngine.Random.Range(1, 3);
+        AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "hitBody" + s, typeof(AudioClip));
+        audioSource.PlayOneShot(clip, 0.2f);
+    }
 }

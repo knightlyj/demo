@@ -75,7 +75,8 @@ public class LevelManager : MonoBehaviour
                 if (GlobalVariables.localPlayer == null)
                 {
                     player = Instantiate(playerPrefab).GetComponent<Player>();
-                    player.transform.position = new Vector3(22, 0, 80);
+                    Vector3 randomPos = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
+                    player.transform.position = new Vector3(35, 0, 175) + randomPos;
                     GlobalVariables.localPlayer = player;
                     player.tag = StringAssets.localPlayerTag;
                     player.playerType = PlayerType.Local;
@@ -90,6 +91,8 @@ public class LevelManager : MonoBehaviour
                 if (GlobalVariables.hostType == HostType.Server)
                 {
                     player = Instantiate(playerPrefab).GetComponent<Player>();
+                    Vector3 randomPos = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
+                    player.transform.position = new Vector3(35, 0, 175) + randomPos;
                     player.tag = StringAssets.AIPlayerTag;
                     player.playerType = PlayerType.LocalAI;
                     player.gameObject.AddComponent<LocalPlayerController>();
@@ -104,7 +107,7 @@ public class LevelManager : MonoBehaviour
                 player.tag = StringAssets.remoteplayerTag;
                 player.playerType = PlayerType.Remote;
                 player.gameObject.AddComponent<RemotePlayerController>();
-                
+
                 break;
             default:
                 break;
@@ -117,7 +120,7 @@ public class LevelManager : MonoBehaviour
             playerDict.Add(player.id, player);
         }
 
-        if(type == ControllerType.Remote || type == ControllerType.LocalAI)
+        if (type == ControllerType.Remote || type == ControllerType.LocalAI)
         {
             UIManager um = UnityHelper.GetUIManager();
             um.AddPlayerInfoPanel(player);

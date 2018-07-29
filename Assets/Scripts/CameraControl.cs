@@ -147,9 +147,10 @@ public class CameraControl : MonoBehaviour
     }
     void UpdateInputOnPC()
     {
+        bool menuOpened = GlobalVariables.menuOpened;
         //计算鼠标输入
-        float mouseYaw = Input.GetAxis("Mouse X") * mouseRatio;
-        float mousePith = Input.GetAxis("Mouse Y") * mouseRatio;
+        float mouseYaw = menuOpened ? 0 : Input.GetAxis("Mouse X") * mouseRatio;
+        float mousePith = menuOpened ? 0 : Input.GetAxis("Mouse Y") * mouseRatio;
         //计算手柄输入
         float gamePadX = Input.GetAxis(GamePadInput.cameraX);
         float gamepadY = Input.GetAxis(GamePadInput.cameraY);

@@ -33,8 +33,7 @@ public class ServerAgent : MonoBehaviour
         Server.onDataEvent += this.OnDateEvent;
         Server.Init();
         lm = GetComponent<LevelManager>();
-        lm.AddPlayer(ControllerType.Local, idCount++, SystemInfo.deviceName);
-        lm.AddPlayer(ControllerType.LocalAI, idCount++, SystemInfo.deviceName);
+        lm.AddPlayer(ControllerType.Local, NewPlayerId(), SystemInfo.deviceName);
     }
 
     void OnDestroy()
@@ -84,25 +83,23 @@ public class ServerAgent : MonoBehaviour
 
                 PlayerQuit quit = new PlayerQuit();
                 quit.ids = new int[inGameCount];
-                int idCount = 0;
+                int i = 0;
 
                 foreach (Connection conn in lostConnList)
                 {
                     if (conn.state == ConnState.InGame)
                     {
-                        quit.ids[idCount++] = conn.playerId;
+                        quit.ids[i++] = conn.playerId;
                         lm.RemovePlayer(conn.playerId);
                     }
                     Server.Disconnect(conn.connId);
                     connDict.Remove(conn.connId);
                 }
 
-                if (idCount > 0)
+                if (i > 0)
                 {
                     GameMsg msg = new GameMsg(GameMsg.MsgType.PlayerQuit, quit);
-                    int length;
-                    byte[] data = MsgPacker.Pack(msg, out length);
-                    SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.ReliableSequenced);
+                    SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.ReliableSequenced);
                 }
             }
 
@@ -203,13 +200,21 @@ public class ServerAgent : MonoBehaviour
 
     //*********************消息处理部分********************************
     int idCount = 1;
-    int inGamePlayerCount = 0;
+    int NewPlayerId()
+    {
+        int id = idCount;
+        idCount++;
+        return id;
+    }
+
+    
+    int inGameClientPlayerCount = 0;
     void OnJoinGameReq(JoinGameReq req, Connection conn)
     {
         if (conn.state == ConnState.Connected)
         {
             JoinGameRsp rsp = new JoinGameRsp();
-            if (inGamePlayerCount >= 4)
+            if (inGameClientPlayerCount >= 4)
             {
                 rsp.success = false;
             }
@@ -220,7 +225,7 @@ public class ServerAgent : MonoBehaviour
                     rsp.success = true;
                     conn.state = ConnState.WaitForReady;
                     conn.playerName = req.name;
-                    inGamePlayerCount++;
+                    inGameClientPlayerCount++;
                 }
             }
             Server.SendMessage(new GameMsg(GameMsg.MsgType.JoinGameRsp, rsp), conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
@@ -232,7 +237,7 @@ public class ServerAgent : MonoBehaviour
         if (conn.state == ConnState.WaitForReady)
         {
             conn.state = ConnState.InGame;
-            Player p = lm.AddPlayer(ControllerType.Remote, idCount++, conn.playerName);
+            Player p = lm.AddPlayer(ControllerType.Remote, NewPlayerId(), conn.playerName);
             conn.playerId = p.id;
             //发送游戏状态
             InitServerGameInfo info = new InitServerGameInfo();
@@ -248,11 +253,8 @@ public class ServerAgent : MonoBehaviour
             PlayerJoin join = new PlayerJoin();
             join.info = info.clientLocalPlayer;
             GameMsg msg = new GameMsg(GameMsg.MsgType.PlayerJoin, join);
-            //直接打包信息,避免多次打包
-            int length;
-            byte[] data = MsgPacker.Pack(msg, out length);
 
-            SendToAllClientsInGame(data, length, conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
+            SendToAllClientsInGame(msg, conn.connId, UnityEngine.Networking.QosType.ReliableSequenced);
         }
     }
 
@@ -264,7 +266,7 @@ public class ServerAgent : MonoBehaviour
 
         if (conn.state == ConnState.InGame)
         {   //游戏玩家-1,并通知其他玩家
-            inGamePlayerCount--;
+            inGameClientPlayerCount--;
 
             LevelManager lm = UnityHelper.GetLevelManager();
             lm.RemovePlayer(conn.playerId);
@@ -276,15 +278,12 @@ public class ServerAgent : MonoBehaviour
             quit.ids = new int[1];
             quit.ids[0] = conn.playerId;
             GameMsg msg = new GameMsg(GameMsg.MsgType.PlayerQuit, quit);
-
-            int length;
-            byte[] data = MsgPacker.Pack(msg, out length);
-
-            SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.ReliableSequenced);
+            
+            SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.ReliableSequenced);
         }
         else if (conn.state == ConnState.WaitForReady)
         {   //游戏玩家-1,
-            inGamePlayerCount--;
+            inGameClientPlayerCount--;
         }
         else if (conn.state == ConnState.Connected)
         {   //不用做什么
@@ -357,9 +356,14 @@ public class ServerAgent : MonoBehaviour
             }
         }
     }
+    
 
-    void SendToAllClientsInGame(byte[] data, int length, UnityEngine.Networking.QosType qos)
+    void SendToAllClientsInGame(GameMsg msg, UnityEngine.Networking.QosType qos)
     {
+        //直接打包信息,避免多次打包
+        int length;
+        byte[] data = MsgPacker.Pack(msg, out length);
+
         foreach (Connection c in connDict.Values)
         {
             if (c.state == ConnState.InGame)
@@ -367,8 +371,12 @@ public class ServerAgent : MonoBehaviour
         }
     }
 
-    void SendToAllClientsInGame(byte[] data, int length, int ignoreId, UnityEngine.Networking.QosType qos)
+    void SendToAllClientsInGame(GameMsg msg, int ignoreId, UnityEngine.Networking.QosType qos)
     {
+        //直接打包信息,避免多次打包
+        int length;
+        byte[] data = MsgPacker.Pack(msg, out length);
+
         foreach (Connection c in connDict.Values)
         {
             if (c.state == ConnState.InGame && c.connId != ignoreId)
@@ -383,12 +391,8 @@ public class ServerAgent : MonoBehaviour
         state.info = new PlayerInfo[lm.playerCount];
         lm.AchievePlayerInfo(state.info, -1);
         GameMsg msg = new GameMsg(GameMsg.MsgType.ServerGameState, state);
-
-        //直接打包信息,避免多次打包
-        int length;
-        byte[] data = MsgPacker.Pack(msg, out length);
-
-        SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.StateUpdate);
+        
+        SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.StateUpdate);
     }
 
     public void SendDamage(Player src, Player target, Vector3 pos, float damage)
@@ -437,21 +441,60 @@ public class ServerAgent : MonoBehaviour
         shoot.targetPointZ = pos.z;
         GameMsg msg = new GameMsg(GameMsg.MsgType.Shoot, shoot);
         
-        //直接打包信息,避免多次打包
-        int length;
-        byte[] data = MsgPacker.Pack(msg, out length);
-
-        SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.AllCostDelivery);
+        SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.AllCostDelivery);
     }
 
     public void SendShoot(Protocol.PlayerShoot shoot)
     {
         GameMsg msg = new GameMsg(GameMsg.MsgType.Shoot, shoot);
+        
+        SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.AllCostDelivery);
+    }
 
-        //直接打包信息,避免多次打包
-        int length;
-        byte[] data = MsgPacker.Pack(msg, out length);
+    List<int> AIIdList = new List<int>();
+    public void AddAI()
+    {
+        if (AIIdList.Count < 3)
+        {
+            int id = NewPlayerId();
+            Player player = lm.AddPlayer(ControllerType.LocalAI, id, "AI id:" + id);
+            AIIdList.Add(id);
 
-        SendToAllClientsInGame(data, length, UnityEngine.Networking.QosType.AllCostDelivery);
+            if (inGameClientPlayerCount > 0)
+            {
+                //通知其他玩家
+                PlayerJoin join = new PlayerJoin();
+                join.info = player.AchievePlayerInfo();
+                GameMsg msg = new GameMsg(GameMsg.MsgType.PlayerJoin, join);
+                
+                SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.ReliableSequenced);
+            }
+        }
+        else
+        {
+            UIManager um = UnityHelper.GetUIManager();
+            um.AddScrollMessage("AI数量达到上限");
+        }
+    }
+
+    public void ClearAI()
+    {
+        PlayerQuit quit = new PlayerQuit();
+        quit.ids = new int[AIIdList.Count];
+
+        int i = 0;
+        foreach (int id in AIIdList)
+        {
+            lm.RemovePlayer(id);
+            quit.ids[i++] = id;
+        }
+
+        if (inGameClientPlayerCount > 0)
+        {
+            GameMsg msg = new GameMsg(GameMsg.MsgType.PlayerQuit, quit);
+            SendToAllClientsInGame(msg, UnityEngine.Networking.QosType.ReliableSequenced);
+        }
+
+        AIIdList.Clear();
     }
 }

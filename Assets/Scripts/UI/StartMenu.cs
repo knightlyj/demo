@@ -83,7 +83,6 @@ public class StartMenu : MonoBehaviour
         Client.serverPort = port;
 
         GlobalVariables.hostType = HostType.Client;
-        //SceneManager.LoadScene(StringAssets.gamePlaySceneName);
         LoginManager lm = GameObject.Find("LoginManager").GetComponent<LoginManager>();
         lm.StartClient();
     }
@@ -97,6 +96,6 @@ public class StartMenu : MonoBehaviour
 
             GlobalVariables.hostType = HostType.Server;
         }
-        SceneManager.LoadScene(StringAssets.gamePlaySceneName);
+        UnityHelper.LoadSceneAsync(StringAssets.gamePlaySceneName);
     }
 }

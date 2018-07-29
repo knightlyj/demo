@@ -45,15 +45,8 @@ public class LoginManager : MonoBehaviour
         started = false;
         Client.Exit();
     }
+    
 
-    void OnLoadingDone()
-    {
-        loading.onLoadingDone -= this.OnLoadingDone;
-        ClientReady ready = new ClientReady();
-        Client.SendMessage(new GameMsg(GameMsg.MsgType.ClientReady, ready), UnityEngine.Networking.QosType.ReliableSequenced);
-    }
-
-    Loading loading = null;
     void OnDateEvent(GameMsg msg, int connection)
     {
         switch (msg.type)
@@ -64,25 +57,7 @@ public class LoginManager : MonoBehaviour
                     if (rsp != null && rsp.success)
                     {
                         //加载场景
-                        UIManager uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
-                        loading = uiManager.loading;
-                        loading.onLoadingDone += this.OnLoadingDone;
-                        uiManager.loading.StartLoading(StringAssets.gamePlaySceneName);
-                    }
-                }
-                break;
-            case GameMsg.MsgType.InitServerGameInfo:
-                {
-                    InitServerGameInfo info = msg.content as InitServerGameInfo;
-                    if (info != null)
-                    {
-                        GlobalVariables.clientInitInfo = info;
-                        if (loading == null)
-                        {
-                            UIManager uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
-                            loading = uiManager.loading;
-                        }
-                        loading.WaitForClick();
+                        UnityHelper.LoadSceneAsync(StringAssets.gamePlaySceneName, LoadingTask.SwitchGameScene);
                     }
                 }
                 break;

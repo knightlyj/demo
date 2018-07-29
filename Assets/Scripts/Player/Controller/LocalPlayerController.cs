@@ -10,7 +10,7 @@ public partial class LocalPlayerController : MonoBehaviour
 
     public GameInput input; //输入
     Player player = null;
-    IPlayerInput agent = null;
+    IPlayerInput inputProc = null;
 
 
     void Awake()
@@ -25,11 +25,13 @@ public partial class LocalPlayerController : MonoBehaviour
     {
         if (tag == StringAssets.localPlayerTag)
         {
-            agent = new LocalPlayerInput();
+            inputProc = new LocalPlayerInput();
+            inputProc.Start(player, this);
         }
         else if (tag == StringAssets.AIPlayerTag)
         {
-            agent = new LocalAIInput();
+            inputProc = new LocalAIInput();
+            inputProc.Start(player, this);
         }
         else
         {
@@ -43,7 +45,10 @@ public partial class LocalPlayerController : MonoBehaviour
 
     void OnDestroy()
     {
+        inputProc.Stop();
+
         EventManager.RemoveListener(EventId.PlayerDamage, player.id, this.OnPlayerDamage);
+        EventManager.RemoveListener(EventId.PlayerBlock, player.id, this.OnPlayerBlock);
         EventManager.RemoveListener(EventId.PlayerRevive, player.id, this.OnPlayerRevive);
         EventManager.RemoveListener(EventId.PlayerDie, player.id, this.OnPlayerDie);
     }
@@ -53,7 +58,7 @@ public partial class LocalPlayerController : MonoBehaviour
     void Update()
     {
         input.Clear();
-        agent.UpdateInput(ref input, this);
+        inputProc.UpdateInput(ref input, this);
 
         UpdateState();
         SmoothOrientation(); //角色朝向平滑过渡
@@ -259,7 +264,7 @@ public partial class LocalPlayerController : MonoBehaviour
     {
         if (GlobalVariables.hostType == HostType.Server)
         {
-            if (target.playerType == PlayerType.LocalAI)
+            if (target.playerType == PlayerType.LocalAI || target.playerType == PlayerType.Local)
             {
                 target.Damage(player, damage, hitPoint);
             }

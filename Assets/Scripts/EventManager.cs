@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public enum EventId
 {
     Empty = 0,
+    PlayerBlock, 
     PlayerDamage,
     PlayerDie,
     PlayerRevive,

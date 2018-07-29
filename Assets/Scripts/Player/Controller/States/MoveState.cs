@@ -53,22 +53,25 @@ public class MoveState : StateBase
             {
                 if (player.weaponType == WeaponType.Melee)
                 {
-                    if (controller.comboCount == 1)
+                    if (controller.EnergyCost(Player.attackEnergyCost) > 0)
                     {
-                        controller.IntoState(PlayerStateType.Attack, "Attack1");
-                        controller.comboCount = 0;
-                    }
-                    else if (controller.comboCount == 0)
-                    {
-                        TimeSpan span = DateTime.Now - controller.lastAttackDoneTime;
-                        if (span.TotalMilliseconds < 300)
-                        {
-                            controller.IntoState(PlayerStateType.Attack, "Attack2");
-                            controller.comboCount = 1;
-                        }
-                        else
+                        if (controller.comboCount == 1)
                         {
                             controller.IntoState(PlayerStateType.Attack, "Attack1");
+                            controller.comboCount = 0;
+                        }
+                        else if (controller.comboCount == 0)
+                        {
+                            TimeSpan span = DateTime.Now - controller.lastAttackDoneTime;
+                            if (span.TotalMilliseconds < 300)
+                            {
+                                controller.IntoState(PlayerStateType.Attack, "Attack2");
+                                controller.comboCount = 1;
+                            }
+                            else
+                            {
+                                controller.IntoState(PlayerStateType.Attack, "Attack1");
+                            }
                         }
                     }
                 }
@@ -108,7 +111,8 @@ public class MoveState : StateBase
                 {
                     if (player.blocking)
                     {
-                        player.SetLowerAniState(Player.StateNameHash.blockIdle);
+                        if (upperAction == UpperAction.Empty)
+                            player.SetLowerAniState(Player.StateNameHash.blockIdle);
                         player.SetUpperAniState(Player.StateNameHash.blockIdle);
                     }
                     else
@@ -124,7 +128,7 @@ public class MoveState : StateBase
                 else  //输入了方向,则移动
                 {
                     player.footIk = false;
-                    if (player.targetId >= 0)
+                    if (player.targetId >= 0 && !controller.input.run)
                     {
                         StrafeMove();
                     }
@@ -157,13 +161,16 @@ public class MoveState : StateBase
 
         PhysicsMove(moveYaw);
 
-        if (player.blocking)
+        if (upperAction == UpperAction.Empty)
         {
-            player.SetUpperAniState(Player.StateNameHash.blockIdle);
-        }
-        else
-        {
-            player.SetUpperAniState(Player.StateNameHash.meleeStrafe);
+            if (player.blocking)
+            {
+                player.SetUpperAniState(Player.StateNameHash.blockIdle);
+            }
+            else
+            {
+                player.SetUpperAniState(Player.StateNameHash.meleeStrafe);
+            }
         }
         player.SetLowerAniState(Player.StateNameHash.meleeStrafe);
 
@@ -194,7 +201,6 @@ public class MoveState : StateBase
         {
             if (player.blocking)
             {
-                controller.moveSpeed = Player.walkSpeed;
                 player.SetUpperAniState(Player.StateNameHash.blockIdle);
             }
             else
@@ -224,6 +230,7 @@ public class MoveState : StateBase
         player.blocking = false;
     }
 
+    DateTime lastStepTime = DateTime.Now;
     public override void OnAnimationEvent(AnimationEvent aniEvent)
     {
         if (aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.swapWeapon)
@@ -231,12 +238,29 @@ public class MoveState : StateBase
             if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.swap))
             {
                 player.ChangeWeapon(nextWeapon);
+                if (nextWeapon == WeaponType.Pistol)
+                    player.targetId = -1;
             }
             else if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.done))
             {
                 player.UpperSuitLowerAnimation();
                 nextWeapon = WeaponType.Empty;
                 upperAction = UpperAction.Empty;
+            }
+        }
+
+        //else if(aniEvent.animatorStateInfo.shortNameHash == Player.StateNameHash.move)
+        {
+            if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.step))
+            {
+                TimeSpan span = DateTime.Now - lastStepTime;
+                if (span.TotalMilliseconds > 150f)
+                {
+                    int r = UnityEngine.Random.Range(1, 4);
+                    AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "foot" + r, typeof(AudioClip));
+                    player.audioSource.PlayOneShot(clip, 0.5f);
+                    lastStepTime = DateTime.Now;
+                }
             }
         }
     }

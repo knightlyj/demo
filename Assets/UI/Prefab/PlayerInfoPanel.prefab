@@ -186,6 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   delay: 0.5
   lostSpeed: 0.3
+  pointRatio: 1
 --- !u!114 &114000013106907650
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -240,7 +241,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -321,7 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []

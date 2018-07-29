@@ -5,6 +5,10 @@ public class Gun : MonoBehaviour
 {
     [SerializeField]
     Light shootLight = null;
+
+    [SerializeField]
+    AudioSource audioSource = null;
+
     // Use this for initialization
     void Start()
     {
@@ -30,6 +34,11 @@ public class Gun : MonoBehaviour
     {
         if (muzzle != null)
         {
+            if(audioSource != null)
+            {
+                AudioClip clip = (AudioClip)Resources.Load(StringAssets.soundPath + "shoot", typeof(AudioClip));
+                audioSource.PlayOneShot(clip, 0.2f);
+            }
             //显示射击光效
             shootLight.enabled = true;
             lightOffTimer = 0.05f;

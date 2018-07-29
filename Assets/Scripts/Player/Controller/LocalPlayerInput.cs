@@ -80,11 +80,23 @@ public enum EightDir
 
 interface IPlayerInput
 {
+    void Start(Player player, LocalPlayerController controller);
     void UpdateInput(ref GameInput input, LocalPlayerController controller);
+    void Stop();
 }
 
 public class LocalPlayerInput : IPlayerInput
 {
+    public void Start(Player player, LocalPlayerController controller)
+    {
+
+    }
+
+    public void Stop()
+    {
+
+    }
+
     public void UpdateInput(ref GameInput input, LocalPlayerController controller)
     {
         input.Clear();
@@ -200,7 +212,7 @@ public class LocalPlayerInput : IPlayerInput
             input.jump = true;
         }
         //副手
-        if (Input.GetKey(KeyboardInput.offHand))
+        if (Input.GetKey(KeyboardInput.offHand) && !GlobalVariables.menuOpened)
         {
             input.offHand = true;
         }
@@ -210,7 +222,7 @@ public class LocalPlayerInput : IPlayerInput
         }
 
         //主手
-        if (Input.GetKey(KeyboardInput.mainHand))
+        if (Input.GetKey(KeyboardInput.mainHand) && !GlobalVariables.menuOpened)
         {
             input.mainHand = true;
         }
