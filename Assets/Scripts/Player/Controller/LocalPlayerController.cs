@@ -52,7 +52,7 @@ public partial class LocalPlayerController : MonoBehaviour
         EventManager.RemoveListener(EventId.PlayerRevive, player.id, this.OnPlayerRevive);
         EventManager.RemoveListener(EventId.PlayerDie, player.id, this.OnPlayerDie);
     }
-    
+
     DateTime lastLockTime = DateTime.Now;
     // Update is called once per frame
     void Update()
@@ -83,9 +83,10 @@ public partial class LocalPlayerController : MonoBehaviour
                 }
             }
         }
-        
+
     }
 
+    string[] targetTags = { StringAssets.AIPlayerTag, StringAssets.remoteplayerTag };
     bool LockTarget()
     {
         if (player.weaponType == WeaponType.Pistol)
@@ -94,23 +95,30 @@ public partial class LocalPlayerController : MonoBehaviour
         }
         else
         {
-            GameObject[] goAIs = GameObject.FindGameObjectsWithTag(StringAssets.AIPlayerTag);
-            if (goAIs != null && goAIs.Length > 0)
+            foreach (string tag in targetTags)
             {
-                foreach (GameObject goAI in goAIs)
+                float nearestSqrDist = float.PositiveInfinity;
+                GameObject[] goAIs = GameObject.FindGameObjectsWithTag(tag);
+                if (goAIs != null && goAIs.Length > 0)
                 {
-                    Transform trAI = goAI.transform;
-                    Vector3 diff = trAI.position - transform.position;
-                    if (diff.sqrMagnitude < 100f)  //这里偷懒了,就用距离判断是否锁定这个目标
+                    foreach (GameObject goAI in goAIs)
                     {
-                        Player p = trAI.GetComponent<Player>();
-                        player.targetId = p.id;
-                        return true;
+                        Transform trAI = goAI.transform;
+                        Vector3 diff = trAI.position - transform.position;
+                        if (diff.sqrMagnitude < 100f && diff.sqrMagnitude < nearestSqrDist)  //这里偷懒了,就用距离判断是否锁定这个目标
+                        {
+                            nearestSqrDist = diff.sqrMagnitude;
+                            Player p = trAI.GetComponent<Player>();
+                            player.targetId = p.id;
+                        }
                     }
                 }
             }
 
-            return false;
+            if (player.targetId > 0)
+                return true;
+            else
+                return false;
         }
     }
 
@@ -120,7 +128,7 @@ public partial class LocalPlayerController : MonoBehaviour
 
         FixedUpdateState();
         UpdateEnergy();
-        
+
     }
 
     //*****************************************
@@ -283,5 +291,5 @@ public partial class LocalPlayerController : MonoBehaviour
             }
         }
     }
-    
+
 }

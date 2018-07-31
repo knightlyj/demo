@@ -167,11 +167,16 @@ public class ClientAgent : MonoBehaviour
 
     void OnRemotePlayerQuit(PlayerQuit quit)
     {
+        UIManager um = UnityHelper.GetUIManager();
         if (initRecieved)
         {
             foreach (int id in quit.ids)
             {
+                Player p = lm.GetPlayer(id);
+                if (p && um)
+                    um.AddScrollMessage(string.Format("{0}离开游戏", p.nameInGame));
                 lm.RemovePlayer(id);
+                
             }
         }
     }

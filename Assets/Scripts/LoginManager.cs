@@ -75,7 +75,7 @@ public class LoginManager : MonoBehaviour
     {
         UIManager uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
         uiManager.MessageBox("连接已断开", false, null);
-        started = false;
+        StopClient();
     }
 
 }

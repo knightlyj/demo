@@ -109,6 +109,12 @@ public class MoveState : StateBase
 
                 if (!controller.input.hasMove) //没输入方向,idle
                 {
+                    if (player.targetId > 0)
+                    {
+                        Player target = UnityHelper.GetLevelManager().GetPlayer(player.targetId);
+                        controller.faceYaw = CommonHelper.YawOfVector3(target.transform.position - player.transform.position);
+                    }
+
                     if (player.blocking)
                     {
                         if (upperAction == UpperAction.Empty)

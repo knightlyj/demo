@@ -30,7 +30,7 @@ public class StartMenu : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        
+
 
     }
 
@@ -40,7 +40,7 @@ public class StartMenu : MonoBehaviour
 
     }
 
-    bool useDefaultIpAndPort = true;
+    bool useDefaultIpAndPort = false;
     void OnJoinClick()
     {
         string ip = inputIp.text;
@@ -62,24 +62,24 @@ public class StartMenu : MonoBehaviour
             }
         }
 
-        UInt16 port;
-        try
-        {
-            port = UInt16.Parse(inputPort.text);
-        }
-        catch
-        {
-            if (useDefaultIpAndPort)
-            {
-                port = 7887;
-            }
-            else
-            {
-                UIManager uiManager = transform.parent.GetComponent<UIManager>();
-                uiManager.MessageBox("illegal port", false, null);
-                return;
-            }
-        }
+        UInt16 port = Server.localPort;
+        //try
+        //{
+        //    port = UInt16.Parse(inputPort.text);
+        //}
+        //catch
+        //{
+        //    if (useDefaultIpAndPort)
+        //    {
+        //        port = 7887;
+        //    }
+        //    else
+        //    {
+        //        UIManager uiManager = transform.parent.GetComponent<UIManager>();
+        //        uiManager.MessageBox("illegal port", false, null);
+        //        return;
+        //    }
+        //}
         Client.serverPort = port;
 
         GlobalVariables.hostType = HostType.Client;

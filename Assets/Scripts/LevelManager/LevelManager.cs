@@ -107,7 +107,11 @@ public class LevelManager : MonoBehaviour
                 player.tag = StringAssets.remoteplayerTag;
                 player.playerType = PlayerType.Remote;
                 player.gameObject.AddComponent<RemotePlayerController>();
-
+                if(GlobalVariables.hostType == HostType.Server)
+                {
+                    Vector3 randomPos = new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
+                    player.transform.position = new Vector3(35, 0, 175) + randomPos;
+                }
                 break;
             default:
                 break;

@@ -50,6 +50,11 @@ public class Loading : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(loadingTask == LoadingTask.SwitchGameScene)
+        {
+            Client.Receive();
+        }
+
         totalTime += Time.deltaTime;
         if (state == LoadingState.Loading)
         {
@@ -106,6 +111,7 @@ public class Loading : MonoBehaviour
             txtTips.text = "加载完成";
             ClientReady ready = new ClientReady();
             Client.SendMessage(new GameMsg(GameMsg.MsgType.ClientReady, ready), UnityEngine.Networking.QosType.ReliableSequenced);
+            
         }
     }
 

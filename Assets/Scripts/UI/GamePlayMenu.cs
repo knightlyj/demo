@@ -14,8 +14,20 @@ public class GamePlayMenu : MonoBehaviour {
     Button btnClose = null;
     void Awake()
     {
-        btnAddAI.onClick.AddListener(this.OnAddAIClick);
-        btnCleraAI.onClick.AddListener(this.OnClearAIClick);
+        if (GlobalVariables.hostType == HostType.Server)
+        {
+            btnAddAI.onClick.AddListener(this.OnAddAIClick);
+            btnCleraAI.onClick.AddListener(this.OnClearAIClick);
+
+            btnAddAI.gameObject.SetActive(true);
+            btnCleraAI.gameObject.SetActive(true);
+
+        }
+        else if(GlobalVariables.hostType == HostType.Client)
+        {
+            btnAddAI.gameObject.SetActive(false);
+            btnCleraAI.gameObject.SetActive(false);
+        }
         btnExit.onClick.AddListener(this.OnExitClick);
         btnClose.onClick.AddListener(this.OnCloseClick);
     }
@@ -32,27 +44,41 @@ public class GamePlayMenu : MonoBehaviour {
 
     void OnDestroy()
     {
-        btnAddAI.onClick.RemoveListener(this.OnAddAIClick);
-        btnCleraAI.onClick.RemoveListener(this.OnClearAIClick);
+        if (GlobalVariables.hostType == HostType.Server)
+        {
+            btnAddAI.onClick.RemoveListener(this.OnAddAIClick);
+            btnCleraAI.onClick.RemoveListener(this.OnClearAIClick);
+        }
+        else if (GlobalVariables.hostType == HostType.Client)
+        {
+
+        }
+
         btnExit.onClick.RemoveListener(this.OnExitClick);
         btnClose.onClick.RemoveListener(this.OnCloseClick);
     }
 
     void OnAddAIClick()
     {
-        ServerAgent sa = UnityHelper.GetServerAgent();
-        if (sa)
+        if (GlobalVariables.hostType == HostType.Server)
         {
-            sa.AddAI();
+            ServerAgent sa = UnityHelper.GetServerAgent();
+            if (sa)
+            {
+                sa.AddAI();
+            }
         }
     }
 
     void OnClearAIClick()
     {
-        ServerAgent sa = UnityHelper.GetServerAgent();
-        if (sa)
+        if (GlobalVariables.hostType == HostType.Server)
         {
-            sa.ClearAI();
+            ServerAgent sa = UnityHelper.GetServerAgent();
+            if (sa)
+            {
+                sa.ClearAI();
+            }
         }
     }
 

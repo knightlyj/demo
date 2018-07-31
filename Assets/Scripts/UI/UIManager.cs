@@ -9,7 +9,7 @@ public class UIManager : MonoBehaviour
     void Awake()
     {
         UnityHelper.StartWriteLogFile();
-
+        Cursor.lockState = CursorLockMode.Confined;
         if (btnShowMenu)
         {
             btnShowMenu.onClick.AddListener(this.ShowOrHideMenu);

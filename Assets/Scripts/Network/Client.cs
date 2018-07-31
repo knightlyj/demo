@@ -23,7 +23,7 @@ public static class Client
     static int localHostId = -1;
     static int connectionId = -1;
 
-    public static bool initialized = false;
+    static bool initialized = false;
     // Use this for initialization
     public static void Init()
     {
@@ -57,6 +57,9 @@ public static class Client
     // Update is called once per frame
     public static void Receive()
     {
+        if (!initialized)
+            return;
+
         int dataSize;
         int channel;
         int connection;

@@ -12,24 +12,31 @@ public static class Server
     public static event OnDisconnectEvent onDisconnectEvent = null;
 
     public static string localIp = null;
-    public static int localPort = 7887;
+    public const int localPort = 27887;
     static int reliableSequencedChannel;
     static int stateUpdateChannel;
     static int allCostChannel;
     static int localHostId = -1;
+
+    static bool initialized = false;
     // Use this for initialization
     public static void Init()
     {
-        NetworkTransport.Init();
-        ConnectionConfig config = new ConnectionConfig();
+        if (!initialized)
+        {
+            NetworkTransport.Init();
+            ConnectionConfig config = new ConnectionConfig();
 
-        reliableSequencedChannel = config.AddChannel(QosType.ReliableSequenced);
-        stateUpdateChannel = config.AddChannel(QosType.StateUpdate);
-        allCostChannel = config.AddChannel(QosType.AllCostDelivery);
-        HostTopology topology = new HostTopology(config, 4);
+            reliableSequencedChannel = config.AddChannel(QosType.ReliableSequenced);
+            stateUpdateChannel = config.AddChannel(QosType.StateUpdate);
+            allCostChannel = config.AddChannel(QosType.AllCostDelivery);
+            HostTopology topology = new HostTopology(config, 4);
 
-        localIp = CommonHelper.GetIpAddress();
-        localHostId = NetworkTransport.AddHost(topology, localPort, localIp);
+            localIp = CommonHelper.GetIpAddress();
+            localHostId = NetworkTransport.AddHost(topology, localPort, localIp);
+
+            initialized = true;
+        }
     }
 
     static List<int> connectionList = new List<int>(10);
@@ -38,6 +45,9 @@ public static class Server
     // Update is called once per frame
     public static void Receive()
     {
+        if (!initialized)
+            return;
+
         int dataSize;
         int channel;
         int connection;
@@ -73,11 +83,16 @@ public static class Server
 
     public static void Exit()
     {
-        if (localHostId >= 0)
-            NetworkTransport.RemoveHost(localHostId);
-        localHostId = -1;
-        connectionList.Clear();
-        NetworkTransport.Shutdown();
+        if (initialized)
+        {
+            if (localHostId >= 0)
+                NetworkTransport.RemoveHost(localHostId);
+            localHostId = -1;
+            connectionList.Clear();
+            NetworkTransport.Shutdown();
+
+            initialized = false;
+        }
     }
 
     public static bool Disconnect(int connId)
