@@ -21,7 +21,7 @@ public class PlayerInfoPanel : MonoBehaviour
         if (player != null)
         {
             playerId = player.id;
-            EventManager.AddListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+            EventManager.AddListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
             txtName.text = player.nameInGame;
         }
         else
@@ -85,7 +85,7 @@ public class PlayerInfoPanel : MonoBehaviour
 
     void OnDestroy()
     {
-        EventManager.RemoveListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+        EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
     }
 
     void SetAlpha()
@@ -103,7 +103,7 @@ public class PlayerInfoPanel : MonoBehaviour
 
     void OnPlayerDestroy(object sender, object eventArg)
     {
-        EventManager.RemoveListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+        EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
         Destroy(gameObject);
     }
 }

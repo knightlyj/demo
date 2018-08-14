@@ -24,11 +24,13 @@
 
 
 ## 脚部IK
-&emsp;&emsp;首先看一个魂2老王的GIF
-[//]: <> ( todo  GIF)
+&emsp;&emsp;魂系列游戏中,站立时脚部的位置和角度会根据地面调整,首先看一个魂2老王的GIF,注意老王的左脚
+
+![](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/ds-badIK.gif)
 
 &emsp;&emsp;在看看角色的GIF
-[//]: <> ( todo  GIF)
+
+![](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/ds-roleIK.gif)
 
 &emsp;&emsp;可以看出来,大概原理是如果动画中的脚部有插入地面,则将脚部放置到地面位置.如果脚部悬空,则没有处理.
 实现方法就很简单了,根据当前动画的脚部位置,从上方一定距离向下发射射线,即可知道脚部是否插入了地面.
@@ -37,9 +39,10 @@
 
 ```
 在Demo中,仅处理了角色idle时的IK,效果图如下.
-[//]: <> ( todo  GIF)
+
+![](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/demo-IK.gif)
 
 可以看到角色Idle时,脚部位于地面,且脚掌贴合地面.
 
 ## 总结
-得益于Unity强大的动画功能,完成这样的系统设计并不是太难.
+实现了以上的功能,基本可以完成黑魂的全部动作.得益于Unity强大的动画功能,完成这样的系统设计并不是太难.

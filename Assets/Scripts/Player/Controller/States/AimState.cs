@@ -11,7 +11,7 @@ public class AimState : StateBase
         base.Start(player, controller, param);
         cameraControl = GameObject.FindWithTag("MainCamera").GetComponent<CameraControl>();
         cameraControl.SwitchCameraMode(CameraControl.ViewMode.Shoot);
-        player.targetId = -1;
+        controller.ClearTarget();
 
         player.SetUpperAniState(Player.StateNameHash.aim);
         player.shootIk = true;
@@ -24,7 +24,7 @@ public class AimState : StateBase
             UIManager um = UnityHelper.GetUIManager();
             if (um != null)
             {
-                um.showFrontSight = true;
+                um.showCrossHair = true;
             }
         }
     }
@@ -129,7 +129,7 @@ public class AimState : StateBase
             UIManager um = UnityHelper.GetUIManager();
             if (um != null)
             {
-                um.showFrontSight = false;
+                um.showCrossHair = false;
             }
         }
     }

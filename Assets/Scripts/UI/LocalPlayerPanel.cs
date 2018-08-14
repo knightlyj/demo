@@ -56,7 +56,7 @@ public class LocalPlayerPanel : MonoBehaviour {
                 }
 
                 playerId = localPlayer.id;
-                EventManager.AddListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+                EventManager.AddListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
 
                 initialized = true;
             }
@@ -65,7 +65,7 @@ public class LocalPlayerPanel : MonoBehaviour {
 
     void OnPlayerDestroy(object sender, object eventArg)
     {
-        EventManager.RemoveListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+        EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
         localPlayer = null;
         playerId = -1;
     }

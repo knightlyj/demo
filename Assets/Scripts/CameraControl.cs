@@ -221,7 +221,7 @@ public class CameraControl : MonoBehaviour
     void UpdateNormalView()
     {
         Player localPlayer = GlobalVariables.localPlayer;
-        if (localPlayer.targetId >= 0)
+        if (localPlayer.targetId > 0)
         {   //锁定状态,追踪目标
             UpdateLockedCamera();
         }

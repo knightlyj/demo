@@ -10,7 +10,7 @@ public enum EventId
     PlayerDamage,
     PlayerDie,
     PlayerRevive,
-    PlayerDestory, //玩家销毁
+    RemovePlayer, //玩家销毁
 }
 
 public static class EventManager

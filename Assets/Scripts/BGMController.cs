@@ -34,7 +34,7 @@ public class BGMController : MonoBehaviour {
             {
                 playerId = player.id;
                 EventManager.AddListener(EventId.PlayerDamage, playerId, this.OnPlayerDamage);
-                EventManager.AddListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+                EventManager.AddListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
             }
         }
         if (fighting)
@@ -51,7 +51,7 @@ public class BGMController : MonoBehaviour {
     void OnDestroy()
     {
         EventManager.RemoveListener(EventId.PlayerDamage, playerId, this.OnPlayerDamage);
-        EventManager.RemoveListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+        EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
     }
 
     DateTime lastDamageTime = DateTime.Now;
@@ -69,6 +69,6 @@ public class BGMController : MonoBehaviour {
     void OnPlayerDestroy(System.Object sender, System.Object eventArg)
     {
         EventManager.RemoveListener(EventId.PlayerDamage, playerId, this.OnPlayerDamage);
-        EventManager.RemoveListener(EventId.PlayerDestory, playerId, this.OnPlayerDestroy);
+        EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
     }
 }

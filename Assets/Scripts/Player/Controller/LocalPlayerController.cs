@@ -51,6 +51,8 @@ public partial class LocalPlayerController : MonoBehaviour
         EventManager.RemoveListener(EventId.PlayerBlock, player.id, this.OnPlayerBlock);
         EventManager.RemoveListener(EventId.PlayerRevive, player.id, this.OnPlayerRevive);
         EventManager.RemoveListener(EventId.PlayerDie, player.id, this.OnPlayerDie);
+
+        ClearTarget();
     }
 
     DateTime lastLockTime = DateTime.Now;
@@ -63,15 +65,15 @@ public partial class LocalPlayerController : MonoBehaviour
         UpdateState();
         SmoothOrientation(); //角色朝向平滑过渡
 
-        if (input.lockTarget)
+        if (input.lockTarget && player.playerType == PlayerType.Local)
         {
             TimeSpan span = DateTime.Now - lastLockTime;
             if (span.TotalMilliseconds > 500)
             {
                 lastLockTime = DateTime.Now;
-                if (player.targetId >= 0)
+                if (player.targetId > 0)
                 {  //有目标,则取消
-                    player.targetId = -1;
+                    ClearTarget();
                 }
                 else
                 {  //锁定目标 
@@ -95,30 +97,68 @@ public partial class LocalPlayerController : MonoBehaviour
         }
         else
         {
+            Player target = null;
             foreach (string tag in targetTags)
             {
                 float nearestSqrDist = float.PositiveInfinity;
-                GameObject[] goAIs = GameObject.FindGameObjectsWithTag(tag);
-                if (goAIs != null && goAIs.Length > 0)
+                GameObject[] goPlayers = GameObject.FindGameObjectsWithTag(tag);
+                if (goPlayers != null && goPlayers.Length > 0)
                 {
-                    foreach (GameObject goAI in goAIs)
+                    foreach (GameObject go in goPlayers)
                     {
-                        Transform trAI = goAI.transform;
-                        Vector3 diff = trAI.position - transform.position;
+                        Transform trPlayer = go.transform;
+                        Vector3 diff = trPlayer.position - transform.position;
                         if (diff.sqrMagnitude < 100f && diff.sqrMagnitude < nearestSqrDist)  //这里偷懒了,就用距离判断是否锁定这个目标
                         {
                             nearestSqrDist = diff.sqrMagnitude;
-                            Player p = trAI.GetComponent<Player>();
-                            player.targetId = p.id;
+                            target = trPlayer.GetComponent<Player>();
                         }
                     }
                 }
             }
 
-            if (player.targetId > 0)
+            if (target)
+            {
+                SetTarget(target);
                 return true;
+            }
             else
+            {
                 return false;
+            }
+        }
+    }
+
+    void OnTargetDestroy(System.Object sender, System.Object eventArg)
+    {
+        ClearTarget();
+    }
+
+    public void SetTarget(Player target)
+    {
+        if (player.playerType == PlayerType.Local)
+        {
+            EventManager.AddListener(EventId.RemovePlayer, target.id, this.OnTargetDestroy);
+            UIManager um = UnityHelper.GetUIManager();
+            if (um)
+            {
+                um.SetLockTarget(target.transform);
+            }
+            player.targetId = target.id;
+        }
+    }
+
+    public void ClearTarget()
+    {
+        if (player.playerType == PlayerType.Local && player.targetId > 0)
+        {
+            UIManager um = UnityHelper.GetUIManager();
+            if (um)
+            {
+                um.SetLockTarget(null);
+            }
+            EventManager.RemoveListener(EventId.RemovePlayer, player.targetId, this.OnTargetDestroy);
+            player.targetId = -1;
         }
     }
 

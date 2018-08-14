@@ -9,7 +9,7 @@ public static class UnityHelper
     private static StreamWriter _writer;
     static UnityHelper()
     {
-        
+
     }
 
     public static void StartWriteLogFile()
@@ -31,10 +31,10 @@ public static class UnityHelper
             }
         }
     }
-    
+
     public static void StopWriteLogFile()
     {
-        if(_writer != null)
+        if (_writer != null)
         {
             Application.logMessageReceived -= LogCallback;
             _writer.Close();
@@ -97,7 +97,7 @@ public static class UnityHelper
 
     public static bool LoadSceneAsync(string sceneName, LoadingTask task = LoadingTask.Nothing)
     {
-        if(Application.CanStreamedLevelBeLoaded(sceneName))
+        if (Application.CanStreamedLevelBeLoaded(sceneName))
         {
             Loading.targetSceneName = sceneName;
             Loading.loadingTask = task;
@@ -111,31 +111,46 @@ public static class UnityHelper
     public static CameraControl GetCameraControl()
     {
         Camera c = Camera.main;
-        return c.GetComponent<CameraControl>();
+        if (c)
+            return c.GetComponent<CameraControl>();
+        else
+            return null;
     }
 
 
     public static LevelManager GetLevelManager()
     {
         GameObject go = GameObject.FindWithTag("LevelManager");
-        return go.GetComponent<LevelManager>();
+        if (go)
+            return go.GetComponent<LevelManager>();
+        else
+            return null;
     }
 
     public static ClientAgent GetClientAgent()
     {
         GameObject go = GameObject.FindWithTag("LevelManager");
-        return go.GetComponent<ClientAgent>();
+        if (go)
+            return go.GetComponent<ClientAgent>();
+        else
+            return null;
     }
 
     public static ServerAgent GetServerAgent()
     {
         GameObject go = GameObject.FindWithTag("LevelManager");
-        return go.GetComponent<ServerAgent>();
+        if (go)
+            return go.GetComponent<ServerAgent>();
+        else
+            return null;
     }
 
     public static UIManager GetUIManager()
     {
         GameObject go = GameObject.FindWithTag("UIManager");
-        return go.GetComponent<UIManager>();
+        if (go)
+            return go.GetComponent<UIManager>();
+        else
+            return null;
     }
 }

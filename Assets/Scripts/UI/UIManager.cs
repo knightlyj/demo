@@ -102,6 +102,16 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    LockSign lockSign = null;
+    public void SetLockTarget(Transform target)
+    {
+        if (lockSign)
+        {
+            lockSign.target = target;
+        }
+    }
+
     //public bool ShowWnd(string name)
     //{
     //    Transform trWnd = transform.FindChild(name);
@@ -149,20 +159,20 @@ public class UIManager : MonoBehaviour
     }
 
     [SerializeField]
-    Transform frontSight = null;
-    public bool showFrontSight
+    Transform crossHair = null;
+    public bool showCrossHair
     {
         set
         {
-            if (frontSight != null)
+            if (crossHair != null)
             {
-                frontSight.gameObject.SetActive(value);
+                crossHair.gameObject.SetActive(value);
             }
         }
         get
         {
-            if (frontSight != null)
-                return frontSight.gameObject.activeInHierarchy;
+            if (crossHair != null)
+                return crossHair.gameObject.activeInHierarchy;
             else
                 return false;
         }

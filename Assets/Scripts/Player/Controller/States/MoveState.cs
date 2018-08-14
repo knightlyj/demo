@@ -245,7 +245,9 @@ public class MoveState : StateBase
             {
                 player.ChangeWeapon(nextWeapon);
                 if (nextWeapon == WeaponType.Pistol)
-                    player.targetId = -1;
+                {
+                    controller.ClearTarget();
+                }
             }
             else if (aniEvent.stringParameter.Equals(LocalPlayerController.AniEventName.done))
             {

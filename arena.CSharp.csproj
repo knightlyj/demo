@@ -106,6 +106,7 @@
     <Compile Include="Assets\Scripts\UI\GamePlayMenu.cs" />
     <Compile Include="Assets\Scripts\UI\Loading.cs" />
     <Compile Include="Assets\Scripts\UI\LocalPlayerPanel.cs" />
+    <Compile Include="Assets\Scripts\UI\LockSign.cs" />
     <Compile Include="Assets\Scripts\UI\MessageBox.cs" />
     <Compile Include="Assets\Scripts\UI\MobileInput.cs" />
     <Compile Include="Assets\Scripts\UI\OpenUrl.cs" />

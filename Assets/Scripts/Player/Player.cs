@@ -108,7 +108,7 @@ public partial class Player : MonoBehaviour
 
     void OnDestroy()
     {
-        EventManager.RaiseEvent(EventId.PlayerDestory, id, this, null);
+        
     }
 
     // Update is called once per frame
