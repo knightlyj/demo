@@ -46,12 +46,13 @@
 &emsp;&emsp;2.如果动画相同,但当前播放进度差异较大,则修改当前动画状态.
 
 #### 角色状态同步的效果
-首先看看低延迟情况(50ms ~ 100ms)
-[//]: <> ( todo  低延迟GIF)
+首先看看低延迟情况(50ms ~ 200ms)
 
-再看看较高延迟的情况(300ms ~ 2s)
-[//]: <> ( todo  高延迟GIF)
+![low latency](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/latency-low.gif)
 
+再看看较高延迟的情况(500ms ~ 2s),动作游戏中,延迟高于200ms时,基本认为很难玩.
+
+![high latency](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/latency-high.gif)
 
 ### 关键事件
 这里可以说的不多,比较关键的事件都可以这样处理,不同事件的具体表现可以根据情况优化.
@@ -63,3 +64,15 @@
 有了以上这些机制,已经可以实现魂系列的多人游戏了.
 
 另外考虑下有服务器作判定的多人动作游戏,部分动作或技能会需要服务器判定是否使用,这样一来机制上会复杂一些,但总体思路是差不多的.
+
+## 其他参考资料
+
+[荣耀战魂中使用了33ms的输入延迟](https://forhonor.ubisoft.com/game/en-us/news-community/152-321584-16/input-delay-in-for-honor)
+
+此文讨论了最初使用的100ms全球同步时钟,但上线后彻底移出了这套机制,仅对部分offensive动作的输入延迟了33ms.如下所示.
+
+![high latency](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/ForHonor.gif)
+
+其中需要跳过的动画部分,要计算出当前延迟才能做到,这里计算延迟的方法可以点对点测试,或者使用全球时钟,不知道荣耀战魂使用了哪种方式.
+
+PS:查阅了一些关于全球时钟同步协议NTP的资料,网络良好时,误差基本在10ms以下,那么依赖全球时钟的延迟估算其实也不是那么精确.
