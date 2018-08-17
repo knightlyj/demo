@@ -13,18 +13,20 @@ public class StartMenu : MonoBehaviour
     [SerializeField]
     InputField inputIp = null;
     [SerializeField]
-    InputField inputPort = null;
+    Button btnQuit = null;
 
     void Awake()
     {
         btnJoin.onClick.AddListener(this.OnJoinClick);
         btnCreate.onClick.AddListener(this.OnCreateClick);
+        btnQuit.onClick.AddListener(this.OnQuitClick);
     }
 
     void OnDestroy()
     {
         btnJoin.onClick.RemoveAllListeners();
         btnCreate.onClick.RemoveAllListeners();
+        btnQuit.onClick.RemoveAllListeners();
     }
 
     // Use this for initialization
@@ -97,5 +99,10 @@ public class StartMenu : MonoBehaviour
             GlobalVariables.hostType = HostType.Server;
         }
         UnityHelper.LoadSceneAsync(StringAssets.gamePlaySceneName);
+    }
+
+    void OnQuitClick()
+    {
+        Application.Quit();
     }
 }

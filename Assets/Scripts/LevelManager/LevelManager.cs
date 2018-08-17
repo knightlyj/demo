@@ -147,7 +147,6 @@ public class LevelManager : MonoBehaviour
             }
             Destroy(playerDict[id].gameObject);
             playerDict.Remove(id);
-            EventManager.RaiseEvent(EventId.RemovePlayer, id, this, null);
             return true;
         }
         else

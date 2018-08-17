@@ -22,7 +22,7 @@ public class LocalAIInput : IPlayerInput
     public void Stop()
     {
         if (player)
-            EventManager.AddListener(EventId.PlayerDamage, player.id, this.OnDamage);
+            EventManager.RemoveListener(EventId.PlayerDamage, player.id, this.OnDamage);
     }
 
     Strategy stratgy = Strategy.Defense;

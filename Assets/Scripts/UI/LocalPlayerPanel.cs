@@ -63,6 +63,14 @@ public class LocalPlayerPanel : MonoBehaviour {
         }
     }
 
+    void OnDestroy()
+    {
+        EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);
+        localPlayer = null;
+        playerId = -1;
+    }
+
+
     void OnPlayerDestroy(object sender, object eventArg)
     {
         EventManager.RemoveListener(EventId.RemovePlayer, playerId, this.OnPlayerDestroy);

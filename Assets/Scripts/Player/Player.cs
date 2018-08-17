@@ -108,7 +108,8 @@ public partial class Player : MonoBehaviour
 
     void OnDestroy()
     {
-        
+            EventManager.RaiseEvent(EventId.RemovePlayer, id, this, null);
+
     }
 
     // Update is called once per frame
@@ -222,26 +223,29 @@ public partial class Player : MonoBehaviour
         else
         {
             bool damage = false;
-            if (src != null)
+            if (healthPoint > 0)
             {
-                if (this.blocking)
+                if (src != null)
                 {
-                    Vector3 dir = src.transform.position - transform.position;
-                    float angle = Vector3.Angle(dir, transform.forward);
-                    if (angle > 90f)
+                    if (this.blocking)
                     {
-                        damage = true;
+                        Vector3 dir = src.transform.position - transform.position;
+                        float angle = Vector3.Angle(dir, transform.forward);
+                        if (angle > 90f)
+                        {
+                            damage = true;
+                        }
+                        else
+                        {
+                            EventManager.RaiseEvent(EventId.PlayerBlock, this.id, this, null);
+
+                            PlayBlockSound();
+                        }
                     }
                     else
                     {
-                        EventManager.RaiseEvent(EventId.PlayerBlock, this.id, this, null);
-
-                        PlayBlockSound();
+                        damage = true;
                     }
-                }
-                else
-                {
-                    damage = true;
                 }
             }
             if (damage)

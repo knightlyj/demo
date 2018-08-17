@@ -44,6 +44,7 @@ public class Loading : MonoBehaviour
 
         Resources.UnloadUnusedAssets();
         StartLoading(targetSceneName);
+        
     }
 
     int count = 0;
