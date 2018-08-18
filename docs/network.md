@@ -67,9 +67,9 @@
 
 ## 其他参考资料
 
-[荣耀战魂中使用了33ms的输入延迟](https://forhonor.ubisoft.com/game/en-us/news-community/152-321584-16/input-delay-in-for-honor)
+[链接: 荣耀战魂中使用了33ms的输入延迟](https://forhonor.ubisoft.com/game/en-us/news-community/152-321584-16/input-delay-in-for-honor)
 
-此文讨论了最初使用的100ms全球同步时钟,但上线后彻底移出了这套机制,仅对部分offensive动作的输入延迟了33ms.如下所示.
+此文提到最初使用的以100ms为输入间隔的全球同步时钟,但上线后彻底移出了这套机制,仅对部分offensive动作的输入延迟了33ms.如下所示.
 
 ![high latency](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/ForHonor.gif)
 
