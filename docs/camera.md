@@ -39,18 +39,18 @@
 ```
 Vector3 watchPoint; //镜头看向的点
 void Update(){
-	//watchPoint平滑追踪角色
-	Vector3 toPlayer = sight.position - watchPoint;
+    //watchPoint平滑追踪角色
+    Vector3 toPlayer = player.position - watchPoint;
     float step = Mathf.Max(toPlayer.magnitude * scale, minStep); //scale用来控制追踪速度,minStep为最小追踪步长.
-    watchPoint = Vector3.MoveTowards(watchPoint, sight.position, step);
+    watchPoint = Vector3.MoveTowards(watchPoint, player.position, step);
 
-	//镜头位置和角度设置
-	float yaw = Vector3.AngleBetween(Vector3.forward, toWatchPoint);
-	Quaternion rotation = Quaternion.Euler(0, yaw, 0);
-	transform.rotation = rotation;
+    //镜头位置和角度设置
+    float yaw = Vector3.AngleBetween(Vector3.forward, toWatchPoint);
+    Quaternion rotation = Quaternion.Euler(0, yaw, 0);
+    transform.rotation = rotation;
 
-	Vector3 watchDir = rotation * Vector3.forward;
-	transform.position = watchPoint - watchDir * cameraDistance; //cameraDistance为预设的镜头距离
+    Vector3 watchDir = rotation * Vector3.forward;
+    transform.position = watchPoint - watchDir * cameraDistance; //cameraDistance为预设的镜头距离
 }
 ```
 
@@ -59,6 +59,7 @@ void Update(){
 ![](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/shake.gif)
 
 仔细看一下,会发现移动时角色一直在抖动,经过我一段时间(好几天)的分析,发现是因为每次Update间隔中,物理引擎的step次数不一定相同,而角色运动是基于物理引擎,这样每次Update之间,角色可能没运动,也可能经历了两次物理引擎的step,从而造成抖动.
+
 解决方法就比较简单了,在之前代码的基础上,用两次Update之间的FixedUpdate的次数来得到物理引擎更新的次数,使得镜头追踪的运动距离与实际物理引擎的step数成正比.在上面代码的基础上,加上了一个fixedCount,大致修改如下:
 
 ```
@@ -70,11 +71,11 @@ void FixedUpdate()
 
 void Update()
 {
-	//watchPoint平滑追踪角色
-	Vector3 toPlayer = sight.position - watchPoint;
-	//这里计算step时,用fixedCount作为乘数,两次Update间FixedUpdate次数越多,这次追踪步长也越大.
+    //watchPoint平滑追踪角色
+    Vector3 toPlayer = player.position - watchPoint;
+    //这里计算step时,用fixedCount作为乘数,两次Update间FixedUpdate次数越多,这次追踪步长也越大.
     float step = Mathf.Max(toPlayer.magnitude * fixedCount * scale, minStep);//scale用来控制追踪速度,minStep为最小追踪步长.
-    watchPoint = Vector3.MoveTowards(watchPoint, sight.position, step);
+    watchPoint = Vector3.MoveTowards(watchPoint, player.position, step);
 	...
 
     fixedCount = 0; //最后要清零 
@@ -108,7 +109,7 @@ void Update()
 
 ![](https://raw.githubusercontent.com/knightlyj/demo/master/docs/img/ds-camera-collision.gif)
 
-黑魂2的比较简单,计算出碰撞位置,然后直接把镜头放到碰撞位置.
+黑魂2的比较简单,按镜头尺寸计算出碰撞位置,然后直接把镜头放到碰撞位置.
 
 ### GTA4的镜头碰撞
 
@@ -117,7 +118,7 @@ void Update()
 GTA4的镜头碰撞看起来效果更好,镜头距离调整非常平滑.仔细看GIF,可以注意到镜头应该与墙壁碰撞时,镜头仅仅是缩短了与角色的距离,随着镜头继续旋转,才彻底把镜头放到墙壁前方.
 
 ### Demo的镜头碰撞
-GTA4的效果实现起来有些复杂,而实际玩黑魂时,也不会太注意到镜头碰撞,故采用了黑魂2的方式,直接设置.
+GTA4的效果实现起来有些复杂,而实际玩黑魂时,也不会太注意到镜头碰撞,故采用了黑魂2的方式.
 
 很多资料会说用RayCast得到碰撞位置,其实这样不够精确,镜头经常会穿模,而Unity已经提供了BoxCast,可以精确模拟镜头尺寸做碰撞计算.
 效果如下.
