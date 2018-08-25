@@ -1,7 +1,10 @@
 ﻿# 基于Unity的游戏Demo
 这个项目的最初设想是复刻黑暗之魂的游戏机制,后续主要因为美术素材不足,很大程度简化了最初的设计.另外参考GTA之后,加入了第三人称射击视角.
 整体制作较为粗糙,主要实现了主流动作游戏的一些基本机制.
-::release下载链接
+
+__[链接: apk下载](https://github.com/knightlyj/demo/releases/download/1.0.0/demo.apk)__
+
+__[链接: exe下载](https://github.com/knightlyj/demo/releases/download/1.0.0/demo.rar)__
 
 ## 操作简介 
 基本操作方法如下:
@@ -39,7 +42,7 @@ __1.人物动作系统__
 
 另外一点就是脚部ik处理,实现起来比预期简单很多.
 
-__[链接:动画系统](https://knightlyj.github.io/demo/animation)__记录了这些内容.
+__[链接:动画系统](https://knightlyj.github.io/demo/animation)__ 记录了这些内容.
 
 __2.镜头控制__
 
@@ -47,7 +50,7 @@ __2.镜头控制__
 
 其中主要问题是角色运动基于物理引擎,而每一帧之间FixedUpdate()执行次数不固定,以至于有很明显的镜头抖动.
 
-__[链接:镜头控制](https://knightlyj.github.io/demo/camera)__记录了黑魂镜头的开发经验.
+__[链接:镜头控制](https://knightlyj.github.io/demo/camera)__ 记录了黑魂镜头的开发经验.
 
 另外还有参考GTA的肩部射击视角,也花了一些心思,但最终还是没有达到GTA中的效果,实现方法并不难,故没有写文章记录了.
 
@@ -63,7 +66,7 @@ __[链接:《守望先锋》架构设计与网络同步](http://gad.qq.com/artic
 
 在使用Unity的基础上，不太可能改动物理引擎或动画系统，而一般来说，实现帧同步需要使用定点数,所以这里也是不可能使用帧同步的.
 
-__[链接:网络同步](https://knightlyj.github.io/demo/network)__记录了网络同步的开发经验.
+__[链接:网络同步](https://knightlyj.github.io/demo/network)__ 记录了网络同步的开发经验.
 
 ## 仍然存在的重大缺陷
 1.开发所使用的Unity版本为5.4.2,在这个版本里提供的非阻塞同步网络API(NetworkTransport),没有办法知道系统自动分配的端口号.而在最新的版本中,增加了一个方法获取端口号.
